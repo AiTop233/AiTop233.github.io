@@ -6,6 +6,7 @@ import { resolve } from 'path'
 // 分类定义 - 在这里增删分类
 const categories = [
   { text: 'B站课程', link: '/bilibili/' },
+  { text: '极客时间', link: '/geektime/' },
   { text: '影视', link: '/movies/' },
   { text: '电子书', link: '/ebooks/' },
   { text: '教程', link: '/tutorials/' },
@@ -62,6 +63,7 @@ export default defineConfig({
     // 侧边栏 (按分类)
     sidebar: {
       '/bilibili/': sidebarCategory('B站付费课程'),
+      '/geektime/': sidebarCategory('极客时间'),
       '/movies/': sidebarCategory('影视'),
       '/ebooks/': sidebarCategory('电子书'),
       '/tutorials/': sidebarCategory('教程'),
@@ -130,6 +132,7 @@ export default defineConfig({
     const pages = [
       { url: '/', changefreq: 'daily', priority: 1.0 },
       { url: '/bilibili/', changefreq: 'weekly', priority: 0.9 },
+      { url: '/geektime/', changefreq: 'weekly', priority: 0.9 },
       { url: '/movies/', changefreq: 'weekly', priority: 0.8 },
       { url: '/ebooks/', changefreq: 'weekly', priority: 0.8 },
       { url: '/tutorials/', changefreq: 'weekly', priority: 0.8 },

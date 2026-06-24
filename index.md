@@ -44,6 +44,11 @@ head:
     <div class="name">B站付费课程</div>
     <div class="count">260+ 门 · 编程·理财·摄影·历史</div>
   </a>
+  <a class="category-card" href="/geektime/">
+    <div class="icon">⏰</div>
+    <div class="name">极客时间</div>
+    <div class="count">276门 · 专栏课+视频课</div>
+  </a>
   <a class="category-card" href="/movies/">
     <div class="icon">🎥</div>
     <div class="name">影视</div>
