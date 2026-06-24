@@ -1,4 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { SitemapStream, streamToPromise } from 'sitemap'
+import { createWriteStream } from 'fs'
+import { resolve } from 'path'
 
 // 分类定义 - 在这里增删分类
 const categories = [
@@ -122,7 +125,30 @@ export default defineConfig({
     lineNumbers: true,
   },
 
-  // ==================== Sitemap ====================
+  // ==================== Sitemap 自动生成 ====================
+  buildEnd: async ({ outDir }) => {
+    const pages = [
+      { url: '/', changefreq: 'daily', priority: 1.0 },
+      { url: '/bilibili/', changefreq: 'weekly', priority: 0.9 },
+      { url: '/movies/', changefreq: 'weekly', priority: 0.8 },
+      { url: '/ebooks/', changefreq: 'weekly', priority: 0.8 },
+      { url: '/tutorials/', changefreq: 'weekly', priority: 0.8 },
+      { url: '/software/', changefreq: 'weekly', priority: 0.8 },
+      { url: '/music/', changefreq: 'weekly', priority: 0.8 },
+    ]
+
+    const sitemap = new SitemapStream({ hostname: 'https://aitop233.github.io' })
+    const writeStream = createWriteStream(resolve(outDir, 'sitemap.xml'))
+
+    sitemap.pipe(writeStream)
+    pages.forEach(p => sitemap.write(p))
+    sitemap.end()
+
+    await streamToPromise(sitemap)
+    console.log('✅ sitemap.xml 已生成')
+  },
+
+  // ==================== HTML 变换 ====================
   transformHtml: async (code, id, context) => {
     // 在页面 <head> 中注入 Schema.org 面包屑结构化数据
     if (id === 'index.md') return code
