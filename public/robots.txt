@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://aitop233.github.io/sitemap.xml
+
+# 禁止抓取资源文件（如有）
+Disallow: /assets/
