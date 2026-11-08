@@ -96,7 +96,13 @@ class Watcher:
         self.retry_limit = int(retry_limit)
         self.backoff = tuple(backoff)
         self._lock = WatchLock(lock_dir) if lock_dir else None
-        self._log = log or (lambda *a, **k: None)
+        # 兼容两种传入：JsonLogger 实例（取 .log 方法）或可调用对象
+        if log is None:
+            self._log = lambda *a, **k: None
+        elif hasattr(log, "log") and callable(log.log):
+            self._log = log.log
+        else:
+            self._log = log
         self._pending: dict[str, tuple[int, float]] = {}
         self._processed: set[str] = set()
         self.consecutive_failed = 0
