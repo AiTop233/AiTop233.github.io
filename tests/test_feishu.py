@@ -22,8 +22,12 @@ RECORD = {
 }
 
 
-def _canned(method, url, *, body=None):
+def _canned(method, url, *, body=None, headers=None):
     calls.append(url)
+    if "/documents/doctest" in url and method == "GET":
+        # 真实接口要求 Bearer token（2026-11-09 真实验收发现的缺失头 bug）
+        if not (headers or {}).get("Authorization", "").startswith("Bearer "):
+            return 200, json.dumps({"code": 99991661, "msg": "Missing access token"})
     if "tenant_access_token" in url:
         return 200, json.dumps({"code": 0, "msg": "ok",
                                 "tenant_access_token": "t-abc", "expire": 7200})
@@ -31,6 +35,8 @@ def _canned(method, url, *, body=None):
         return 200, json.dumps({"code": 0, "msg": "ok",
                                 "data": {"document": {"document_id": "doctest"}}})
     if "/children" in url and method == "PATCH":
+        if not (headers or {}).get("Authorization", "").startswith("Bearer "):
+            return 200, json.dumps({"code": 99991661, "msg": "Missing access token"})
         return 200, json.dumps({"code": 0, "msg": "ok",
                                 "data": {"children": [{"block_id": "blk1"}]}})
     raise AssertionError(f"stub 未覆盖: {method} {url}")
@@ -54,10 +60,10 @@ class FeishuWriterTests(unittest.TestCase):
     def test_append_record_writes_link_block(self):
         bodies = []
 
-        def canned(method, url, *, body=None):
+        def canned(method, url, *, body=None, headers=None):
             if "/children" in url and method == "PATCH":
                 bodies.append(body)
-            return _canned(method, url, body=body)
+            return _canned(method, url, body=body, headers=headers)
 
         summary = make_writer(canned).append_record(RECORD)
         self.assertEqual(summary["block_id"], "blk1")
@@ -88,9 +94,9 @@ class FeishuWriterTests(unittest.TestCase):
         self.assertIn("app_id", cm.exception.hint)
 
     def test_doc_no_permission_raises_auth_error_with_grant_hint(self):
-        def canned(method, url, *, body=None):
+        def canned(method, url, *, body=None, headers=None):
             if "tenant_access_token" in url:
-                return _canned(method, url, body=body)
+                return _canned(method, url, body=body, headers=headers)
             return 200, json.dumps({"code": 99991672, "msg": "permission denied"})
 
         with self.assertRaises(AuthError) as cm:
@@ -98,10 +104,10 @@ class FeishuWriterTests(unittest.TestCase):
         self.assertIn("文档应用", cm.exception.hint)
 
     def test_append_failure_raises_writer_error(self):
-        def canned(method, url, *, body=None):
+        def canned(method, url, *, body=None, headers=None):
             if "/children" in url:
                 return 200, json.dumps({"code": 99999999, "msg": "boom"})
-            return _canned(method, url, body=body)
+            return _canned(method, url, body=body, headers=headers)
 
         with self.assertRaises(WriterError):
             make_writer(canned).append_record(RECORD)

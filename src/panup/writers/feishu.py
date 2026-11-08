@@ -87,12 +87,13 @@ class FeishuWriter(Writer):
 
     # -- 传输层（测试打桩点） ------------------------------------------------
 
-    def _request(self, method, url, *, body=None):
+    def _request(self, method, url, *, body=None, headers=None):
         """单次 HTTP 调用，返回 (status, text)。测试覆写本方法打桩。"""
         data = json.dumps(body, ensure_ascii=False).encode() if body is not None else None
-        headers = {"Content-Type": "application/json; charset=utf-8",
-                   "Accept": "application/json"}
-        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        hdrs = {"Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"}
+        hdrs.update(headers or {})
+        req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return r.status, r.read().decode("utf-8", "replace")
 
@@ -135,7 +136,7 @@ class FeishuWriter(Writer):
         last = None
         for attempt in range(1, 3 + 1):
             try:
-                status, text = self._request(method, url, body=body)
+                status, text = self._request(method, url, body=body, headers=headers)
             except urllib.error.HTTPError as e:
                 status, text = e.code, e.read().decode("utf-8", "replace")
             except (urllib.error.URLError, TimeoutError, OSError) as e:
