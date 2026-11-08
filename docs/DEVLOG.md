@@ -36,3 +36,9 @@
 - 做了：I-004 人验收通过，合并 main（80af384）、分支已删；验收结果回填、看板重整（[core]/[drivers] 阶段 1 清空）
 - 停在：main；开工 I-005 飞书 Writer
 - 下次：I-005 代码（mock 测试先行）→ 人侧准备：飞书开放平台建自建应用拿 app_id/app_secret 存 secrets/feishu_app.json + 文档授权给应用 → 真实验收（上传 --doc feishu → 文档出现一行可点击链接）
+
+## 2026-11-09（第七次会话记录）
+- 做了：I-005 实现并转「待验收」——writers/feishu.py（tenant_access_token + docx 追加带超链接块），8 例新测（全套 67 例绿）、变异检查过；分支 I-005-feishu-writer 未合并
+- A6 单测调整：feishu 注册后「未启用」提示改用不存在写入端名验证（原语义不变）
+- 停在：main；等 I-005 人验收（人侧前置：飞书应用 + secrets/feishu_app.json + config.toml [feishu].doc_token + 文档授权）
+- 下次：I-005 验收通过后合并 → I-006 监控自动上传收尾 B1
