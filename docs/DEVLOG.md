@@ -49,3 +49,9 @@
 - B1 代码全部完成；两条分支待验收：I-005（writers）、I-006（watcher，分支叠加在 I-005 上）
 - 停在：main；等飞书应用配置后一并验收 I-005 + I-006-A3
 - 下次：验收通过 → 按链序合并两条分支 → B1 收尾（更新 BACKEND 密钥清单）；之后进入「后续阶段」选题
+
+## 2026-11-09（第九次会话记录 · 规划）
+- 做了：规划访谈 + 阶段 2 立项——Web 端提前（本地网页管理台 F4 + 目录约定自动化 F5）；技术栈 FastAPI + uvicorn + 免构建 SPA（零依赖条款修订为「依赖最小集合」）；目录约定 `网盘@远端目录`（`__` 分隔层级、一律加年/月/日、文件名不编码）；新建 FRONTEND.md / DESIGN_SYSTEM.md；PRD / ARCHITECTURE / BACKEND / AGENTS / DECISIONLOG（D-002）/ 看板同步完成；B2 四个 issue（I-007～I-010）已建待办
+- 待办提醒：PRD「需求质量清单」新增 F4 / F5 条目后需人复勾；requirements.txt 将在 I-007 落地（fastapi / uvicorn 锁版本）
+- 停在：main；声明回到执行模式
+- 下次：开工 I-007（Web 服务骨架）；并行等飞书应用验收 B1 尾巴

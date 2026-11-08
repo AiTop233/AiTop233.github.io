@@ -19,12 +19,16 @@
   - `core/log.py`：JSON lines 日志
   - `config.py`：配置与密钥加载、启动校验
   - `cli.py`（含 `__main__.py`）：命令入口
-  - `watcher.py`：目录监控循环
-- 与 ARCHITECTURE 模块分类的对应：drivers / writers / core / cli / watcher / config 一一对应，目录一致。
+  - `watcher.py`：目录监控循环（阶段 2 支持约定目录动态规则）
+  - `web/api.py`：本地管理台服务端（FastAPI REST + 托管 SPA，阶段 2）
+  - `web/convention.py`：目录约定解析（`网盘@远端目录` → 规则，阶段 2）
+  - `web/static/`：SPA 前端（index.html / app.js / styles.css，免构建）
+- 与 ARCHITECTURE 模块分类的对应：drivers / writers / core / cli / watcher / web / config 一一对应，目录一致。
+- 运行时第三方依赖（阶段 2 起放宽零依赖，AGENTS §11 条款 2）：`fastapi`、`uvicorn`（版本锁定在 requirements.txt）。
 
 ## 2. 接口与契约
 
-- 代码位置：`drivers/base.py`、`writers/base.py`、`core/pipeline.py`
+- 代码位置：`drivers/base.py`、`writers/base.py`、`core/pipeline.py`、`web/api.py`
 - Driver 基类（语义对齐 alist 的 Driver 接口，裁剪为本项目所需子集）：
   - `auth_check() -> dict`：校验登录态，返回账号与容量摘要；失效抛 `AuthError`
   - `mkdir(remote_dir) -> dict`：建目录，已存在视为成功（幂等），父目录自动创建
@@ -39,6 +43,13 @@
   - `publish_file(local_path, pan, remote_dir, *, writer_names=None, force=False) -> dict`：完整管道；返回链接与台账记录
   - `check_all() -> dict`：各网盘与写入端登录态体检
 - 错误契约：对外只抛 `ProjectError` 子类（`AuthError` / `UploadError` / `ShareError` / `WriterError` / `ConfigError`），携带 `code`、上游 `errno` 与「怎么办」恢复指引；不向调用方裸抛网络异常。
+- REST API（阶段 2，全部挂 `/api/*`，只监听 127.0.0.1）：
+  - `POST /api/upload`（multipart 文件 + pan/dir/date_dir/doc 表单）→ `{link, pwd, path, dedup, writers}`
+  - `GET /api/uploads?limit=` → 台账记录列表；`POST /api/uploads/{id}/retry` → 失败项重传
+  - `GET /api/status` → 各网盘与写入端登录态体检（三灯）
+  - `GET /api/rules` / `PUT /api/rules`（阶段 1 固定规则）；约定目录模式下由 convention 扫描动态生成（F5）
+  - `GET /api/config` / `PUT /api/config` → 白名单配置项（默认目录、飞书 doc_token、监控参数）
+  - 错误信封：`{code, msg, hint}`，HTTP 状态 4xx/5xx；前端直接展示 msg + hint
 
 ## 3. 数据与存储
 
@@ -87,7 +98,7 @@
 ## 9. 配置与密钥
 
 - 代码位置：`config.py`；配置模板 `config.example.toml`（入库），实际 `config.toml` 不入库
-- 配置项：各网盘默认上传目录、监控目录与「网盘 + 目标目录」映射、监控间隔与稳定判定时长、飞书目标文档 token、日志目录
+- 配置项：各网盘默认上传目录、监控根目录与「网盘 + 目标目录」映射（阶段 2 起另有约定目录模式）、监控间隔与稳定判定时长、飞书目标文档 token、日志目录、`[web] port`（默认 8256）
 - 密钥来源：环境变量（`BAIDU_COOKIE` / `QUARK_COOKIE`）优先于 `secrets/` 文件（`baidu_cookies.json`、`quark_cookie.txt`、`feishu_app.json`）
 - 启动检查：watch 与 upload 启动时校验必需项，缺项一次性列出全部缺失清单后退出，不用默认值顶替（AC-06 的配置面）
 
