@@ -1,6 +1,6 @@
 # 架构：网盘自动上传
 
-> 本项目**无前端**（CLI + 本地监控，无图形界面）：不产 `FRONTEND.md` 与 `DESIGN_SYSTEM.md`；界面形态的扩展（Web 端 / 桌面端）见 PRD「后续阶段」。
+> 阶段 1 为 CLI + 本地监控（无图形界面）；**阶段 2 起有前端**——本地 Web 管理台（浏览器访问，F4）：前端代码组织见 `FRONTEND.md`，界面结构与视觉约定见 `DESIGN_SYSTEM.md`。桌面端仍在「后续阶段」。
 
 ## 0. 这份文档写什么、不写什么
 
@@ -12,9 +12,10 @@
 ## 1. 数据流
 
 ```
-本地文件（两种入口）
+本地文件（三种入口）
   ├─ CLI 手动指定（F1）
-  └─ watcher 监控目录新文件（F2）
+  ├─ watcher 监控目录新文件（F2；阶段 2 起监控根的「网盘@远端目录」约定文件夹自动成为规则，F5）
+  └─ Web 管理台手动上传（F4，阶段 2）
           │
           ▼
 core 上传管道（publish）：去重检查 → 驱动建目录 → 分片上传 → 创建分享链接
@@ -22,12 +23,12 @@ core 上传管道（publish）：去重检查 → 驱动建目录 → 分片上�
           │                                    ├─► writer（飞书）：追加一行「时间 · 文件名 · 链接」
           │                                    └─► 台账（SQLite）：记录文件 / 网盘 / 链接 / 状态
           ▼
-输出：CLI 打印链接 / watch 日志（JSON lines）
+输出：CLI 打印链接 / watch 日志 / Web 页面展示链接与记录
 ```
 
-一句话：本地文件经上传管道进网盘指定目录并生成分享链接，链接写入飞书文档，全过程记入本地台账。
+一句话：本地文件经上传管道进网盘指定目录并生成分享链接，链接写入飞书文档，全过程记入本地台账；阶段 2 起浏览网页即完成上传、记录查看与监控管理。
 
-现状与目标的差距：无现状，从零搭建。差距 = 阶段 1 的 I-001 ～ I-006，落地顺序按依赖链：骨架配置 → 百度驱动 → 夸克驱动 → 管道与 CLI → 飞书写入 → 监控自动上传。
+现状与目标的差距：阶段 1 的 I-001 ～ I-006 代码已完成（I-005 / I-006 待验收）。阶段 2 差距 = Web 服务与 SPA、目录约定解析，对应看板 B2（I-007 ～ I-010），落地顺序：服务骨架 → SPA 手动上传与仪表盘 → 监控规则管理（含约定解析）→ 状态与配置。
 
 ## 2. 模块分类与依赖方向
 
@@ -38,18 +39,20 @@ core 上传管道（publish）：去重检查 → 驱动建目录 → 分片上�
 | drivers | 网盘客户端：登录态校验、建目录、上传、创建分享 | `src/panup/drivers/` | config | core、writers、入口 |
 | writers | 文档写入端：向指定文档追加记录 | `src/panup/writers/` | config | core、drivers、入口 |
 | core | 上传管道、去重、台账、驱动与写入端注册表 | `src/panup/core/` | drivers、writers、config | 入口 |
-| cli | 命令入口：upload / status / watch 转发 | `src/panup/cli.py` | core | drivers、writers |
-| watcher | 目录监控，产出新文件事件交给 core | `src/panup/watcher.py` | core | drivers、writers |
+| cli | 命令入口：upload / status / watch / serve 转发 | `src/panup/cli.py` | core | drivers、writers |
+| watcher | 目录监控，产出新文件事件交给 core；阶段 2 支持约定目录动态规则 | `src/panup/watcher.py` | core | drivers、writers |
+| web | 本地管理台服务端（FastAPI REST API + 托管 SPA 静态资源） | `src/panup/web/` | core、watcher | drivers、writers |
 | config | 配置与密钥加载、启动校验 | `src/panup/config.py` | — | — |
 
-依赖方向：入口 → core → drivers / writers → config，单向；drivers 内部、drivers 与 writers 之间互不依赖。
+依赖方向：入口（cli / watcher / web）→ core → drivers / writers → config，单向；drivers 内部、drivers 与 writers 之间互不依赖。
 
-通信契约按「未来会新增」设计：新增一个网盘 = `drivers/` 下新增一个驱动文件并在注册表登记一行；新增一个写入目标 = `writers/` 下新增一个文件并登记；新增一个入口（Web / 桌面 / MCP）= 调 core 的公开函数，不改 core。
+通信契约按「未来会新增」设计：新增一个网盘 = `drivers/` 下新增一个驱动文件并在注册表登记一行；新增一个写入目标 = `writers/` 下新增一个文件并登记；新增一个入口（桌面 / MCP）= 调 core 公开函数或 REST API，不改 core；Web 前端只消费 REST API（`/api/*`），不 import 服务端内部。
 
 技术栈：
 
 - **Python 3.13 标准库优先**（已验证的零依赖实现可照搬）：`urllib` 解决 HTTP 调用，`sqlite3` 解决台账存储，`tomllib` 解决配置读取，`argparse` 解决 CLI，`logging` + 手写 JSON lines 解决日志。适用：个人本机工具、装机门槛低；不适用：当出现需要并发框架或异步 I/O 的需求时（后续阶段再评估）；风险：无第三方生态兜底，接口层改动需自己维护。
 - **飞书开放平台 docx API 直调**：官方文档明确、个人自建应用可用。适用：向既有文档追加块；不适用：批量管理整个云空间时（权限模型不同）；风险：接口限频（个位数次/秒），串行调用即可。
+- **Web 服务端 FastAPI + uvicorn（阶段 2，人选定）**：解决「管理台 REST API + 文件流式上传」。适用：本地单用户管理台、需要自动接口文档与校验时；不适用：当需要分发给他人部署时（会引入配置与安全面）；风险：引入两个第三方依赖（打破零依赖，AGENTS §11 条款 2 已随之修订），升级依赖时锁版本。前端为免构建 SPA 静态资源（原生 HTML/JS/CSS），由 FastAPI 托管，不引入 Node 构建链。被否决：标准库 http.server（multipart 流式解析与异步转发自造成本高于两个依赖）；Flask（无原生异步与校验，优势不再）。
 - **目录监控用标准库轮询起步**（间隔可配，默认 5 秒）：零依赖；若轮询不满足再评估引入 `watchdog`（引入前须在 issue 里说明理由并更新本节）。
 - 被否决的候选见第 4 节。
 
