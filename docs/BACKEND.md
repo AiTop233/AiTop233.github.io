@@ -1,0 +1,115 @@
+# 后端工程：网盘自动上传
+
+> 通用规则见《后端工程规范》；本文件只写本项目与默认不同的地方。
+> 每个单位都写「代码位置」；没有额外约定的单位写「按 04 默认」，不硬造。
+> 目录约定：源码在 `src/panup/`，测试在 `tests/`，运行期数据在 `data/`（台账）、`logs/`（日志）、`secrets/`（凭据），三者均不入仓库。
+
+## 1. 模块
+
+- 代码位置：`src/panup/`
+- 模块清单与职责：
+  - `drivers/base.py`：Driver 基类与注册表（新网盘在此登记）
+  - `drivers/baidu.py`：百度网盘客户端（移植自本人已验证的网页版接口实现，端点与参数以它为准）
+  - `drivers/quark.py`：夸克网盘客户端（参考 alist quark 驱动的接口流程自建，风格对齐 baidu.py）
+  - `writers/base.py`：Writer 基类与注册表
+  - `writers/feishu.py`：飞书文档写入端
+  - `core/pipeline.py`：上传管道（编排去重 → 建目录 → 上传 → 分享 → 写入 → 台账）
+  - `core/ledger.py`：台账读写（SQLite）
+  - `core/errors.py`：错误类型与项目错误码
+  - `core/log.py`：JSON lines 日志
+  - `config.py`：配置与密钥加载、启动校验
+  - `cli.py`（含 `__main__.py`）：命令入口
+  - `watcher.py`：目录监控循环
+- 与 ARCHITECTURE 模块分类的对应：drivers / writers / core / cli / watcher / config 一一对应，目录一致。
+
+## 2. 接口与契约
+
+- 代码位置：`drivers/base.py`、`writers/base.py`、`core/pipeline.py`
+- Driver 基类（语义对齐 alist 的 Driver 接口，裁剪为本项目所需子集）：
+  - `auth_check() -> dict`：校验登录态，返回账号与容量摘要；失效抛 `AuthError`
+  - `mkdir(remote_dir) -> dict`：建目录，已存在视为成功（幂等），父目录自动创建
+  - `upload(local_path, remote_dir, *, overwrite=True, on_progress=None) -> dict`：分片上传，返回远端路径与大小；秒传命中时跳过字节上传
+  - `share(remote_path, *, pwd=None, period_days=0) -> dict`：创建分享链接，返回链接、提取码、有效期
+  - `publish(local_path, remote_dir, **kwargs) -> dict`：mkdir + upload + share 一步到位
+  - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
+- Writer 基类：
+  - `auth_check() -> None`：凭证可用性检查
+  - `append_record(record) -> dict`：向目标文档追加一行记录
+- core 公开函数（未来 Web / 桌面 / MCP 入口共用）：
+  - `publish_file(local_path, pan, remote_dir, *, writer_names=None, force=False) -> dict`：完整管道；返回链接与台账记录
+  - `check_all() -> dict`：各网盘与写入端登录态体检
+- 错误契约：对外只抛 `ProjectError` 子类（`AuthError` / `UploadError` / `ShareError` / `WriterError` / `ConfigError`），携带 `code`、上游 `errno` 与「怎么办」恢复指引；不向调用方裸抛网络异常。
+
+## 3. 数据与存储
+
+- 代码位置：`core/ledger.py`
+- 存储选型：SQLite 单文件 `data/ledger.db`（标准库 `sqlite3`）
+- 核心表：`uploads`（id、local_path、file_hash、size、pan、remote_path、link、pwd、status［success / failed / pending］、error_code、created_at、updated_at）
+- 索引与去重：唯一索引 `(local_path, file_hash, pan, remote_path)`，支撑 AC-07 去重
+- 软删、迁移策略：阶段 1 无软删；建表一次成型，字段变更用 ALTER + 版本标记（后续 issue 再扩展，见第 11 节）
+
+## 4. 用例
+
+- 代码位置：`core/pipeline.py`
+- 事务边界：单文件上传为最小事务单元；分片中断 → 台账记 `pending`，下次重传整个文件（明确不做断点续传）
+- 校验位置：管道入口校验文件存在且可读、网盘与目录参数合法；config 启动时校验必填项
+- 幂等键：`(local_path, file_hash, pan, remote_path)`；台账已有 `success` 记录 → 跳过上传并返回已有链接；`force=True` 覆盖重传
+
+## 5. 后台任务
+
+- 代码位置：`watcher.py`
+- 任务清单：目录监控循环（轮询，间隔默认 5 秒，可配置）
+- 重入 / 锁：单实例文件锁 `data/watch.lock`，防止双开导致重复上传
+- 死信与重试：单文件失败重试 3 次（退避 5 / 15 / 60 秒），仍失败台账记 `failed`；连续失败 5 个文件则停止循环并醒目提示；不做自动无限重试
+
+## 6. 外部依赖
+
+- 代码位置：`drivers/baidu.py`、`drivers/quark.py`、`writers/feishu.py`
+- 第三方服务：百度网盘网页接口（pan.baidu.com）、夸克网盘网页接口（drive-pc.quark.cn 等）、飞书开放平台（open.feishu.cn）
+- 超时：每个 HTTP 请求 60 秒
+- 重试：临时性错误（限频、5xx）按指数退避重试 3 次；`AuthError` 不重试，直接报错并给恢复指引
+- 降级 / 熔断：阶段 1 不做熔断；writer 失败不阻塞上传（链接已在台账），仅记失败
+- 限频：批量场景逐文件串行，间隔 ≥ 1 秒（AC-08）
+
+## 7. 错误与状态
+
+- 代码位置：`core/errors.py`
+- 错误码目录：项目码 `PUP-1xx`（配置 / 管道）与网盘 errno 透传 `PAN-<盘>-<errno>`，常量表建在 `core/errors.py`，文档 `docs/errors.md` 执行期建；百度 errno 中文对照表随驱动移植沿用
+- 对外文案与可重试性：每类错误输出「发生了什么 + 怎么办」（例：cookie 失效 → 提示重新登录并导出 cookie 到 `secrets/`）；可重试性随 code 标注（retriable / fatal）
+
+## 8. 鉴权与权限
+
+- 代码位置：`config.py`、`secrets/`
+- 使用主体：单人自用
+- 账号 / 角色 / 数据范围：无账号体系；凭据即权限——网盘 cookie（百度 BDUSS / STOKEN，夸克登录 cookie）、飞书自建应用 `app_id` / `app_secret`；数据范围 = 本人各网盘与指定飞书文档
+- 明确不做：不做账号 / 角色 / 组织 / 成员邀请（多用户列 PRD「后续阶段」）
+
+## 9. 配置与密钥
+
+- 代码位置：`config.py`；配置模板 `config.example.toml`（入库），实际 `config.toml` 不入库
+- 配置项：各网盘默认上传目录、监控目录与「网盘 + 目标目录」映射、监控间隔与稳定判定时长、飞书目标文档 token、日志目录
+- 密钥来源：环境变量（`BAIDU_COOKIE` / `QUARK_COOKIE`）优先于 `secrets/` 文件（`baidu_cookies.json`、`quark_cookie.txt`、`feishu_app.json`）
+- 启动检查：watch 与 upload 启动时校验必需项，缺项一次性列出全部缺失清单后退出，不用默认值顶替（AC-06 的配置面）
+
+## 10. 日志、指标与告警
+
+- 代码位置：`core/log.py`
+- 档位：本地小工具
+- 事件目录：`upload.start / upload.success / upload.failed`、`share.created`、`writer.appended / writer.failed`、`watch.file_detected / watch.dedup_skipped`、`auth.expired`
+- 去向与格式：JSON lines，`logs/panup-YYYYMMDD.log`，每行 `{ts, event, level, pan, file, code, msg}`
+- 保留、采样、脱敏：按天滚动保留 30 天（启动时清理过期文件）；全量记录不采样；不记录 cookie、secret、提取码（AC-05）
+- 查询入口：`grep '"event":"upload.failed"' logs/*.log`
+- 告警：无自动告警；watch 连续失败时在控制台输出醒目提示（见第 5 节）
+
+## 11. 数据迁移
+
+- 代码位置：`core/ledger.py`
+- 迁移工具：无外部工具；阶段 1 建表一次成型。后续字段变更在此单位登记做法（ALTER + 版本标记）后另行实现
+
+## 12. 测试
+
+- 代码位置：`tests/`
+- 契约测试：同一套 Driver 契约用例跑所有驱动实现（mock 上游响应），新驱动接入即受约束
+- 复现测试：错误码 → 文案映射；去重与幂等（同参数二次调用返回已有记录）
+- 外部依赖替身：驱动与 writer 的 HTTP 层打桩（monkeypatch 客户端请求函数），测试不真连网盘与飞书；真连只在人验收时发生
+- 关键路径：publish 成功链路、去重命中、cookie 失效报错、writer 失败不阻塞上传、watch 稳定判定

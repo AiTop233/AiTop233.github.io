@@ -1,0 +1,15 @@
+# 凭据不进仓库：cookie 与飞书 app 凭证（换机需重新导出）
+secrets/
+# 运行期数据：SQLite 台账、watch 单实例锁（换机上传记录不带走，需要时手动备份）
+data/
+# 日志：JSON lines 按天滚动，保留 30 天
+logs/
+# 实际配置含个人路径与个人目录规则；模板 config.example.toml 入库
+config.toml
+# Python 缓存
+__pycache__/
+*.pyc
+# 会话工具目录（本机）
+.zcode/
+# 预留：若将来需要隔离环境，建在项目内
+.venv/
