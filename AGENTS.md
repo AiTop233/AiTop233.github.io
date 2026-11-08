@@ -13,6 +13,8 @@
 | `docs/PRD.md` | 做什么、不做什么、怎么算成功；需求编号 F1、F2…… | 判断一件事是否超出范围；把想法转为待办时 | 仅规划模式 |
 | `docs/ARCHITECTURE.md` | 架构：数据流（含现状与目标的差距）、模块分类与依赖方向、架构级红线、关键选择、可观测性总览、交付与升级 | 开始一个 issue 前读「数据流」和「约束」；判断一个做法是否改变架构；发版 / 改分发方式前读第 6 段 | 仅规划模式；大重构同次更新数据流、模块图与现状差距；进入规划模式时同步 `[补空白]` |
 | `docs/BACKEND.md` | 后端工程要求：模块、接口、数据、用例、任务、外部依赖、错误、鉴权、配置、日志、迁移、测试；只写项目选择 / 覆盖 / 例外 | 写后端代码前 | 仅规划模式；后端工程约定变更时 |
+| `docs/FRONTEND.md` | 前端工程要求：入口、组件、状态、数据访问、运行时错误与日志、复用、样式指针、测试；只写项目选择 / 覆盖 / 例外 | 写前端代码前 | 仅规划模式；前端工程约定变更时 |
+| `docs/DESIGN_SYSTEM.md` | 前端设计：界面结构 / 导航 / 流程 + 设计约定（色 / 字与尺寸 / 组件 / 视觉语言 / 例外）；**数值不写在这里**，指向代码里的语义变量 | 写前端界面前；要定结构、颜色、尺寸或视觉语言时 | 仅规划模式；色值或尺寸变更时 |
 | `docs/ISSUES.md` | 看板：每个 issue 一行（顶部标当前批次），**状态的唯一来源** | 每次开工；人问"现在什么状态" | 状态变化时；记录想法时（提交到 main） |
 | `docs/issues/I-xxx.md` | 一个 issue 的全部内容：三层目标（意图/行为/机制）、验收标准（逐条编号、标注人/模型验收、冻结后改动留修订）、过程记录、自验、验收结果 | 开始或继续这个 issue 时；验收时 | 开发中写过程记录、自验、怎么验收（随分支提交） |
 | `docs/DEVLOG.md` | 会话交接：上次做到哪、下次从哪开始。每条一两行、细节指向 issue；第 2 档的补空白标 `[补空白]`，规划模式补进 ARCHITECTURE 后追加 `[已同步]`；不记状态、不记单个 issue 的过程、不记代码细节 | 每次开工读最后一条；进入规划模式时查 `[补空白]` | 每次收工追加一条 |
@@ -672,12 +674,13 @@ git branch I-xxx-简述 <合并提交>^2          # 从合并提交的第二个�
 
 | 用途 | 命令 |
 |---|---|
-| 环境 | 系统 Python 3.13.9（无 venv、零第三方依赖起步）；Windows + Git Bash |
+| 环境 | 系统 Python 3.13.9（无 venv；第三方依赖见 requirements.txt）；Windows + Git Bash |
 | 测试 | `python -m unittest discover -s tests -v` |
-| 手动上传（I-004 后可用） | `python -m panup upload <文件> --pan quark --dir /分享` |
-| 查看台账（I-004 后可用） | `python -m panup status` |
-| 配置与登录态体检（I-004 后可用） | `python -m panup check` |
-| 启动监控（I-006 后可用） | `python -m panup watch` |
+| 手动上传（I-004 后可用） | Git Bash 下加前缀：`MSYS_NO_PATHCONV=1 PYTHONPATH=src python -m panup upload <文件> --pan quark --dir /分享` |
+| 查看台账（I-004 后可用） | `PYTHONPATH=src python -m panup status` |
+| 配置与登录态体检（I-004 后可用） | `PYTHONPATH=src python -m panup check` |
+| 启动监控（I-006 后可用） | `PYTHONPATH=src python -m panup watch`（需 config.toml） |
+| 本地管理台（I-007 后可用） | `PYTHONPATH=src python -m panup serve` → 浏览器开 http://127.0.0.1:8256 |
 | 查失败日志 | `grep '"event":"upload.failed"' logs/*.log` |
 
 ## 11. 设计与代码规范
@@ -710,7 +713,7 @@ git branch I-xxx-简述 <合并提交>^2          # 从合并提交的第二个�
 ### 项目自己的代码规范
 
 1. **文件颗粒度**：模块保持内聚、局部可理解；避免多职责巨型文件，也避免把相关逻辑摊成碎文件。行数软哨兵：接近 ~500 行触发「是否混入多个职责」的检查，800 行以上通常要拆，除非有明确理由；哨兵触发审视、不强制拆。
-2. **零第三方依赖优先**：标准库能解决的不引包；确需引入（如 watchdog）先在 issue 说明理由并更新 `ARCHITECTURE.md`「技术栈」，经人同意后才装。
+2. **依赖最小集合**（2026-11-09 修订，人选定 FastAPI）：运行时第三方依赖只允许 `fastapi` + `uvicorn`（版本锁在 requirements.txt）；前端为免构建原生 HTML/CSS/JS，不引入 Node 构建链与组件库；除此之外标准库能解决的不引包，确需引入先在 issue 说明理由并更新 `ARCHITECTURE.md`「技术栈」，经人同意后才装。
 3. **接入层隔离**：`drivers/`、`writers/` 内不得 import cli / watcher；上游接口的端点、参数与响应解析只在接入层内做，core 只消费契约返回值（AC-03）。
 4. **错误契约**：对外只抛 `ProjectError` 子类，携带 code、上游 errno 与「怎么办」恢复指引；禁止裸抛网络异常给调用方。
 5. **凭据不落可见处**：cookie、secret、提取码不进日志、不进测试夹具、不进仓库（AC-04 / AC-05）。
