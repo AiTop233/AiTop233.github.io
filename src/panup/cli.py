@@ -15,7 +15,8 @@ from panup.core.ledger import Ledger
 from panup.core.pipeline import publish_file
 from panup.writers.base import WRITERS
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+# 项目根：src/panup/cli.py → parents[2]
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = _PROJECT_ROOT / "data" / "ledger.db"
 
 
@@ -115,6 +116,36 @@ def cmd_check(args) -> int:
     return 1 if bad else 0
 
 
+def cmd_watch(args) -> int:
+    from panup.config import load_config
+    from panup.core.log import JsonLogger
+    from panup.watcher import Watcher, build_rules
+
+    cfg = load_config()
+    watch_cfg = cfg.get("watch") or {}
+    rules = build_rules(watch_cfg.get("dirs") or [])
+    ledger = Ledger(args.db or DEFAULT_DB)
+    log = JsonLogger((cfg.get("log") or {}).get("dir") or "logs", echo=True)
+    watcher = Watcher(
+        rules, ledger=ledger, driver_factory=build_driver,
+        interval=watch_cfg.get("interval_seconds", 5),
+        stable=watch_cfg.get("stable_seconds", 10),
+        retry_limit=watch_cfg.get("retry_limit", 3),
+        lock_dir=_PROJECT_ROOT / "data", log=log,
+    )
+    print(f"监控中：{len(rules)} 个目录（Ctrl+C 停止；日期子目录默认开启）")
+    for r in rules:
+        print(f"  {r['local']} → {r['pan']}:{r['remote_dir']}"
+              + ("（年/月/日）" if r["date_dir"] else ""))
+    try:
+        watcher.run_forever()
+    except KeyboardInterrupt:
+        print("已停止")
+    finally:
+        ledger.close()
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -141,6 +172,10 @@ def build_parser() -> argparse.ArgumentParser:
     ck = sub.add_parser("check", help="网盘登录态体检")
     ck.add_argument("--pan", default=None, help="只查指定网盘（缺省查全部）")
     ck.set_defaults(func=cmd_check)
+
+    wa = sub.add_parser("watch", help="监控配置目录，自动上传（需 config.toml）")
+    wa.add_argument("--db", default=None, help="台账数据库路径（默认 data/ledger.db）")
+    wa.set_defaults(func=cmd_watch)
     return p
 
 
