@@ -7,7 +7,7 @@
 ------------------------------------------------
 POST /open-apis/auth/v3/tenant_access_token/internal   app_id+secret 换 token
 GET  /open-apis/docx/v1/documents/{document_id}        文档可达性检查
-PATCH /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children
+POST /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children
                                                        向页面块末尾追加文本块
 
 凭证来源（BACKEND.md §9）：环境变量 FEISHU_APP_ID / FEISHU_APP_SECRET >
@@ -87,12 +87,13 @@ class FeishuWriter(Writer):
 
     # -- 传输层（测试打桩点） ------------------------------------------------
 
-    def _request(self, method, url, *, body=None):
+    def _request(self, method, url, *, body=None, headers=None):
         """单次 HTTP 调用，返回 (status, text)。测试覆写本方法打桩。"""
         data = json.dumps(body, ensure_ascii=False).encode() if body is not None else None
-        headers = {"Content-Type": "application/json; charset=utf-8",
-                   "Accept": "application/json"}
-        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        hdrs = {"Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json"}
+        hdrs.update(headers or {})
+        req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return r.status, r.read().decode("utf-8", "replace")
 
@@ -135,7 +136,7 @@ class FeishuWriter(Writer):
         last = None
         for attempt in range(1, 3 + 1):
             try:
-                status, text = self._request(method, url, body=body)
+                status, text = self._request(method, url, body=body, headers=headers)
             except urllib.error.HTTPError as e:
                 status, text = e.code, e.read().decode("utf-8", "replace")
             except (urllib.error.URLError, TimeoutError, OSError) as e:
@@ -157,11 +158,13 @@ class FeishuWriter(Writer):
                 raise AuthError(f"飞书应用凭证无效（{msg}）",
                                 code=f"PAN-feishu-{code}", errno=code,
                                 hint="检查 secrets/feishu_app.json 的 app_id/app_secret")
-            if code == 99991672 or "permission" in msg.lower():
-                raise AuthError(f"飞书文档无权限（{msg}）",
+            if code == 99991672 or code == 1770032 or \
+                    "permission" in msg.lower() or "forbidden" in msg.lower():
+                raise AuthError(f"飞书文档无写入权限（{msg}）",
                                 code=f"PAN-feishu-{code}", errno=code,
-                                hint="把目标文档授权给应用：文档右上角「…」→"
-                                     "「添加文档应用」，并确认应用已开通云文档权限")
+                                hint="① 应用后台「权限管理」开通 docx 查看/编辑/管理并"
+                                     "重新发布版本；② 文档右上角「…」→「添加文档应用」"
+                                     "把应用加进目标文档（权限给可编辑）")
             e = err_cls(f"飞书接口返回错误（{msg}）", code=f"PAN-feishu-{code}",
                         errno=code, hint="查看 msg；临时性失败可重试")
             e.retriable = status >= 500
@@ -200,6 +203,6 @@ class FeishuWriter(Writer):
         }
         path = (f"/open-apis/docx/v1/documents/{doc_token}"
                 f"/blocks/{doc_token}/children?document_revision_id=-1")
-        payload = self._api("PATCH", path, body=body)
+        payload = self._api("POST", path, body=body)
         block_id = ((payload.get("data") or {}).get("children") or [{}])[0].get("block_id")
         return {"block_id": block_id, "doc": doc_token}
