@@ -11,3 +11,10 @@
 - [补空白] config.py 复用 core/errors.py 的统一错误类型（零依赖叶子，仅错误类型）——ARCHITECTURE 模块表 config 行「允许依赖 —」需补注「core.errors（仅错误类型）」，待规划模式同步后追加 [已同步]
 - 停在：main；B1 继续
 - 下次：I-002 百度驱动移植（drivers/baidu.py）。人验收 A2～A6 需要百度登录态：把 cookie 放 secrets/baidu_cookies.json 或环境变量 BAIDU_COOKIE
+
+## 2026-11-09（第三次会话记录）
+- 做了：I-002（百度驱动）与 I-003（夸克驱动）实现并转「待验收」——Driver 基类 + 注册表、契约测试 25 例新增（全套 38 例绿）、两个变异检查均红→还原→绿；两条分支叠加（I-003 基于 I-002 分支），均未合并，等验收
+- 关键来源：百度=移植本人已验证实现；夸克=alist drivers/quark_uc（上传/列目录/建目录）+ 社区分享接口（/share → /task 轮询 → /share/password），端点已写进各驱动 docstring
+- 待验收：I-002、I-003（整单人验收，需要两个网盘的真实 cookie）
+- 停在：main；等 I-002 / I-003 验收
+- 下次：验收通过后按链序合并 → I-004 上传管道 + CLI（依赖两条驱动在 main）
