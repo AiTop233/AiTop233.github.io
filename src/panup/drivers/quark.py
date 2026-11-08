@@ -156,7 +156,7 @@ class QuarkDriver(Driver):
                 continue
             for part in v.split(","):
                 if "=" in part:
-                    name, _, value = part.strip().split("=", 1)
+                    name, value = part.strip().split("=", 1)
                     if name in ("__puus", "__pus"):
                         self.cookies[name] = value.split(";")[0]
 
