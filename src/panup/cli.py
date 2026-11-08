@@ -15,7 +15,8 @@ from panup.core.ledger import Ledger
 from panup.core.pipeline import publish_file
 from panup.writers.base import WRITERS
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+# 项目根：src/panup/cli.py → parents[2]
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = _PROJECT_ROOT / "data" / "ledger.db"
 
 
