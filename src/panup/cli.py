@@ -115,6 +115,17 @@ def cmd_check(args) -> int:
     return 1 if bad else 0
 
 
+def cmd_serve(args) -> int:
+    """本地管理台：起 FastAPI 服务（只监听 127.0.0.1，BACKEND.md §2）。"""
+    from panup.web.api import serve
+
+    try:
+        return serve()
+    except ProjectError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -141,6 +152,9 @@ def build_parser() -> argparse.ArgumentParser:
     ck = sub.add_parser("check", help="网盘登录态体检")
     ck.add_argument("--pan", default=None, help="只查指定网盘（缺省查全部）")
     ck.set_defaults(func=cmd_check)
+
+    sv = sub.add_parser("serve", help="本地管理台服务（127.0.0.1:8256）")
+    sv.set_defaults(func=cmd_serve)
     return p
 
 

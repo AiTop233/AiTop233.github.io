@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>网盘自动上传</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>网盘自动上传</h1>
+  <nav class="tabs" id="tabs" aria-label="功能导航">
+    <button class="tab active" data-tab="upload" type="button">上传</button>
+    <button class="tab" data-tab="records" type="button">记录</button>
+    <button class="tab" data-tab="watch" type="button">监控</button>
+    <button class="tab" data-tab="settings" type="button">设置</button>
+  </nav>
+</header>
+
+<section class="statusbar" id="statusbar" aria-label="凭据状态灯">
+  <span class="light" data-light="baidu"><i class="dot unknown"></i>百度</span>
+  <span class="light" data-light="quark"><i class="dot unknown"></i>夸克</span>
+  <span class="light" data-light="feishu"><i class="dot unknown"></i>飞书</span>
+  <button id="refresh-status" type="button">刷新状态</button>
+</section>
+
+<main id="panels">
+  <div class="panel active" data-panel="upload" id="panel-upload">
+    <p class="placeholder">上传区（I-008 落地）</p>
+  </div>
+  <div class="panel" data-panel="records" id="panel-records">
+    <p class="placeholder">记录表（I-008 落地）</p>
+  </div>
+  <div class="panel" data-panel="watch" id="panel-watch">
+    <p class="placeholder">监控规则（I-009 落地）</p>
+  </div>
+  <div class="panel" data-panel="settings" id="panel-settings">
+    <p class="placeholder">设置（I-010 落地）</p>
+  </div>
+</main>
+
+<div id="toast" class="hidden" role="alert"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
