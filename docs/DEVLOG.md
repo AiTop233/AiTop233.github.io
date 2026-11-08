@@ -25,3 +25,9 @@
 - I-004 验收标准修订：新增 A7（`--date-dir` 按日期建远端子目录），人原话已记录
 - 停在：main；B1 剩 I-004 → I-005 → I-006
 - 下次：I-004 上传管道 + CLI（台账、去重、status 子命令；驱动已在 main）
+
+## 2026-11-09（第五次会话记录）
+- 做了：I-004 实现并转「待验收」——管道（去重/日期子目录/writer 挂载点）+ SQLite 台账 + CLI（upload/status/check），21 例新测（全套 59 例绿），真实验收 A2～A7 全过（含 /panup验收/26/11/09 日期目录）
+- Git Bash 教训：`--dir` 会吃 MSYS 路径转换，命令需 `MSYS_NO_PATHCONV=1` 前缀（已写进 I-004 怎么验收；AGENTS 常用命令补注待规划确认）
+- 停在：main；等 I-004 人验收
+- 下次：I-005 飞书 Writer 代码先行（mock 测试可写）；**人验收前需要你在飞书开放平台建自建应用**（app_id/app_secret → secrets/feishu_app.json，并把目标文档授权给应用）——到时我列步骤
