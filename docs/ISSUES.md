@@ -17,7 +17,7 @@
 ## 阶段 2 · 本地管理台
 
 ### [web]
-- I-007 · feature · 进行中 · Web 服务骨架：FastAPI REST + SPA 托管（F4 铺路）· 人验收 · B2
+- I-007 · feature · 待验收 · Web 服务骨架：FastAPI REST + SPA 托管（F4 铺路）· 人验收 · B2
 - I-008 · feature · 待办 · 管理台：手动上传 + 记录仪表盘（F4）· 人验收 · B2
 - I-009 · feature · 待办 · 管理台：目录约定自动化 + 监控规则管理（F5、F4）· 人验收 · B2
 - I-010 · feature · 待办 · 管理台：状态与配置（F4）· 人验收 · B2
