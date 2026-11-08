@@ -97,7 +97,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("https://e/s/1", out)
 
     def test_doc_feishu_warns_not_enabled(self):
-        code, out, _ = run_cli(self._upload_args(("--doc", "feishu")),
+        code, out, _ = run_cli(self._upload_args(("--doc", "nosuch")),
                                FakeCliDriver())
         self.assertEqual(code, 0)
         self.assertIn("未启用", out)
