@@ -25,10 +25,8 @@ SECRETS_DIR = _PROJECT_ROOT / "secrets"
 TARGETS = {
     "baidu": {
         "label": "百度网盘",
-        "login_url": (
-            "https://pan.baidu.com/v2/?login&tpl=netdisk"
-            "&u=https%3A%2F%2Fpan.baidu.com%2Fdisk%2Fmain"
-        ),
+        # 直接打开网盘首页，未登录时百度官方会自动跳到登录页（二维码）
+        "login_url": "https://pan.baidu.com/",
         # 登录态判定：BDUSS 出现即已登录；STOKEN 通常随之出现
         "cookie_names": ("BDUSS",),
         "domains": (".baidu.com",),
