@@ -34,7 +34,7 @@ def _canned(method, url, *, body=None, headers=None):
     if "/documents/doctest" in url and method == "GET":
         return 200, json.dumps({"code": 0, "msg": "ok",
                                 "data": {"document": {"document_id": "doctest"}}})
-    if "/children" in url and method == "PATCH":
+    if "/children" in url and method == "POST":
         if not (headers or {}).get("Authorization", "").startswith("Bearer "):
             return 200, json.dumps({"code": 99991661, "msg": "Missing access token"})
         return 200, json.dumps({"code": 0, "msg": "ok",
@@ -61,7 +61,7 @@ class FeishuWriterTests(unittest.TestCase):
         bodies = []
 
         def canned(method, url, *, body=None, headers=None):
-            if "/children" in url and method == "PATCH":
+            if "/children" in url and method == "POST":
                 bodies.append(body)
             return _canned(method, url, body=body, headers=headers)
 

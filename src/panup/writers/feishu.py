@@ -7,7 +7,7 @@
 ------------------------------------------------
 POST /open-apis/auth/v3/tenant_access_token/internal   app_id+secret 换 token
 GET  /open-apis/docx/v1/documents/{document_id}        文档可达性检查
-PATCH /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children
+POST /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children
                                                        向页面块末尾追加文本块
 
 凭证来源（BACKEND.md §9）：环境变量 FEISHU_APP_ID / FEISHU_APP_SECRET >
@@ -201,6 +201,6 @@ class FeishuWriter(Writer):
         }
         path = (f"/open-apis/docx/v1/documents/{doc_token}"
                 f"/blocks/{doc_token}/children?document_revision_id=-1")
-        payload = self._api("PATCH", path, body=body)
+        payload = self._api("POST", path, body=body)
         block_id = ((payload.get("data") or {}).get("children") or [{}])[0].get("block_id")
         return {"block_id": block_id, "doc": doc_token}
