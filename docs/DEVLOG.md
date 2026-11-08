@@ -31,3 +31,8 @@
 - Git Bash 教训：`--dir` 会吃 MSYS 路径转换，命令需 `MSYS_NO_PATHCONV=1` 前缀（已写进 I-004 怎么验收；AGENTS 常用命令补注待规划确认）
 - 停在：main；等 I-004 人验收
 - 下次：I-005 飞书 Writer 代码先行（mock 测试可写）；**人验收前需要你在飞书开放平台建自建应用**（app_id/app_secret → secrets/feishu_app.json，并把目标文档授权给应用）——到时我列步骤
+
+## 2026-11-09（第六次会话记录）
+- 做了：I-004 人验收通过，合并 main（80af384）、分支已删；验收结果回填、看板重整（[core]/[drivers] 阶段 1 清空）
+- 停在：main；开工 I-005 飞书 Writer
+- 下次：I-005 代码（mock 测试先行）→ 人侧准备：飞书开放平台建自建应用拿 app_id/app_secret 存 secrets/feishu_app.json + 文档授权给应用 → 真实验收（上传 --doc feishu → 文档出现一行可点击链接）
