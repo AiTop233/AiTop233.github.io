@@ -12,7 +12,7 @@ from pathlib import Path
 
 from panup.core.errors import ProjectError, UploadError, WriterError
 from panup.core.ledger import Ledger
-from panup.drivers.base import Driver, get_driver
+from panup.drivers.base import DRIVERS, Driver, get_driver
 from panup.writers.base import WRITERS, get_writer
 
 
@@ -113,3 +113,29 @@ def publish_file(local_path, pan: str, remote_dir: str, *, ledger: Ledger,
         ledger.record_failed(record_id, e.code)
         log("upload.failed", pan=pan, file=local_path_str, code=e.code, msg=e.msg)
         raise
+
+
+def _check_one(cls) -> dict:
+    """单通道体检：构造实例并 auth_check；失败转为 {ok: False, error}。"""
+    try:
+        return {"ok": True, "detail": cls().auth_check()}
+    except ProjectError as e:
+        return {"ok": False,
+                "error": {"code": e.code, "msg": e.msg, "hint": e.hint or ""}}
+
+
+def check_all(*, driver_registry=None, writer_registry=None) -> dict:
+    """三灯体检：全部网盘驱动与写入端逐个 auth_check，单项失败不中断整体。
+
+    返回 {<name>: {"ok": True, "detail": …} | {"ok": False, "error": {code, msg, hint}}}
+    （BACKEND.md §2 core 公开函数，Web /api/status 与未来入口共用）。
+    注册表可注入（测试打桩点）；缺省用全局注册表（先 import panup.drivers 触发注册）。
+    """
+    drv = DRIVERS if driver_registry is None else driver_registry
+    wri = WRITERS if writer_registry is None else writer_registry
+    out: dict = {}
+    for name, cls in sorted(drv.items()):
+        out[name] = _check_one(cls)
+    for name, cls in sorted(wri.items()):
+        out[name] = _check_one(cls)
+    return out
