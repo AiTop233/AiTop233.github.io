@@ -1,0 +1,149 @@
+"""CLI 入口 —— upload / status / check 子命令（python -m panup ...）。
+
+入口薄壳（AC-01）：业务逻辑全在 core.pipeline；此处只做参数解析、输出与退出码。
+失败时输出「发生了什么 + 怎么办」并以非 0 退出（AC-06）。
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+from panup.core.errors import ConfigError, ProjectError
+from panup.core.ledger import Ledger
+from panup.core.pipeline import publish_file
+from panup.writers.base import WRITERS
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DB = _PROJECT_ROOT / "data" / "ledger.db"
+
+
+def build_driver(pan: str):
+    """构造网盘驱动（测试打桩点）。"""
+    import panup.drivers  # noqa: F401 —— 触发驱动注册（AC-02：新增网盘登记一行）
+    from panup.drivers.base import get_driver
+
+    return get_driver(pan)
+
+
+def _resolve_remote_dir(args) -> str:
+    if args.dir:
+        return args.dir
+    from panup.config import load_config
+
+    cfg = load_config()  # 缺配置文件会抛 ConfigError，含恢复指引
+    default = ((cfg.get("pan") or {}).get(f"{args.pan}_default_dir"))
+    if not default:
+        raise ConfigError(
+            f"未指定 --dir，且配置里没有 {args.pan} 的默认目录",
+            code="PUP-104",
+            hint="命令加 --dir，或在 config.toml [pan] 里填 "
+                 f"{args.pan}_default_dir",
+        )
+    return default
+
+
+def cmd_upload(args) -> int:
+    doc_names = list(args.doc or [])
+    for w in [d for d in doc_names if d not in WRITERS]:
+        print(f"提示: 文档写入端 {w} 未启用（后续阶段提供），本次跳过写入")
+    doc_names = [w for w in doc_names if w in WRITERS]
+
+    remote_dir = _resolve_remote_dir(args)
+    ledger = Ledger(args.db or DEFAULT_DB)
+    try:
+        result = publish_file(
+            args.local_path, args.pan, remote_dir, ledger=ledger,
+            driver=build_driver(args.pan), force=args.force,
+            date_dir=args.date_dir, period_days=args.period_days,
+            writer_names=doc_names,
+        )
+    except ProjectError as e:
+        ledger.close()
+        print(f"上传失败: {e}", file=sys.stderr)
+        return 1
+    ledger.close()
+
+    if result["dedup"]:
+        print("去重命中，未重新上传（同文件同目录已分享过；--force 强制重传）")
+    else:
+        rapid = "（秒传）" if result.get("rapid") else ""
+        print(f"已上传 {result['pan']} {result['path']}{rapid}")
+    print(f"链接: {result['link']}")
+    if result.get("pwd"):
+        print(f"提取码: {result['pwd']}")
+    for w in result.get("writers") or []:
+        if w["ok"]:
+            print(f"已写入文档端 {w['writer']}: {w['detail']}")
+        else:
+            print(f"提示: 文档端 {w['writer']} 写入失败（不影响上传），"
+                  f"原因: {w['error']}", file=sys.stderr)
+    return 0
+
+
+def cmd_status(args) -> int:
+    ledger = Ledger(args.db or DEFAULT_DB)
+    try:
+        rows = ledger.recent(args.limit)
+    finally:
+        ledger.close()
+    if not rows:
+        print("（暂无上传记录）")
+        return 0
+    for r in rows:
+        head = f"#{r['id']} [{r['status']}] {r['pan']} {r['remote_path']}"
+        tail = r["link"] or (f"失败 {r['error_code']}" if r["error_code"] else "")
+        print(f"{head}  {tail}  {r['updated_at']}")
+    return 0
+
+
+def cmd_check(args) -> int:
+    import panup.drivers  # noqa: F401 —— 触发驱动注册
+    from panup.drivers.base import DRIVERS
+
+    names = [args.pan] if args.pan else sorted(DRIVERS)
+    bad = 0
+    for name in names:
+        try:
+            info = build_driver(name).auth_check()
+            account = info.get("account") or "（未知账号）"
+            print(f"✓ {name}: 登录态正常（{account}）")
+        except ProjectError as e:
+            bad += 1
+            print(f"✗ {name}: {e}", file=sys.stderr)
+    return 1 if bad else 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    up = sub.add_parser("upload", help="上传文件/目录并返回分享链接")
+    up.add_argument("local_path", help="本地文件路径")
+    up.add_argument("--pan", required=True, help="目标网盘: baidu | quark")
+    up.add_argument("--dir", default=None, help="网盘目标目录（缺省用配置默认值）")
+    up.add_argument("--date-dir", action="store_true",
+                    help="目标目录追加「年/月/日」三级子目录（如 /分享/26/11/09）")
+    up.add_argument("--force", action="store_true", help="跳过去重，强制重传")
+    up.add_argument("--period-days", type=int, default=0,
+                    help="分享有效期天数（0=永久，默认永久）")
+    up.add_argument("--doc", action="append", default=None,
+                    help="写入文档端（可多次，如 --doc feishu）")
+    up.add_argument("--db", default=None, help="台账数据库路径（默认 data/ledger.db）")
+    up.set_defaults(func=cmd_upload)
+
+    st = sub.add_parser("status", help="查看最近上传记录")
+    st.add_argument("--limit", type=int, default=10)
+    st.add_argument("--db", default=None)
+    st.set_defaults(func=cmd_status)
+
+    ck = sub.add_parser("check", help="网盘登录态体检")
+    ck.add_argument("--pan", default=None, help="只查指定网盘（缺省查全部）")
+    ck.set_defaults(func=cmd_check)
+    return p
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
+    return args.func(args)
