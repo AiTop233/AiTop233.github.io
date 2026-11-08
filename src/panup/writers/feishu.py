@@ -158,11 +158,13 @@ class FeishuWriter(Writer):
                 raise AuthError(f"飞书应用凭证无效（{msg}）",
                                 code=f"PAN-feishu-{code}", errno=code,
                                 hint="检查 secrets/feishu_app.json 的 app_id/app_secret")
-            if code == 99991672 or "permission" in msg.lower():
-                raise AuthError(f"飞书文档无权限（{msg}）",
+            if code == 99991672 or code == 1770032 or \
+                    "permission" in msg.lower() or "forbidden" in msg.lower():
+                raise AuthError(f"飞书文档无写入权限（{msg}）",
                                 code=f"PAN-feishu-{code}", errno=code,
-                                hint="把目标文档授权给应用：文档右上角「…」→"
-                                     "「添加文档应用」，并确认应用已开通云文档权限")
+                                hint="① 应用后台「权限管理」开通 docx 查看/编辑/管理并"
+                                     "重新发布版本；② 文档右上角「…」→「添加文档应用」"
+                                     "把应用加进目标文档（权限给可编辑）")
             e = err_cls(f"飞书接口返回错误（{msg}）", code=f"PAN-feishu-{code}",
                         errno=code, hint="查看 msg；临时性失败可重试")
             e.retriable = status >= 500
