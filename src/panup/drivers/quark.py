@@ -32,8 +32,6 @@ import hashlib
 import json
 import mimetypes
 import os
-import random
-import string
 import time
 import urllib.error
 import urllib.parse
@@ -474,13 +472,16 @@ class QuarkDriver(Driver):
     # -- 分享 ------------------------------------------------------------------
 
     def share(self, remote_path, *, pwd=None, period_days=0):
-        """创建分享链接。period_days: 0=永久，其余为天数。pwd=None 时随机 4 位。"""
+        """创建分享链接。period_days: 0=永久，其余为天数。
+
+        pwd=None 表示不设提取码（默认，人定：夸克链接不带密码更好转发）；
+        显式给 4 位字符串才设码，给 "" 等同于不设。
+        """
         p = self._norm(remote_path)
         fid = self._fid_cache.get(p) or self._resolve_fid(p)
         filename = p.rsplit("/", 1)[-1]
         if pwd is None:
-            pwd = "".join(random.choice(string.digits + string.ascii_lowercase)
-                          for _ in range(4))
+            pwd = ""
         body = {
             "fid_list": [fid],
             "title": filename,
@@ -520,7 +521,9 @@ class QuarkDriver(Driver):
             data = resp.get("data") or {}
             status = data.get("status")
             if status == 2:
-                return ((data.get("task_resp") or {}).get("data") or {}).get("share_id")
+                # 两种形状都见过：task_resp.data.share_id（旧）与顶层 share_id（新）
+                inner = ((data.get("task_resp") or {}).get("data") or {})
+                return inner.get("share_id") or data.get("share_id")
             if status == 3:
                 raise ShareError(f"分享任务失败: {data.get('task_resp') or data}",
                                  code="PAN-quark-task",

@@ -69,13 +69,17 @@ class PipelineTests(unittest.TestCase):
                          driver=self.driver)
         self.assertFalse(r["dedup"])
         self.assertEqual(r["link"], "https://e/s/1")
-        self.assertEqual(r["path"], "/分享/a.txt")
+        # D-005：单文件也落成「标题/文件名」，分享指向标题文件夹
+        self.assertEqual(r["path"], "/分享/a")
         self.assertEqual(self.driver.calls[0], ("mkdir", "/分享"))
-        self.assertEqual(self.driver.calls[2][0], "share")
+        self.assertEqual(self.driver.calls[-1][0], "share")
+        self.assertEqual(self.driver.calls[-1][1], "/分享/a")
         row = self.ledger.find_success(local_path=str(self.src.resolve()),
                                        file_hash=r["file_hash"], pan="fake",
-                                       remote_path="/分享/a.txt")
+                                       remote_path="/分享/a")
         self.assertIsNotNone(row)
+        self.assertEqual(row["kind"], "file")
+        self.assertEqual(row["file_count"], 1)
 
     def test_dedup_hit_skips_driver(self):
         publish_file(str(self.src), "fake", "/分享", ledger=self.ledger,
@@ -127,7 +131,8 @@ class PipelineTests(unittest.TestCase):
     def test_share_period_days_passthrough(self):
         publish_file(str(self.src), "fake", "/分享", ledger=self.ledger,
                      driver=self.driver, period_days=7)
-        self.assertEqual(self.driver.calls[2][2], 7)
+        shares = [c for c in self.driver.calls if c[0] == "share"]
+        self.assertEqual(shares[0][2], 7)
 
     def test_unregistered_writer_raises(self):
         with self.assertRaises(Exception):
