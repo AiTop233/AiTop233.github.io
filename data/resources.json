@@ -1,0 +1,3795 @@
+{
+  "version": 1,
+  "counts": {
+    "bilibili": 252,
+    "geektime": 276,
+    "movies": 3,
+    "ebooks": 3,
+    "tutorials": 2,
+    "software": 2,
+    "music": 2
+  },
+  "items": [
+    {
+      "category": "bilibili",
+      "title": "新手理财通关攻略——简七的13堂极简理财课",
+      "link": "https://pan.quark.cn/s/26c37812fdf1",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "SPSS问卷数据统计分析基础课程",
+      "link": "https://pan.quark.cn/s/2be39c124f9b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "SPSS数据分析零基础实战课程",
+      "link": "https://pan.quark.cn/s/8428ad2e7a80",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "6个万能公式搞定职场PPT",
+      "link": "https://pan.quark.cn/s/4768d6961442",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "零基础入门学唱歌",
+      "link": "https://pan.quark.cn/s/eef8af358a54",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "16堂宇宙课：北师大物理系赵峥教授",
+      "link": "https://pan.quark.cn/s/5d215ca5e63e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人人都能唱出好歌声",
+      "link": "https://pan.quark.cn/s/9aef771ef001",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "12堂教你学唱歌",
+      "link": "https://pan.quark.cn/s/3306ada9ed7a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Java从入门到实战",
+      "link": "https://pan.quark.cn/s/6220580c305f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Python零基础30天速通（小白定制版）",
+      "link": "https://pan.quark.cn/s/4b654b6d52ae",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Python小白也能听懂的入门课",
+      "link": "https://pan.quark.cn/s/c20215b3c713",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "KO大魔王：英语语法通关计划",
+      "link": "https://pan.quark.cn/s/d3e791587585",
+      "note": "B站 · 完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "白宫里的主角们",
+      "link": "https://pan.quark.cn/s/d9defc8d01d2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "摆脱内耗的12个行动指南",
+      "link": "https://pan.quark.cn/s/65fbbe740d8d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "林超：给年轻人的跨学科工具箱",
+      "link": "https://pan.quark.cn/s/9193184caf22",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "王建章的摄影课（第一感受影像创作社区）",
+      "link": "https://pan.quark.cn/s/f584edd59116",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "「城市行者」旅行摄影实战课程",
+      "link": "https://pan.quark.cn/s/95273b9c5db9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "顶级互联网工程师的计算机思维课",
+      "link": "https://pan.quark.cn/s/0b816d56031e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "戴锦华大师电影课：性别与凝视",
+      "link": "https://pan.quark.cn/s/8c1fe3d8b6fb",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Web前端入门：从零开始做网站",
+      "link": "https://pan.quark.cn/s/96bfabfb976c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "互联网职业通识20讲",
+      "link": "https://pan.quark.cn/s/80265a159320",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "提纲挈领读《红楼梦》",
+      "link": "https://pan.quark.cn/s/0503364d9610",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "剪辑思维训练营",
+      "link": "https://pan.quark.cn/s/eefc6879e0e8",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "王昱珩：环球博物馆中的自然科学",
+      "link": "https://pan.quark.cn/s/ff2129280f60",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "马皑教授的社会学：人类的越轨行为研究",
+      "link": "https://pan.quark.cn/s/014b4a8c8f18",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李兴兴：剪辑实战训练营",
+      "link": "https://pan.quark.cn/s/a05a4d176165",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "傅佩荣教授 拨开迷雾读国学",
+      "link": "https://pan.quark.cn/s/863c5c334b64",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "王骁Albert：美国背面研究报告",
+      "link": "https://pan.quark.cn/s/a1cdc77f4257",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "张绍忠 战忽知道五季合集",
+      "link": "https://pan.quark.cn/s/af67027550e2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "微表情心理课",
+      "link": "https://pan.quark.cn/s/ca3426c683ee",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "第四次工业革命来了-局座",
+      "link": "https://pan.quark.cn/s/139ec376d681",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "吴金闪教授：量子力学无基础入门",
+      "link": "https://pan.quark.cn/s/17b374dad6cf",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大钱理群教授讲鲁迅",
+      "link": "https://pan.quark.cn/s/41c8a613ad27",
+      "note": "B站 · 完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "梨核财经：金融通识与商业分析法",
+      "link": "https://pan.quark.cn/s/d9426eb1b89b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "金灿荣：进击的中国外交",
+      "link": "https://pan.quark.cn/s/e885bdadd0db",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "小白也能听懂的人工智能原理",
+      "link": "https://pan.quark.cn/s/52c2d726e26f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人类文明的地理密码",
+      "link": "https://pan.quark.cn/s/e57d5c3a6a57",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "西方哲学课",
+      "link": "https://pan.quark.cn/s/19d90367ec3f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "福尔摩斯的推理笔记",
+      "link": "https://pan.quark.cn/s/a18784954897",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "范勇鹏：美国的诞生--制度的起源与本质",
+      "link": "https://pan.quark.cn/s/a6576b431602",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大陈连山教授解读宝藏《山海经》",
+      "link": "https://pan.quark.cn/s/02fdca620b6f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "暴走漫画：讲故事也是一种超能力",
+      "link": "https://pan.quark.cn/s/9c3d08f28a13",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "全能音乐人入门训练营：零基础学写歌",
+      "link": "https://pan.quark.cn/s/52e0fda63809",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "次世代必备黑科技：创意编程指南",
+      "link": "https://pan.quark.cn/s/a65c68ac605b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "方志远教授讲明史：明朝之亡",
+      "link": "https://pan.quark.cn/s/39a781052566",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "孙志立简明音标50讲",
+      "link": "https://pan.quark.cn/s/18aedb52d66f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "随风说：金融的黑色现场",
+      "link": "https://pan.quark.cn/s/3d1b83355e58",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Tiger谭秋娟的吉他弹唱入门课",
+      "link": "https://pan.quark.cn/s/832cd827fff9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "宋浩数学：2022专升本数学全程班",
+      "link": "https://pan.quark.cn/s/f6af237aeb1e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "C4D大作战：百万UP的光之教程",
+      "link": "https://pan.quark.cn/s/6033582fa1a4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大杨立华教授讲庄子哲学",
+      "link": "https://pan.quark.cn/s/d11e9116ecf4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "CBA10冠王训练师教你从0学篮球",
+      "link": "https://pan.quark.cn/s/ea49cc08270f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "野路子特效课：像P图一样\"P\"视频",
+      "link": "https://pan.quark.cn/s/b864c4666ff3",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "上海交大陆铭教授的经济学思维课",
+      "link": "https://pan.quark.cn/s/6722c108c8d4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李淼：三体中的物理学",
+      "link": "https://pan.quark.cn/s/81ff4183f36d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "PS+AI双专业，设计师的第一门必修课",
+      "link": "https://pan.quark.cn/s/f2999887deb5",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大教授韩茂莉讲中国历史地理",
+      "link": "https://pan.quark.cn/s/a443f740e233",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "包爱民教授：脑科学新知20讲",
+      "link": "https://pan.quark.cn/s/d5c15c5d03ad",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李国平教授：财务通识二十讲",
+      "link": "https://pan.quark.cn/s/29cba631f0bf",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "苑举正教授：哲学透镜看世界",
+      "link": "https://pan.quark.cn/s/bb231e2c294e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "于赓哲：了不起的大唐文明史",
+      "link": "https://pan.quark.cn/s/65204bbfbd10",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "戴锦华大师电影课：性别与凝视",
+      "link": "https://pan.quark.cn/s/395d5a8dabd1",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "打工人的法律必修课",
+      "link": "https://pan.quark.cn/s/38a15e8c5331",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "轻松玩转Linux",
+      "link": "https://pan.quark.cn/s/a1fd7cbac9cd",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "潘妮妮：经典日漫的政治学分析",
+      "link": "https://pan.quark.cn/s/4087ebc200cc",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大陈平原：晚清画报中的近代中国",
+      "link": "https://pan.quark.cn/s/c369801502ba",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "UI设计师的动效入门指南",
+      "link": "https://pan.quark.cn/s/e9900f75be5f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "百万后期的进阶课",
+      "link": "https://pan.quark.cn/s/b15d58dacdb2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "PR秘传技：进阶剪辑的全方位攻略",
+      "link": "https://pan.quark.cn/s/17a527a3bcb4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "程龙老师：尤克里里基础入门课",
+      "link": "https://pan.quark.cn/s/ff425cab9c87",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "流行唱法6讲",
+      "link": "https://pan.quark.cn/s/664d6fd9204e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北宋之美：苏东坡的奇遇人生",
+      "link": "https://pan.quark.cn/s/9d7f996c8415",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "杜素娟的西方文学课：欧美经典名著解读",
+      "link": "https://pan.quark.cn/s/5ebc4d4a042e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "同济陈家琪讲西方哲学：从康德到黑格尔",
+      "link": "https://pan.quark.cn/s/6c90b29c54e5",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "许倬云讲世界历史：五百年大变局",
+      "link": "https://pan.quark.cn/s/0b383706451a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "刘海龙教授：传播理论通识课",
+      "link": "https://pan.quark.cn/s/3485b3be2b32",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "于赓哲：历史上的利益分配",
+      "link": "https://pan.quark.cn/s/c382e6a592ae",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "中国制造：一场未来十年的大博弈",
+      "link": "https://pan.quark.cn/s/7d7457ac9236",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "考古大师课：文明、记忆与历史现场",
+      "link": "https://pan.quark.cn/s/757a99b429bd",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "翟东升：人民币汇率与人民币国际化",
+      "link": "https://pan.quark.cn/s/076dcdb52d93",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "王受之教授：世界现代设计通识课",
+      "link": "https://pan.quark.cn/s/a312df85b7b5",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "马红漫博士：用得上的行为经济学",
+      "link": "https://pan.quark.cn/s/fad562eede0a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "中国政法大学刘建清教授：犯罪心理课",
+      "link": "https://pan.quark.cn/s/a2e544f00903",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "历史学者张宏杰：中西文明对比15讲",
+      "link": "https://pan.quark.cn/s/be6f14ab53d8",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "从量子到宇宙：北师大赵峥教授的物理课",
+      "link": "https://pan.quark.cn/s/8cbeb556de4e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "柳肃教授讲中西建筑文化",
+      "link": "https://pan.quark.cn/s/29bc2dc54a0b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "黄江南教授讲世界经济变局：观念经济学",
+      "link": "https://pan.quark.cn/s/75a26e875ddb",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人人都需要的自我管理课",
+      "link": "https://pan.quark.cn/s/1585828337ef",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "零基础上手Procreate",
+      "link": "https://pan.quark.cn/s/b25f75289789",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人体绘画：从0开始角色创作",
+      "link": "https://pan.quark.cn/s/4c6ee2ac1a45",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人物速写：风格化角色创作实战",
+      "link": "https://pan.quark.cn/s/67461ab42862",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人类文明闪耀时：郦波教授的最美唐诗12讲",
+      "link": "https://pan.quark.cn/s/b8eed5baf227",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "孙绍振教授：文学阅读审美课",
+      "link": "https://pan.quark.cn/s/fd6e404feaa6",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "汪诘：科幻世界漫游指南（第一季）",
+      "link": "https://pan.quark.cn/s/160833ca23a0",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "黄金时代的摄影50讲：如何理解大师之作",
+      "link": "https://pan.quark.cn/s/7ade7cf346af",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "陈平的跨学科思维课",
+      "link": "https://pan.quark.cn/s/6e7977c3e5fe",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "关键对话20讲：如何成为沟通高手",
+      "link": "https://pan.quark.cn/s/8a76af9ebf3c",
+      "note": "B站 · 完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "陈嘉映教授：从哲学到人生",
+      "link": "https://pan.quark.cn/s/9ce49b1c63f3",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "孟晖讲宋朝美学：看得见的大宋文明",
+      "link": "https://pan.quark.cn/s/fc5b30ba60f5",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "白金游戏工作室：爆款游戏创作心法",
+      "link": "https://pan.quark.cn/s/2e3cdeab8638",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "超硬核沟通课：关于说话的一切",
+      "link": "https://pan.quark.cn/s/abc8e7249f4a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人像摄影后期系统化入门",
+      "link": "https://pan.quark.cn/s/99f518e349de",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "范李猿：14天体态矫正计划｜上身篇",
+      "link": "https://pan.quark.cn/s/ecec67c1f1b3",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "中国文学的妖怪宇宙：马瑞芳讲志怪神魔小说",
+      "link": "https://pan.quark.cn/s/51a7dfeb4f23",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "心理学通识与新知",
+      "link": "https://pan.quark.cn/s/d22c5e37fa3a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Python实战精讲：萌新系统入门",
+      "link": "https://pan.quark.cn/s/bac040021176",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "姜振宇主讲MBTI性格分析",
+      "link": "https://pan.quark.cn/s/54f258aa3f4b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "小说写作必修课：零基础打造写作IP",
+      "link": "https://pan.quark.cn/s/6e54294078da",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "零基础减脂塑性·男女适用",
+      "link": "https://pan.quark.cn/s/d7d8a3a70d4a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "偏见看政治：李筠教授的政治学课",
+      "link": "https://pan.quark.cn/s/7f0a9fa7f006",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "黄朴民教授：《孙子兵法》与兵家智慧",
+      "link": "https://pan.quark.cn/s/a77287b8ec66",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "刁克利教授：莎士比亚戏剧10讲",
+      "link": "https://pan.quark.cn/s/cd058d7c3cc8",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "黎叔家常川菜私教课",
+      "link": "https://pan.quark.cn/s/f18539052cf3",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "多风格头像板绘入门",
+      "link": "https://pan.quark.cn/s/249905362b3d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "于赓哲教授：大唐风华人物30讲",
+      "link": "https://pan.quark.cn/s/742093ffc31b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "社交必备：幽默感养成课",
+      "link": "https://pan.quark.cn/s/d0dbbb515017",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "毛戈平美妆学院：生活妆容课",
+      "link": "https://pan.quark.cn/s/ecde5ac3ff7c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "卓叔增重：增肌饮食营养课",
+      "link": "https://pan.quark.cn/s/80c53173be23",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "今天开始画漫画：零基础入门到创作",
+      "link": "https://pan.quark.cn/s/66838cb0dec9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "毛戈平美妆学院：小白零基础入门课",
+      "link": "https://pan.quark.cn/s/f2b0f8b5f92e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "方锦龙国乐通识课",
+      "link": "https://pan.quark.cn/s/47c13f81098c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "年轻人的金融和商业分析课",
+      "link": "https://pan.quark.cn/s/d108c81d8ad2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "大神同款定格动画保姆级教学",
+      "link": "https://pan.quark.cn/s/4799897d31fd",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "AE超能力学院 - 小莫入门到精通",
+      "link": "https://pan.quark.cn/s/38ef4ea87306",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "北师大曾祥龙：情绪自救课(含训练营)",
+      "link": "https://pan.quark.cn/s/809809e90551",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "高盛元精读唐诗宋词",
+      "link": "https://pan.quark.cn/s/cfc2a4608542",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "海洋饼干：21天纤细腰腹训练课",
+      "link": "https://pan.quark.cn/s/d3a4e7ed18ea",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "洪兰脑科学课堂：大脑与生活",
+      "link": "https://pan.quark.cn/s/f9c9ea054dd7",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "胡sir吉他综合教程：入门到即兴",
+      "link": "https://pan.quark.cn/s/477d36eb880e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "互联网职业通识20讲",
+      "link": "https://pan.quark.cn/s/463b233fe5d1",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "V叔的钢琴基础入门课",
+      "link": "https://pan.quark.cn/s/0e524596805e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "极速时代的个人竞争力",
+      "link": "https://pan.quark.cn/s/0e3567abff6d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "姜振宇：微表情心理应用课",
+      "link": "https://pan.quark.cn/s/b35f4255e68d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "金融学家王巍教授：金融可以创造历史",
+      "link": "https://pan.quark.cn/s/946913f8984a",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "精准表达30讲：能成事儿的表达课",
+      "link": "https://pan.quark.cn/s/631903c7016f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李凯教授精读《史记》",
+      "link": "https://pan.quark.cn/s/5cb8769dbb09",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李永乐老师：从一到无穷大",
+      "link": "https://pan.quark.cn/s/31487376622d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "六层楼先生：女性健康通识课",
+      "link": "https://pan.quark.cn/s/91638f1d6ec4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "罗翔：刑法悖论十讲",
+      "link": "https://pan.quark.cn/s/279908196bd1",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "孟庆延：经典社会学思想20讲",
+      "link": "https://pan.quark.cn/s/df584151e872",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "胖雪人的声音魔法课",
+      "link": "https://pan.quark.cn/s/711d2e06d07c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "彭弘Red摄影零基础相机入门课程",
+      "link": "https://pan.quark.cn/s/54e61e876add",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "千秋兴亡：葛剑雄讲中国史（上下）",
+      "link": "https://pan.quark.cn/s/0d0fba4b1d84",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人大吴征宇教授：现代国际秩序的变迁",
+      "link": "https://pan.quark.cn/s/e2ebd08e2367",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "人像摄影实战训练营",
+      "link": "https://pan.quark.cn/s/aff08836a9c0",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "申古博：中国传统壁画课25讲",
+      "link": "https://pan.quark.cn/s/bc5a7b4b5075",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "算法面试通关40讲",
+      "link": "https://pan.quark.cn/s/c24921d32d6b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "台湾大学孙中兴教授讲经典社会学",
+      "link": "https://pan.quark.cn/s/af774250b087",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "台湾大学苑举正教授的财经哲学课",
+      "link": "https://pan.quark.cn/s/41d1e74b23db",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "杨宁老师的文学启示课",
+      "link": "https://pan.quark.cn/s/667b849c3bc0",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "一站式手绘色彩指南",
+      "link": "https://pan.quark.cn/s/35cbcc87530b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "张策的短视频创作课",
+      "link": "https://pan.quark.cn/s/1706244e8010",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "卓叔增重：增肌入门教学课",
+      "link": "https://pan.quark.cn/s/177b9b18f603",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "欧阳春晓：28天根本性减脂课程",
+      "link": "https://pan.quark.cn/s/2a62b1291aac",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "28天增肌减脂，居家打造黄金比例身材",
+      "link": "https://pan.quark.cn/s/4c023f2da64f",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "王者荣耀：萌新射手如何冲击传奇王者",
+      "link": "https://pan.quark.cn/s/d79cd8308602",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "中国美术学院吕澎：中国现代艺术史",
+      "link": "https://pan.quark.cn/s/26828aa94a8f"
+    },
+    {
+      "category": "bilibili",
+      "title": "闫帅奇·28天极速减脂计划",
+      "link": "https://pan.quark.cn/s/d52e65a0ffad",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "陈老师 手机影像创作实战课程：从入门到精通",
+      "link": "https://pan.quark.cn/s/105066db7704",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "从0开始的PPT高手修神记",
+      "link": "https://pan.quark.cn/s/8a4ff9665244",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "大神教你玩转手机摄影，随手拍出好照片",
+      "link": "https://pan.quark.cn/s/3ef020b9f798",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "街舞（爵士舞）基本功打卡课 - 谭老师",
+      "link": "https://pan.quark.cn/s/ea7f4869992c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "六斗米短视频脚本文案策划十三式",
+      "link": "https://pan.quark.cn/s/a98ad1172656",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "旁门左道八合一PPT一站式系统课程",
+      "link": "https://pan.quark.cn/s/d53798635c63",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "邵彦：中国古代绘画通识课",
+      "link": "https://pan.quark.cn/s/7bb85837ea5c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "申一帆：学科提分攻略",
+      "link": "https://pan.quark.cn/s/df84c5c789a7",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "宋浩普林斯顿微积分读本(修订版)224节",
+      "link": "https://pan.quark.cn/s/0bbf4013a6e0",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "乔伯伯：5500词汇系统课",
+      "link": "https://pan.quark.cn/s/ab1505e48b28",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "野川社：平面基础视觉设计课",
+      "link": "https://pan.quark.cn/s/ae04d8284e2e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Mai 2022说唱音乐大师课",
+      "link": "https://pan.quark.cn/s/a7f2bb7a5150",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "Pro Shot：15天三分完全指南",
+      "link": "https://pan.quark.cn/s/877171a330a4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "CoachFui：篮球核心力量技巧训练课程",
+      "link": "https://pan.quark.cn/s/45d33bb804b8"
+    },
+    {
+      "category": "bilibili",
+      "title": "CoachFui：第二季篮球核心力量技巧训练课程",
+      "link": "https://pan.quark.cn/s/c447553a2ccc"
+    },
+    {
+      "category": "bilibili",
+      "title": "CoachFui：第二季新单动投篮训练课程",
+      "link": "https://pan.quark.cn/s/0eaa7ba72d80"
+    },
+    {
+      "category": "bilibili",
+      "title": "CoachFui：第三季新单动投篮课【库里系列】",
+      "link": "https://pan.quark.cn/s/0d9e01736310"
+    },
+    {
+      "category": "bilibili",
+      "title": "现代社会秩序背后的科技商业史",
+      "link": "https://pan.quark.cn/s/5b65fa9843cd",
+      "note": "更新中"
+    },
+    {
+      "category": "bilibili",
+      "title": "上外顾悦教授：终极英语口语课",
+      "link": "https://pan.quark.cn/s/b91e3996fdbf",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "一门给年轻人的恋爱成长课",
+      "link": "https://pan.quark.cn/s/48f699d8d29e",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "南开大学张俊山教授讲《资本论》",
+      "link": "https://pan.quark.cn/s/57a28ddbdca3",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "浙江大学蒋文华老师讲博弈论",
+      "link": "https://pan.quark.cn/s/85ae95937bb4",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "度阴山讲阳明心学：教你修炼强大内心",
+      "link": "https://pan.quark.cn/s/122f541cfbc2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "不刷题的吴姥姥：牛顿爱因斯坦的时空观",
+      "link": "https://pan.quark.cn/s/4fc5cf92fc32",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "卓叔增重：12周家庭增肌循环计划",
+      "link": "https://pan.quark.cn/s/f2e83fee1f61",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "图灵的猫：人人都能听懂的AI通识课",
+      "link": "https://pan.quark.cn/s/293639bbe9cb",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "地下王朝：古猫讲中国墓葬史",
+      "link": "https://pan.quark.cn/s/85e90e586555",
+      "note": "B站 · 完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "苑举正：从东西方文化冲突，看大国博弈",
+      "link": "https://pan.quark.cn/s/ad8f9b2f35ab"
+    },
+    {
+      "category": "bilibili",
+      "title": "奇妙流行声乐课堂：从零开始学唱歌",
+      "link": "https://pan.quark.cn/s/1094309027aa"
+    },
+    {
+      "category": "bilibili",
+      "title": "被低估的王朝：隋朝改革的成与败",
+      "link": "https://pan.quark.cn/s/f283c7ce3182",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "智慧与谋略：精讲《鬼谷子》",
+      "link": "https://pan.quark.cn/s/a734d38fdfe8"
+    },
+    {
+      "category": "bilibili",
+      "title": "清华大学靳卫萍老师：看懂宏观经济大势",
+      "link": "https://pan.quark.cn/s/5b430c60e8e2",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "理性的惊悚：张志浩解读悬疑推理小说",
+      "link": "https://pan.quark.cn/s/8127b5164e60"
+    },
+    {
+      "category": "bilibili",
+      "title": "人大毛立平教授：纵观清史二十讲",
+      "link": "https://pan.quark.cn/s/7480f7de0e0d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "鬼谷的生物演化课",
+      "link": "https://pan.quark.cn/s/e46edc878346",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "刘擎哲学大师课",
+      "link": "https://pan.quark.cn/s/78aba7505e03",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "中美未来十年经济大博弈之20大推演",
+      "link": "https://pan.quark.cn/s/73aab4b45a32",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "拓展三倍人生：庆澄的电影权谋赏析课",
+      "link": "https://pan.quark.cn/s/f9d4ee95fdfe",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "许倬云讲中国通史：五千年大格局",
+      "link": "https://pan.quark.cn/s/cef045acee9f",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "刘谦第一课！零基础魔术教学",
+      "link": "https://pan.quark.cn/s/b6d8b4fdb8ed",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "古典文学大师课：从《三国演义》到《金瓶梅》",
+      "link": "https://pan.quark.cn/s/4dfad9ef71f8",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "王受之教授：世界建筑史（现代篇）完结36集",
+      "link": "https://pan.quark.cn/s/cd2bf7dbf49f"
+    },
+    {
+      "category": "bilibili",
+      "title": "王受之教授：世界建筑文明史（古典篇）完结37集",
+      "link": "https://pan.quark.cn/s/ab0b6610731b"
+    },
+    {
+      "category": "bilibili",
+      "title": "陈传席教授讲中国艺术史：从上古到南宋",
+      "link": "https://pan.quark.cn/s/789ae04cab8c",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "珍大户认知世界的经济学155节",
+      "link": "https://pan.quark.cn/s/2ba0a74a3f38",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "松明：玩转压力：积极情绪养成课",
+      "link": "https://pan.quark.cn/s/d07f9ddd4553",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "聂辉华教授：基层中国的运行逻辑",
+      "link": "https://pan.quark.cn/s/5a785ccdf16c",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "北大彭吉象教授：中国传统美学",
+      "link": "https://pan.quark.cn/s/7dbf3c50dab9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "六神磊磊：跟着金庸学说话",
+      "link": "https://pan.quark.cn/s/755e384b0a32",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "费勇讲《金刚经》《心经》：教你断离一切烦恼",
+      "link": "https://pan.quark.cn/s/0dfce2f66bbc",
+      "note": "更新中"
+    },
+    {
+      "category": "bilibili",
+      "title": "珍大户认知世界的经济学155节",
+      "link": "https://pan.quark.cn/s/ab0e078adbd9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "央美叶剑青教授：中西方艺术的黄金时代",
+      "link": "https://pan.quark.cn/s/b898ac82b939",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "当代经典摄影20讲：如何理解大师之作",
+      "link": "https://pan.quark.cn/s/682ee48a5fba",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "许准的政治经济学课：21世纪重读《资本论》",
+      "link": "https://pan.quark.cn/s/59608427fc04"
+    },
+    {
+      "category": "bilibili",
+      "title": "莫梦醒零基础也能学：多风格人像摄影系统课",
+      "link": "https://pan.quark.cn/s/d8291e712b46",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "英语名师赖世雄的学习方法论",
+      "link": "https://pan.quark.cn/s/dc67b0b855c0",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "柳行长：金融保险通识课",
+      "link": "https://pan.quark.cn/s/dca47a89fb2f",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "朱老丝：让说话有\"逻辑\"",
+      "link": "https://pan.quark.cn/s/4a3e82d87fe7",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "温铁军：去西方中心主义的话语建构",
+      "link": "https://pan.quark.cn/s/45bdc1fe8de2",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "王一快：简单有趣的自我成长课堂",
+      "link": "https://pan.quark.cn/s/af7eeb1f597c"
+    },
+    {
+      "category": "bilibili",
+      "title": "熊伟零基础书法入门课",
+      "link": "https://pan.quark.cn/s/dc61835aa496",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "周邦琴英语思维训练营",
+      "link": "https://pan.quark.cn/s/30fb619053a9",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "熊浩：论文求生12节",
+      "link": "https://pan.quark.cn/s/85a732538526",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "武汉大学赵林教授的西方哲学课",
+      "link": "https://pan.quark.cn/s/b6cf4e9f863d",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "生命的真相：王一方的北大医学人文课",
+      "link": "https://pan.quark.cn/s/813f9f23f10f",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "北师大侯树栋教授：欧洲中世纪史",
+      "link": "https://pan.quark.cn/s/66ccca1f4e24",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "耿直哥–深度学习必修课：进击算法工程师100节",
+      "link": "https://pan.quark.cn/s/fe61c40deb1d"
+    },
+    {
+      "category": "bilibili",
+      "title": "洪兰识人的艺术(混沌大学)",
+      "link": "https://pan.quark.cn/s/d8fe7bd397ae"
+    },
+    {
+      "category": "bilibili",
+      "title": "清华大学靳卫萍老师：中国经济趋势分析",
+      "link": "https://pan.quark.cn/s/be17e922b591"
+    },
+    {
+      "category": "bilibili",
+      "title": "摄影后期调色：给摄影爱好者的色彩课",
+      "link": "https://pan.quark.cn/s/c1d7890d3390"
+    },
+    {
+      "category": "bilibili",
+      "title": "欧阳春晓：18天体态矫正·腰臀比雕刻",
+      "link": "https://pan.quark.cn/s/9e761ec5c63b",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "闫帅奇女性马甲线打造减脂瘦肚子方案",
+      "link": "https://pan.quark.cn/s/039828fc1b09",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "闫帅奇：男性腹肌打造瘦肚子全方案",
+      "link": "https://pan.quark.cn/s/0fda6ca9e6de",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "范李猿：14天体态矫正计划【下身篇】",
+      "link": "https://pan.quark.cn/s/f3c8083966fb",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "李银河的爱情课：中国青年的情感与婚姻",
+      "link": "https://pan.quark.cn/s/3559dade1ade",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "焦雄屏的电影课：世界电影20大名作赏析",
+      "link": "https://pan.quark.cn/s/f6fff7684408",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "费俊峰教授：变态心理学20讲",
+      "link": "https://pan.quark.cn/s/e10f45344c19"
+    },
+    {
+      "category": "bilibili",
+      "title": "复旦徐英瑾教授：认知世界的20个哲学命题",
+      "link": "https://pan.quark.cn/s/68c9920c273b"
+    },
+    {
+      "category": "bilibili",
+      "title": "真正看懂中国经济",
+      "link": "https://pan.quark.cn/s/405dc75d78fb",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "林粒粒：小白玩转AI大模型应用开发",
+      "link": "https://pan.quark.cn/s/678a92a14bd1"
+    },
+    {
+      "category": "bilibili",
+      "title": "机器学习必修课：经典算法与Python实战 - 梗直哥炜120节",
+      "link": "https://pan.quark.cn/s/fe0a1e3a0368"
+    },
+    {
+      "category": "bilibili",
+      "title": "钱文忠重讲《玄奘西游记》",
+      "link": "https://pan.quark.cn/s/579dc78aa4b4",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "【人工智能AI实操课】14个项目带你熟练掌握AI",
+      "link": "https://pan.quark.cn/s/26b24e868045"
+    },
+    {
+      "category": "bilibili",
+      "title": "范李猿：21天零基础居家减脂搏击操",
+      "link": "https://pan.quark.cn/s/2510ad0eb226"
+    },
+    {
+      "category": "bilibili",
+      "title": "混社会：步入成人世界的第一堂生存手段课",
+      "link": "https://pan.quark.cn/s/433a3bc86c31",
+      "note": "B站"
+    },
+    {
+      "category": "bilibili",
+      "title": "费勇讲《了凡四训》：33堂立命法则课",
+      "link": "https://pan.quark.cn/s/215e2684c676"
+    },
+    {
+      "category": "bilibili",
+      "title": "周树华：英语零基础直达口语流利",
+      "link": "https://pan.quark.cn/s/4b7ea9ee9ee5"
+    },
+    {
+      "category": "bilibili",
+      "title": "猫和老鼠动画师John的绘画入门课",
+      "link": "https://pan.quark.cn/s/c2a69b1c8b37"
+    },
+    {
+      "category": "bilibili",
+      "title": "【李蚊先】人体+场景：从零开始学透视",
+      "link": "https://pan.quark.cn/s/936fc469b44b"
+    },
+    {
+      "category": "bilibili",
+      "title": "B站-西川的诗歌课",
+      "link": "https://pan.quark.cn/s/7555dd79f53d"
+    },
+    {
+      "category": "bilibili",
+      "title": "戴建业老师B站微课合集",
+      "link": "https://pan.quark.cn/s/5c754f37b68b"
+    },
+    {
+      "category": "bilibili",
+      "title": "黄执中：成为懂情绪的高效沟通者",
+      "link": "https://pan.quark.cn/s/4a49a0b8c113",
+      "note": "完结"
+    },
+    {
+      "category": "bilibili",
+      "title": "欧阳春晓：30天维密普拉提居家瘦身课",
+      "link": "https://pan.quark.cn/s/dd4c72f1f101"
+    },
+    {
+      "category": "bilibili",
+      "title": "清华大学靳卫萍老师：经济学思维30讲",
+      "link": "https://pan.quark.cn/s/87018d7df565",
+      "note": "B站"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "001-技术与商业案例解读",
+      "link": "https://pan.baidu.com/s/1acIx3TNhCJbV42cyxQpv0A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "002-AI技术内参",
+      "link": "https://pan.baidu.com/s/1Lg_2plMJGlHTZ12r0bzTHw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "003-左耳听风",
+      "link": "https://pan.baidu.com/s/1CNjCAo4ej4FLes2yEDMIuA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "004-朱赟的技术管理课",
+      "link": "https://pan.baidu.com/s/1CAHyWv5VJSQwt7D-rM5zBg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "005-邱岳的产品手记",
+      "link": "https://pan.baidu.com/s/1Yn4lUWrp-Lj9MHCcMh7gwg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "006-人工智能基础课",
+      "link": "https://pan.baidu.com/s/1qL6e7KmA9dmC91d5pVjqrA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "007-赵成的运维体系管理课",
+      "link": "https://pan.baidu.com/s/1uMpqZ5tUMhXN8VWkaDSwaA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "008-推荐系统三十六式",
+      "link": "https://pan.baidu.com/s/1HK7s89xIJYcuC3U61NiabA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "009-深入浅出区块链",
+      "link": "https://pan.baidu.com/s/1uPj871C5NhqjZ7nZx2odPw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "010-技术领导力实战笔记",
+      "link": "https://pan.baidu.com/s/15ROQCLTq-pdn3qwS29fMSg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "011-硅谷产品实战36讲",
+      "link": "https://pan.baidu.com/s/1dUsPktA5vNS1r6pf_A_egA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "012-从0开始学架构",
+      "link": "https://pan.baidu.com/s/1e-OVrtOmyuhlxJ7GZ90o1A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "013-Java核心技术面试精讲",
+      "link": "https://pan.baidu.com/s/1KEqwJHEtVk5SJM13xyi2GA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "014-趣谈网络协议",
+      "link": "https://pan.baidu.com/s/17otVHwBnxSeCZ_G8C_v_DA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "015-从0开始学游戏开发",
+      "link": "https://pan.baidu.com/s/1KrOkuLH8msUX-nMSbd_eTA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "016-机器学习40讲",
+      "link": "https://pan.baidu.com/s/18Lc0_MJ2gNZU4geN9eopPA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "017-软件测试52讲",
+      "link": "https://pan.baidu.com/s/1WmLvtdKzuUX2Ph_FrZ2U8g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "018-持续交付36讲",
+      "link": "https://pan.baidu.com/s/1o87don5nwF_OH-Dlhczz2w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "019-深入拆解Java虚拟机",
+      "link": "https://pan.baidu.com/s/1rX43uaCxTxkTnf-izghuVQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "020-邱岳的产品实战",
+      "link": "https://pan.baidu.com/s/1jMEo6Be0RBdMaqkApd0qAQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "021-程序员进阶攻略",
+      "link": "https://pan.baidu.com/s/1Fo_rjpU9VdxbrhgBRYcELA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "022-Go语言核心36讲",
+      "link": "https://pan.baidu.com/s/1wqlHwxOE_tJexo2fViqqHg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "023-技术管理实战36讲",
+      "link": "https://pan.baidu.com/s/1f8lVlrxJaFP4usJeNX9IGQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "024-从0开始学微服务",
+      "link": "https://pan.baidu.com/s/10NvJ2EiV1VaYRGG8snIOtg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "025-深入剖析Kubernetes",
+      "link": "https://pan.baidu.com/s/1ErK38UpdjrrupZ53AXt5DQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "026-数据结构与算法之美",
+      "link": "https://pan.baidu.com/s/15jD-IJuqA3Mtr7h0gfIXvA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "027-如何设计一个秒杀系统",
+      "link": "https://pan.baidu.com/s/1PwBs6DhZzgcSKOmoA6cmNQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "028-白话法律42讲",
+      "link": "https://pan.baidu.com/s/1a-3jhwfjlYJCsahQ4NbcBQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "029-从0开始学大数据",
+      "link": "https://pan.baidu.com/s/1lVn5SD36WTTH5ZvR6-URww?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "030-MySQL实战45讲",
+      "link": "https://pan.baidu.com/s/17h56H-zkNJJBKyirYHu5eQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "031-Linux性能优化实战",
+      "link": "https://pan.baidu.com/s/1WfIFok-6yiDuykFTgIjSxw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "032-Android开发高手课",
+      "link": "https://pan.baidu.com/s/1MhzEhRPQ_G0dgKml3IlmPA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "033-程序员的数学基础课",
+      "link": "https://pan.baidu.com/s/10gDdrDbpP0Un6N9P7rCSIA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "034-数据分析实战45讲",
+      "link": "https://pan.baidu.com/s/1OBLY0irGIRtjphMC6hWvyQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "035-10x程序员工作法",
+      "link": "https://pan.baidu.com/s/1YyEAU-WN4VOg4_PZxno_yQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "036-代码精进之路",
+      "link": "https://pan.baidu.com/s/1-2tBxn0amLaraOeBdXB76Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "037-重学前端",
+      "link": "https://pan.baidu.com/s/1hdoG_TZvAMetbQQm-cgG7w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "038-面试现场",
+      "link": "https://pan.baidu.com/s/1jq0y_SJvM4XI3g0QZRVDuQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "039-软件工程之美",
+      "link": "https://pan.baidu.com/s/1-zc2IW6r39XFAzntK9VyTw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "040-Java并发编程实战",
+      "link": "https://pan.baidu.com/s/1_FvoPNXw513BZXzRsGqc_w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "041-iOS开发高手课",
+      "link": "https://pan.baidu.com/s/1TKklNdqFuBEouFif33bDvw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "042-趣谈Linux操作系统",
+      "link": "https://pan.baidu.com/s/1YF-KO-b_1Yp1kWilIIchzg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "043-从0开始做增长",
+      "link": "https://pan.baidu.com/s/1p2ic8-RwNnta2FyqXcCtSQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "044-许式伟的架构课",
+      "link": "https://pan.baidu.com/s/1uQTOFK5RObZTtw-Lsjm1Rw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "045-大规模数据处理实战",
+      "link": "https://pan.baidu.com/s/1Y_xoFmL3mZYGvK2IB4AoVA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "046-深入浅出计算机组成原理",
+      "link": "https://pan.baidu.com/s/1qlKqdy-cW1G5dWPqvP02tQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "047-Python核心技术与实战",
+      "link": "https://pan.baidu.com/s/1W80v-vRt8XMOonvaM5orYg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "048-深入拆解Tomcat&Jetty",
+      "link": "https://pan.baidu.com/s/13iOkxLKXZZOyj-YTudMAlQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "049-Java性能调优实战",
+      "link": "https://pan.baidu.com/s/1PReA1JbEVBUOXh3Cb635sQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "050-OpenResty从入门到实战",
+      "link": "https://pan.baidu.com/s/1zfhW07FGtEENRPgfINQ9pg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "051-透视HTTP协议",
+      "link": "https://pan.baidu.com/s/1VG3V9QPfy7XQi7CRIMCarg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "052-Kafka核心技术与实战",
+      "link": "https://pan.baidu.com/s/1bKZGNqo5kRFYomfN74ZDMw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "053-SQL必知必会",
+      "link": "https://pan.baidu.com/s/1EniRocneqiRHtx1Gtjc82A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "054-黄勇的OKR实战笔记",
+      "link": "https://pan.baidu.com/s/1aZHKRRoLW1K9ad-M1oLARw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "055-Flutter核心技术与实战",
+      "link": "https://pan.baidu.com/s/14dqTyr_Cog-3crK1lhxCxA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "056-编辑训练营",
+      "link": "https://pan.baidu.com/s/1bKyswJQ5UEUW9PFW8YJW0Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "057-从0打造音视频直播系统",
+      "link": "https://pan.baidu.com/s/1EcdoNYeh7TKX0GRaSVg_rQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "058-消息队列高手课",
+      "link": "https://pan.baidu.com/s/10Gq1x1DcSesHkKxYSpUY3A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "059-网络编程实战",
+      "link": "https://pan.baidu.com/s/1wgmKzVPsi4qzSi-3bXdg8Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "060-浏览器工作原理与实践",
+      "link": "https://pan.baidu.com/s/16l58WbqvWsRSrJkIdz3X7A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "061-编译原理之美",
+      "link": "https://pan.baidu.com/s/1i2bXcdZc2CWOcmOiUXbcZQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "062-研发效率破局之道",
+      "link": "https://pan.baidu.com/s/1EY0v7bhlhqm2mzynFLRocw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "063-即时消息技术剖析与实战",
+      "link": "https://pan.baidu.com/s/1iYei8bm2hbyhb3FeBtZk1Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "064-全栈工程师修炼指南",
+      "link": "https://pan.baidu.com/s/1dUHIiChtQEdIwy4pi-gC3A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "065-高并发系统设计40问",
+      "link": "https://pan.baidu.com/s/1zDHwdpcmTSeEGvnneKipnw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "066-分布式技术原理与算法解析",
+      "link": "https://pan.baidu.com/s/1wVCfqnskkwYfhFX3gl2Ylw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "067-说透中台",
+      "link": "https://pan.baidu.com/s/1Y5B5NFi7Oacn05MrwQawfw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "068-DevOps实战笔记",
+      "link": "https://pan.baidu.com/s/1pHBEIKYMQPSZFJf2Q208Qw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "069-DDD实战课",
+      "link": "https://pan.baidu.com/s/1ok8gYi6KmZfba9L8CGJuyA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "070-苏杰的产品创新课",
+      "link": "https://pan.baidu.com/s/1jxxkZ6pYH9R3uasdLMqd7Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "071-雷蓓蓓的项目管理实战课",
+      "link": "https://pan.baidu.com/s/1I_aSUBG44Up-RSgGvdMD1Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "072-设计模式之美",
+      "link": "https://pan.baidu.com/s/1jL0_O0XeF_CzjgD2W6YK-w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "073-JavaScript核心原理解析",
+      "link": "https://pan.baidu.com/s/1u6mwmZg7KFmAQb64W35kIg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "074-后端技术面试38讲",
+      "link": "https://pan.baidu.com/s/1IcMfDukMrnFuRloPkl74cg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "075-现代C++编程实战",
+      "link": "https://pan.baidu.com/s/19ub964UVAh_IUTeFrLiNHQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "076-性能工程高手课",
+      "link": "https://pan.baidu.com/s/1w3anLSLwqlC_dI4Ddw-YsA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "077-安全攻防技能30讲",
+      "link": "https://pan.baidu.com/s/1PVtHkdCdHWtIdePTYEMVDw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "078-性能测试实战30讲",
+      "link": "https://pan.baidu.com/s/1A01legp3nKQfJIN5drc3Eg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "079-摄影入门课",
+      "link": "https://pan.baidu.com/s/1vbUnaV3trA5j7mOnhqNSDA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "080-人人都能学会的编程入门课",
+      "link": "https://pan.baidu.com/s/17n9BSAMsoEQ2uqAMxJK7ow?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "081-说透敏捷",
+      "link": "https://pan.baidu.com/s/1kCWKlC_kBr_hfsHKgn718w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "082-接口测试入门课",
+      "link": "https://pan.baidu.com/s/1b-0RrIZxRGQs34AK-D63mg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "083-分布式协议与算法实战",
+      "link": "https://pan.baidu.com/s/1H5DvQcnhVAASSs_c-G3bBw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "084-RPC实战与核心原理",
+      "link": "https://pan.baidu.com/s/1bzk9WEyTogv9V61I99oeTg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "085-架构实战案例解析",
+      "link": "https://pan.baidu.com/s/1MFBXCvUJU981mvHy9THLgA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "086-后端存储实战课",
+      "link": "https://pan.baidu.com/s/1u_OLV6FmR9NyedRgGq3Hcw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "087-深入浅出云计算",
+      "link": "https://pan.baidu.com/s/1u7CMZbZA_xBbk4t832ZERg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "088-Java业务开发常见错误100例",
+      "link": "https://pan.baidu.com/s/1Kom4Q2D24LocK4QRgPPofw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "089-图解GoogleV8",
+      "link": "https://pan.baidu.com/s/1DAfd8i_VUOduEC6Mb0YnKw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "090-SRE实战手册",
+      "link": "https://pan.baidu.com/s/1ku7D0PZalwogJm1lEP9yBg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "091-检索技术核心20讲",
+      "link": "https://pan.baidu.com/s/18OK_KTIg-sFz688JBaKmkA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "092-数据中台实战课",
+      "link": "https://pan.baidu.com/s/1NByM4Yytqyte0oubaXM8Aw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "093-Kafka核心源码解读",
+      "link": "https://pan.baidu.com/s/16HIYeiSchcuZizfnN32mQA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "094-Serverless入门课",
+      "link": "https://pan.baidu.com/s/1ff8d52EisTP7fhQzlJVUVw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "095-视觉笔记入门课",
+      "link": "https://pan.baidu.com/s/1I_gYdNFqtLawLxpOrw3wfQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "096-系统性能调优必知必会",
+      "link": "https://pan.baidu.com/s/1YVdv_3qRaJlpNiWz63_hvw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "097-罗剑锋的C++实战笔记",
+      "link": "https://pan.baidu.com/s/145y_Rl9F4nH8nthOv-rCmw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "098-互联网人的英语私教课",
+      "link": "https://pan.baidu.com/s/11aXaXJ_MvHQ839Q0wb8Lnw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "099-职场求生攻略",
+      "link": "https://pan.baidu.com/s/1f8gQQ1ktHuZC0DiRoB0uuQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "100-软件设计之美",
+      "link": "https://pan.baidu.com/s/1L3xRBJJrdvV2cEgZeHdG7g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "101-编译原理实战课",
+      "link": "https://pan.baidu.com/s/1-7tWkd7gTdP9CKVktEYXuQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "102-正则表达式入门课",
+      "link": "https://pan.baidu.com/s/1GmVDwEMM6xsjff-6qXQnsA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "103-跟月影学可视化",
+      "link": "https://pan.baidu.com/s/1lOVzLDiYcQe9G4kxpVlwmg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "104-OAuth2.0实战课",
+      "link": "https://pan.baidu.com/s/14VrSF8_3W07Y1LEMhMTAjQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "105-Vim实用技巧必知必会",
+      "link": "https://pan.baidu.com/s/1q1rwiaNDHmRp4poYMtGOXg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "106-如何看懂一幅画",
+      "link": "https://pan.baidu.com/s/1U2TPywsZcSxDIKdhY5WcVg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "107-重学线性代数",
+      "link": "https://pan.baidu.com/s/1fEqSTUgeP8siGamD6_ma9Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "108-Redis核心技术与实战",
+      "link": "https://pan.baidu.com/s/16PZe4TYenEocPptrZGYrtA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "109-分布式数据库30讲",
+      "link": "https://pan.baidu.com/s/1UEZHfpz6DwBxJS-dy-L3Lw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "110-ToB市场品牌实战课",
+      "link": "https://pan.baidu.com/s/1v6r3Ynbean4ir6nrFJXjcQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "111-Linux内核技术实战课",
+      "link": "https://pan.baidu.com/s/1vYuWC1KoztyJ7q6De1fw_g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "112-技术管理案例课",
+      "link": "https://pan.baidu.com/s/1mJxoa6oPdSBMiagBJM4O7w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "113-用户体验设计实战课",
+      "link": "https://pan.baidu.com/s/13JZMI-4h447vf2-FuSsVZw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "114-WebAssembly入门课",
+      "link": "https://pan.baidu.com/s/1Ihx0adZkeDpISu-6y71xjw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "115-动态规划面试宝典",
+      "link": "https://pan.baidu.com/s/1RCOwFSOLxCQta1TYySX1Zg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "116-深度学习推荐系统实战",
+      "link": "https://pan.baidu.com/s/1xC9syWRjAPA1ZzsoE3_rXw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "117-爱上跑步",
+      "link": "https://pan.baidu.com/s/1q3kjQ9xlpCcxN5Gc6oGVFg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "118-Go并发编程实战课",
+      "link": "https://pan.baidu.com/s/1Z60Zd03rwgIQrJEfD9bcaA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "119-人人都用得上的写作课",
+      "link": "https://pan.baidu.com/s/1YzS_A1nf4A-Z69F0mZjEDg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "120-手机摄影",
+      "link": "https://pan.baidu.com/s/1pEk3KcLyk1nr8FN3dk-Ung?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "121-乔新亮的CTO成长复盘",
+      "link": "https://pan.baidu.com/s/1LLBM79zTyH4TYyPQ31vtaA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "122-物联网开发实战",
+      "link": "https://pan.baidu.com/s/1NsAbEKIXdeSa9bP6X4k97A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "123-容器实战高手课",
+      "link": "https://pan.baidu.com/s/16qD4O2_Y2cMZv8HSARrhpw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "124-实用密码学",
+      "link": "https://pan.baidu.com/s/1Y9tBc03ak1kaYoqvxhtMYg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "125-大厂晋升指南",
+      "link": "https://pan.baidu.com/s/15J65pulkbNUMKh1uE-Xa_A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "126-AB测试从0到1",
+      "link": "https://pan.baidu.com/s/1kjLED55Y5FCf56Q4tRKx2w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "127-成为AI产品经理",
+      "link": "https://pan.baidu.com/s/1wgWJsezb-pUb9XnIRxyilw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "128-分布式金融架构课",
+      "link": "https://pan.baidu.com/s/11Zdnw1UKb8R5TE9hobawAQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "129-代码之丑",
+      "link": "https://pan.baidu.com/s/1TG1vcifDPMcuzCLDw7l1zw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "130-体验设计案例课",
+      "link": "https://pan.baidu.com/s/1fqxrF3YDK-2gxVqHLDSHHA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "131-手把手教你玩音乐",
+      "link": "https://pan.baidu.com/s/1gNYEheI24N7XjEW1ObcizA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "132-etcd实战课",
+      "link": "https://pan.baidu.com/s/1LVbp1AwbJVP2Dus0xCKMbg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "133-恋爱必修课",
+      "link": "https://pan.baidu.com/s/1N0TTjw-3lC4Q_6xNbELdAA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "134-跟着高手学复盘",
+      "link": "https://pan.baidu.com/s/1B_ncoo3TKpOcxuNaNmPh_w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "135-Python自动化办公实战课",
+      "link": "https://pan.baidu.com/s/15iMieHe4Wg-lxK9ltuMAlw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "136-基于人因的用户体验设计课",
+      "link": "https://pan.baidu.com/s/1SJGCd6Mgr32Nkzsk_GLL0w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "137-打造爆款短视频",
+      "link": "https://pan.baidu.com/s/1Qm9vzFNnY51rny_2rcAHOw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "138-MySQL必知必会",
+      "link": "https://pan.baidu.com/s/1Sh2O9WVnlXHztDqXyX53vQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "139-流程型组织15讲",
+      "link": "https://pan.baidu.com/s/13i4LaWXkaHL3YRdZGSFDMQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "140-Spark性能调优实战",
+      "link": "https://pan.baidu.com/s/18jztqeXeOy9LIJu9He_7ow?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "141-高楼的性能工程实战课",
+      "link": "https://pan.baidu.com/s/1xTyHmxn0auzpvdFeorwb9A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "142-技术面试官识人手册",
+      "link": "https://pan.baidu.com/s/1IVYKtO8iGlxTTzGHGlRUTA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "143-说透数字化转型",
+      "link": "https://pan.baidu.com/s/1m27Sr6z8HfA7qj_Php7TUg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "144-Spring编程常见错误50例",
+      "link": "https://pan.baidu.com/s/1QTL-rvDckCLQEnwChHY93Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "145-操作系统实战45讲",
+      "link": "https://pan.baidu.com/s/1TYfd-8qLc0BbUMGainRjNg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "146-容量保障核心技术与实战",
+      "link": "https://pan.baidu.com/s/12MaUISzd0cJO7i445CB56g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "147-性能优化高手课",
+      "link": "https://pan.baidu.com/s/199tGF1yCsOT9DZS7hEkFxw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "148-说透芯片",
+      "link": "https://pan.baidu.com/s/1vSYFoOf72A1MXP0ZbACiNw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "149-ReactHooks核心原理与实战",
+      "link": "https://pan.baidu.com/s/1Td4OOxT4e4MGKDbDWJIcbw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "150-Go语言项目开发实战",
+      "link": "https://pan.baidu.com/s/1Az302wYZBGwWHzcpAmXHhQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "151-说透5G",
+      "link": "https://pan.baidu.com/s/1oHdyzsKNRR-wsQj7aLFYig?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "152-如何成为学习高手",
+      "link": "https://pan.baidu.com/s/1W0Yi0yCJc7g1pfECRFuymQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "153-如何读懂一首诗",
+      "link": "https://pan.baidu.com/s/156D7bMVEmk2L5l3UCQ5sug?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "154-如何落地业务建模",
+      "link": "https://pan.baidu.com/s/1bvFxWp7WzilWxxqqHQHn6g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "155-讲好故事",
+      "link": "https://pan.baidu.com/s/1z5einsyH3G3M0VYJlMKCDw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "156-程序员的个人财富课",
+      "link": "https://pan.baidu.com/s/1pyDahlES74eeSm_1q87bdw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "157-说透区块链",
+      "link": "https://pan.baidu.com/s/1GAwkHj6hWqe5aeITEItEbQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "158-Redis源码剖析与实战",
+      "link": "https://pan.baidu.com/s/1X27eztUsw73Usws-Y5DW6g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "159-数据分析思维课",
+      "link": "https://pan.baidu.com/s/1hHCKiug61XntoqDGArfSPw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "160-程序员的测试课",
+      "link": "https://pan.baidu.com/s/1gnWaFwdm9OY0a8v310v2_A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "161-陈天·Rust编程第一课",
+      "link": "https://pan.baidu.com/s/1ec3sLOh--dPa_MU__5s-_Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "162-手把手带你写一门编程语言",
+      "link": "https://pan.baidu.com/s/1P7G8CUCbhxiaNKAcaHIJ4A?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "163-零基础实战机器学习",
+      "link": "https://pan.baidu.com/s/1WVb6yT-HgLoeLvEHTJU8pQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "164-零基础入门Spark",
+      "link": "https://pan.baidu.com/s/16LIIrBzZaNPS6YuoyqZQug?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "165-手把手带你写一个Web框架",
+      "link": "https://pan.baidu.com/s/1p1EuRbHtpo5_hOlaZu0CgQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "166-大数据经典论文解读",
+      "link": "https://pan.baidu.com/s/1821eSfHz5wKYn3jdGXRWNQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "167-手把手带你搭建秒杀系统",
+      "link": "https://pan.baidu.com/s/1bUGEjRdiCjNOQY3dNmb0EA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "168-PyTorch深度学习实战",
+      "link": "https://pan.baidu.com/s/1TwYYpH54PTB6mqUSxyyDJg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "169-TonyBai·Go语言第一课",
+      "link": "https://pan.baidu.com/s/1hg1t--W5UiAuAPygfIsDog?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "170-玩转Vue3全家桶",
+      "link": "https://pan.baidu.com/s/1PLj7wN9wCVA6qo8AjIOZFQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "171-全链路压测实战30讲",
+      "link": "https://pan.baidu.com/s/1DJaEo6CN1GNSAVivl_z30Q?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "172-编程高手必学的内存知识",
+      "link": "https://pan.baidu.com/s/1PzGyKyWAAi9dw5UWtaL9nw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "173-超级访谈：对话张雪峰",
+      "link": "https://pan.baidu.com/s/1YVftkGLS7kiPMnurniqHLg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "174-深入剖析Java新特性",
+      "link": "https://pan.baidu.com/s/1-gGClo0prnrwzB-BuD0voQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "175-攻克视频技术",
+      "link": "https://pan.baidu.com/s/1y1kYbMpWHqb-TIto7OYVgA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "176-搞定音频技术",
+      "link": "https://pan.baidu.com/s/1YioJ3lqBxBEJs8dUbYsv-g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "177-郭东白的架构课",
+      "link": "https://pan.baidu.com/s/1Xp0qeA7RmeA_f5akENl8Yg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "178-深入C语言和程序运行原理",
+      "link": "https://pan.baidu.com/s/1DDF5aK3EZWfTpWWjr2vncA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "179-业务开发算法50讲",
+      "link": "https://pan.baidu.com/s/1kjEwj-fRoceKm2wPNZcSDg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "180-SpringCloud微服务项目实战",
+      "link": "https://pan.baidu.com/s/1ix036-9eVAVOZxlITbsUVw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "181-Web漏洞挖掘实战",
+      "link": "https://pan.baidu.com/s/1CmEiY2FhHRAq0ZKhme7WvA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "182-去无方向的信",
+      "link": "https://pan.baidu.com/s/1DH4voCTDLOmMa3c0z1EOQw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "183-朱涛·Kotlin编程第一课",
+      "link": "https://pan.baidu.com/s/11CM2BFLMmi_Z6Cmh9nKo-g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "184-网络排查案例课",
+      "link": "https://pan.baidu.com/s/1RnhHSVgJkVcc-vAx64O50w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "185-反爬虫兵法演绎20讲",
+      "link": "https://pan.baidu.com/s/1KtJI3dvA84WJi6NWLMJS9w?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "186-eBPF核心技术与实战",
+      "link": "https://pan.baidu.com/s/14BnxfR5guuGIPbdsFeqwVA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "187-深入浅出分布式技术原理",
+      "link": "https://pan.baidu.com/s/1XsBmbcKf6JLDIcjkebRzmQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "188-李智慧·高并发架构实战课",
+      "link": "https://pan.baidu.com/s/1MKIWGwMMyquWeJUpBSRZ6g?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "189-大厂广告产品心法",
+      "link": "https://pan.baidu.com/s/1ijGP2_HMuXvvjQSzlN1Avg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "190-说透低代码",
+      "link": "https://pan.baidu.com/s/1RPJK5wRIZeCv3_H-iZ2Krw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "191-自动化测试高手课",
+      "link": "https://pan.baidu.com/s/1LNXlCFt5BUk9kwurTudXuw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "192-徐昊·TDD项目实战70讲",
+      "link": "https://pan.baidu.com/s/15CUZrAMs3yAWt835FnQeIw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "193-超级访谈：对话汤峥嵘",
+      "link": "https://pan.baidu.com/s/1ZRXf7q8p8v0BanWk3GuaNg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "194-ReactNative新架构实战课",
+      "link": "https://pan.baidu.com/s/11HITCHZ2RoQizUy-LGKNCw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "195-遗留系统现代化实战",
+      "link": "https://pan.baidu.com/s/1Fo08zGXlg94afBmlS06BpQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "196-林外·专利写作第一课",
+      "link": "https://pan.baidu.com/s/1jK7UssHiZFlvQxRQpoANNQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "197-说透元宇宙",
+      "link": "https://pan.baidu.com/s/1hsEI1PNMGysuYWBlfNM6Gg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "198-人人都用得上的数字化思维课",
+      "link": "https://pan.baidu.com/s/1py381rsnHDK-pPaogivNTg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "199-中间件核心技术与实战",
+      "link": "https://pan.baidu.com/s/17u-uyUBeZBs0MgeQ7HAzWg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "200-Kubernetes入门实战课",
+      "link": "https://pan.baidu.com/s/1Qx71meQD5_JMQbIpfqzWfA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "201-大厂设计进阶实战课",
+      "link": "https://pan.baidu.com/s/1UCqBIEQ8VvAm8DO1bPvTHQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "202-快手·音视频技术入门课",
+      "link": "https://pan.baidu.com/s/1CzHHF-T1fXPhcj6R2-iqSQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "203-快手·移动端音视频开发实战",
+      "link": "https://pan.baidu.com/s/1_QLEohTjkXfzwDYjqaqksQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "204-商业思维案例笔记",
+      "link": "https://pan.baidu.com/s/1KhoJ8PGaEgQq1gNvVkkWiQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "205-计算机基础实战课",
+      "link": "https://pan.baidu.com/s/1ofTyv_tF5t0fnXIguEDXyw?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "206-Web3.0入局攻略",
+      "link": "https://pan.baidu.com/s/1Tx9ul875x9s-WObSGFXotA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "207-现代ReactWeb开发实战",
+      "link": "https://pan.baidu.com/s/1uopMJ6z0zq-J_nh1p9bxnA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "208-Serverless进阶实战课",
+      "link": "https://pan.baidu.com/s/1WU29HIin8TVtR8qRrBhIQA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "209-技术领导力实战笔记2022",
+      "link": "https://pan.baidu.com/s/1MbEZD7YprO60JdZphIfE2w?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "210-深入浅出可观测性",
+      "link": "https://pan.baidu.com/s/13TH1tdsuRxLBmJsqOVKihg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "211-JavaScript进阶实战课",
+      "link": "https://pan.baidu.com/s/1vcBqo8ybjI9U2JuqSd0FSA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "212-Go进阶·分布式爬虫实战",
+      "link": "https://pan.baidu.com/s/115NLOAnwvXa3rjORBpLmvA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "213-超级访谈：对话毕玄",
+      "link": "https://pan.baidu.com/s/1qlDZCZCvLDC0jdrWt_bBaQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "214-超级访谈：对话玉伯",
+      "link": "https://pan.baidu.com/s/1oK8U91yUiOB8A7wP-DjjGQ?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "215-高并发系统实战课",
+      "link": "https://pan.baidu.com/s/1hkP4aWRpHnMeGDdBrBJ6Kg?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "216-Vue3企业级项目实战课",
+      "link": "https://pan.baidu.com/s/1AwH4sQOkR_tz8n0wO36V8w?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "217-手把手教你落地DDD",
+      "link": "https://pan.baidu.com/s/10vsxabS92yPMJZwIaT1y5Q?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "218-云原生架构与GitOps实战",
+      "link": "https://pan.baidu.com/s/1gZFQ_YkQcMpZfm0QTYiDRg?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "219-Dubbo源码剖析与实战",
+      "link": "https://pan.baidu.com/s/1u_zHlOFe8WJCg080LG-JzA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "220-现代C++20实战高手课",
+      "link": "https://pan.baidu.com/s/1wfjB_8dU5-eutpDTYRHTvw?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "221-运维监控系统实战笔记",
+      "link": "https://pan.baidu.com/s/1QTO0KaV2L4MVvfsEkrc9oQ?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "222-手把手带你写一个MiniSpring",
+      "link": "https://pan.baidu.com/s/1YTQRsqQZ0YsS_oLAOOursA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "223-快速上手C++数据结构与算法",
+      "link": "https://pan.baidu.com/s/14piV-LE2w0oHnIJ_jz-w4w?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "224-大型Android系统重构实战",
+      "link": "https://pan.baidu.com/s/1XZbnCcp8cUvZFgnhmHWZbg?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "225-手把手带你搭建推荐系统",
+      "link": "https://pan.baidu.com/s/1Gg8lMUWotge-PE9G8kXUNA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "226-AI大模型之美",
+      "link": "https://pan.baidu.com/s/1RGqXzu1PfC5kBfd9up95HA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "227-Python实战·从0到1搭建直播视频平台（35讲）",
+      "link": "https://pan.baidu.com/s/1siHbC8ramRNkv1j_b3P4WA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "228-邓明-后端工程师的高阶面经(13讲)",
+      "link": "https://pan.baidu.com/s/1DS3fwI_o3SfDaqJc_En5GA?pwd=wjup",
+      "code": "wjup",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "229-B端体验设计入门课",
+      "link": "https://pan.baidu.com/s/1FzV0R2ozIGfG40-KIpqu6g?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "column",
+      "title": "230-零基础GPT应用入门课",
+      "link": "https://pan.baidu.com/s/1dFnBP5kkqTDTZdrmaKZUJA?pwd=wjup",
+      "code": "wjup",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "01-微服务架构核心20讲",
+      "link": "https://pan.baidu.com/s/1vtm4dOSKU02wSg1_DWHVvw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "02-微服务架构实战160讲",
+      "link": "https://pan.baidu.com/s/1zfqEi4EDnbioh9s0B1js9w?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "03-零基础学Python（2018版）",
+      "link": "https://pan.baidu.com/s/1d1n-4sbBgCQh-dOaqeTpyQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "04-React实战进阶45讲",
+      "link": "https://pan.baidu.com/s/12NSniLljY4CvLw-AP7CWXQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "05-快速上手Kotlin开发",
+      "link": "https://pan.baidu.com/s/1jkd67VwfNzIOprHBLHYibg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "06-算法面试通关40讲",
+      "link": "https://pan.baidu.com/s/19bMUlrK1t-_n6stL5cml3g?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "07-Nginx核心知识150讲",
+      "link": "https://pan.baidu.com/s/1CePnyzRJlZigZhMSbQwogg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "08-玩转Git三剑客",
+      "link": "https://pan.baidu.com/s/13T7JXF3g2erEZhTafip_Vw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "09-TensorFlow快速入门与实战",
+      "link": "https://pan.baidu.com/s/1BM3YUGhdUi-anDRLHqgiVQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "10-玩转Spring全家桶",
+      "link": "https://pan.baidu.com/s/1d98Q6DFjYo-3wUu3k-8Ojg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "11-Go语言从入门到实战",
+      "link": "https://pan.baidu.com/s/1x65mGlvOVWmKZMMjal8PxA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "12-Vue开发实战",
+      "link": "https://pan.baidu.com/s/1yLDmyGMuD6BEBT2ev4bXtA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "13-从0开发一款iOSApp",
+      "link": "https://pan.baidu.com/s/1zdhGBx_2o8s02fmtu4N7ww?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "14-Web协议详解与抓包实战",
+      "link": "https://pan.baidu.com/s/1BY6b1etldqs6mLn-Fu8LAA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "15-零基础学Java",
+      "link": "https://pan.baidu.com/s/1XMZJIHJO8NMa9sMrXBsuuw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "16-玩转webpack",
+      "link": "https://pan.baidu.com/s/1a5jTgjV7mi99Hcu5_aZbmg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "17-Linux实战技能100讲",
+      "link": "https://pan.baidu.com/s/1?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "18-Elasticsearch核心技术与实战",
+      "link": "https://pan.baidu.com/s/14h2t6SktSh0bJZ1VmyIb3g?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "19-SpringBoot与Kubernetes云原生微服务实践",
+      "link": "https://pan.baidu.com/s/1Dn66PKdCchPw1xsAAfU4HQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "20-TypeScript开发实战",
+      "link": "https://pan.baidu.com/s/1f_9UMS21NF320VudmAg-Zw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "21-Swift核心技术与实战",
+      "link": "https://pan.baidu.com/s/1lziaCBxDNWoJQ6BugCVxTQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "22-ZooKeeper实战与源码剖析",
+      "link": "https://pan.baidu.com/s/1565qauz2Gs3580rO-KZlhQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "23-Node.js开发实战",
+      "link": "https://pan.baidu.com/s/1xxqVlCqcSL2xmS8elvwmRA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "24-Netty源码剖析与实战",
+      "link": "https://pan.baidu.com/s/1sDgfQ09AsT-cAnwxUMcLhw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "25-移动端自动化测试实战",
+      "link": "https://pan.baidu.com/s/1bk6vyJaMXA6Ehc-XSj1lyw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "26-MongoDB高手课",
+      "link": "https://pan.baidu.com/s/18WhVY3PS1mghOWwvotrtiA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "27-小马哥讲Spring核心编程思想",
+      "link": "https://pan.baidu.com/s/1ffGfEkjPDhO5wAuj5pv-5w?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "28-Electron开发实战",
+      "link": "https://pan.baidu.com/s/1mp2F46dJOU-lETKPv6pMDQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "29-NETCore开发实战",
+      "link": "https://pan.baidu.com/s/12pBffwgnLtw-1N9k93iw-A?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "30-NLP实战高手课",
+      "link": "https://pan.baidu.com/s/1U7WPczoaUuyq8hWt7uhR-A?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "31-ServiceMesh实战",
+      "link": "https://pan.baidu.com/s/122aPQVEMiiWzCHWStnIJYA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "32-微信小程序全栈开发实战",
+      "link": "https://pan.baidu.com/s/1MVwZCOGyyV9SqMR7WKWRjA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "33-TensorFlow2项目进阶实战",
+      "link": "https://pan.baidu.com/s/15JqLKAx7PqToeIR39v6O9w?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "34-分布式系统案例课",
+      "link": "https://pan.baidu.com/s/116cNGsqkjJEeDdkbx9OrFg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "35-Web安全攻防实战",
+      "link": "https://pan.baidu.com/s/1A_Nn5xVXoAtuVob4lOUfQA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "36-Selenium自动化测试实战",
+      "link": "https://pan.baidu.com/s/1ChdCHS4GYqGhLSXEry-zew?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "37-Flink核心技术与实战",
+      "link": "https://pan.baidu.com/s/1dGMbYIZWzexpi0jiya54_g?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "38-张汉东的Rust实战课",
+      "link": "https://pan.baidu.com/s/1FPVhjXGUKdHEXPTOVf3h8w?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "39-Django快速开发实战",
+      "link": "https://pan.baidu.com/s/1rzSfNYGViy1r4mTRfDghMQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "40-小马哥讲SpringAOP编程思想",
+      "link": "https://pan.baidu.com/s/15P674lauVsLcLO00ABiq2g?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "41-爆款文案修炼手册",
+      "link": "https://pan.baidu.com/s/1euPGv1jJZl9qshqTiH65Hw?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "42-如何讲好一堂课",
+      "link": "https://pan.baidu.com/s/11cOw5KLijk4Lf8LHzqkyPg?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "43-HarmonyOS快速入门与实战",
+      "link": "https://pan.baidu.com/s/1DygUxXduYzi3Yx1OVHyDtQ?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "44-云计算必修小课",
+      "link": "https://pan.baidu.com/s/1CLCXP7-GNlkWe8ACu0joEA?pwd=f49e",
+      "code": "f49e",
+      "note": "极客时间"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "45-零基础学Python（2023版）",
+      "link": "https://pan.baidu.com/s/1wktDG1VZbwuP6c0x99aMPA?pwd=f49e",
+      "code": "f49e",
+      "note": "完结"
+    },
+    {
+      "category": "geektime",
+      "group": "video",
+      "title": "46-B端产品经理入门课",
+      "link": "https://pan.baidu.com/s/1Jy_qaxtl3YlUu6VT06az_A?pwd=f49e",
+      "code": "f49e",
+      "note": "完结"
+    },
+    {
+      "category": "movies",
+      "title": "星际穿越 Interstellar (2014)",
+      "link": "https://pan.baidu.com/s/1example123",
+      "code": "k9x2",
+      "size": "12.5GB",
+      "note": "IMAX 4K 原盘压制 · 中英双字"
+    },
+    {
+      "category": "movies",
+      "title": "甄嬛传 全76集",
+      "link": "https://pan.quark.cn/s/example456",
+      "size": "48GB",
+      "note": "1080P 高清修复版"
+    },
+    {
+      "category": "movies",
+      "title": "Planet Earth 脉动地球 全3季",
+      "link": "https://www.aliyundrive.com/s/example789",
+      "code": "m3f7",
+      "size": "36GB",
+      "note": "BBC 纪录片 · 4K HDR · 中英字幕"
+    },
+    {
+      "category": "ebooks",
+      "title": "程序员的自我修养 — 链接、装载与库",
+      "link": "https://pan.baidu.com/s/1example_ebook1",
+      "code": "b2p8",
+      "size": "28MB",
+      "note": "PDF 高清版 · 经典计算机书籍"
+    },
+    {
+      "category": "ebooks",
+      "title": "SICP 计算机程序的构造和解释 (第2版)",
+      "link": "https://pan.quark.cn/s/example_ebook2",
+      "size": "15MB",
+      "note": "EPUB + PDF 双格式"
+    },
+    {
+      "category": "ebooks",
+      "title": "人类简史 Sapiens (中文版)",
+      "link": "https://www.aliyundrive.com/s/example_ebook3",
+      "code": "x5k9",
+      "size": "8MB",
+      "note": "MOBI 格式 · 适合 Kindle 阅读"
+    },
+    {
+      "category": "tutorials",
+      "title": "CS50 哈佛计算机科学导论 (2024)",
+      "link": "https://pan.baidu.com/s/1example_tut1",
+      "code": "h4n7",
+      "size": "22GB",
+      "note": "中英字幕 · 含全部作业材料"
+    },
+    {
+      "category": "tutorials",
+      "title": "Blender 3D 建模完全教程",
+      "link": "https://pan.quark.cn/s/example_tut2",
+      "size": "18GB",
+      "note": "从入门到精通 · 含项目文件"
+    },
+    {
+      "category": "software",
+      "title": "JetBrains 全家桶 2024.2",
+      "link": "https://pan.baidu.com/s/1example_sw1",
+      "code": "j9t3",
+      "size": "5.2GB",
+      "note": "含激活工具 · Windows/Mac/Linux"
+    },
+    {
+      "category": "software",
+      "title": "Adobe Creative Cloud 2024 套装",
+      "link": "https://pan.quark.cn/s/example_sw2",
+      "size": "28GB",
+      "note": "PS/AI/PR/AE · 一键安装版"
+    },
+    {
+      "category": "music",
+      "title": "周杰伦 全专辑 FLAC 无损合集",
+      "link": "https://pan.baidu.com/s/1example_music1",
+      "code": "w8k2",
+      "size": "12GB",
+      "note": "FLAC 无损 · 含全部录音室专辑"
+    },
+    {
+      "category": "music",
+      "title": "Hans Zimmer 汉斯·季默 电影原声精选",
+      "link": "https://pan.quark.cn/s/example_music2",
+      "size": "6.5GB",
+      "note": "FLAC + MP3 · 50首经典配乐"
+    }
+  ]
+}
