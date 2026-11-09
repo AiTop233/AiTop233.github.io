@@ -24,6 +24,9 @@
   - `web/inbox.py`：浏览器上传的字节 → inbox 目录树 → 「资源」列表（落盘清洗、按顶层目录分组，阶段 2）
   - `web/jobs.py`：上传任务进度板（内存态，管道 `progress` 事件 → `GET /api/jobs/{id}` / `GET /api/batches/{id}` 快照，阶段 2）
   - `web/convention.py`：目录约定解析（`网盘@远端目录` → 规则，阶段 2）
+  - `sources/base.py`、`sources/link.py`、`sources/pansou.py`：资源发现（阶段 3，未实现）
+  - `transforms/base.py`、`transforms/name.py`：资源加工（阶段 3，未实现）
+  - `core/line.py`：产线编排（发现 → 获取 → 加工 → 投放，阶段 3，未实现）
   - `web/static/`：SPA 前端（index.html / app.js / styles.css，免构建）
 - 与 ARCHITECTURE 模块分类的对应：drivers / writers / core / cli / watcher / web / config 一一对应，目录一致。
 - 运行时第三方依赖（阶段 2 起放宽零依赖，AGENTS §11 条款 2）：`fastapi`、`uvicorn`（版本锁定在 requirements.txt）。
@@ -51,6 +54,33 @@
   - `publish_file(local_path, pan, remote_dir, *, …) -> dict`：单盘特例（watcher 与既有调用方），内部转 `publish_task` 的单个 target
   - `check_all() -> dict`：各网盘与写入端登录态体检
 - 错误契约：对外只抛 `ProjectError` 子类（`AuthError` / `UploadError` / `ShareError` / `WriterError` / `ConfigError`），携带 `code`、上游 `errno` 与「怎么办」恢复指引；不向调用方裸抛网络异常。
+
+### 阶段 3 契约草案（设计，未实现；语义见 `SOURCES.md`）
+
+- `Source` 基类（`sources/base.py`，与 Driver 同样用 `@register` 登记）：
+  - `name: str`；`kinds: set[str]`（如 `{"search"}`）
+  - `discover(query: dict, *, limit: int = 20) -> list[Candidate]`：只产出元数据，**不下载、不上传**（AC-09）
+  - `Candidate = {source, ref, title, pan, pwd, size, file_count, created_at, score, extra}`；`ref` 是「怎么拿到它」的凭据（本地路径 / `pan + share_id` / 搜索结果的唯一 id）
+- `Transform` 基类（`transforms/base.py`）：
+  - `order: int`；`apply(res: Resource, *, ctx: dict) -> Resource`：只改名字与结构，**不改内容**（F8 边界）
+  - `Resource = {title, files: [{rel, size, abs?}], pan, remote_path?}`；纯函数，不抛网络异常
+- Driver 增量（向后兼容，不改既有方法签名）：
+  - `capabilities: frozenset[str] = {"mkdir", "upload", "share", "list"}`；转存源加 `"save_share"`，能服务端改名加 `"rename"`
+  - `supports(cap) -> bool`
+  - `resolve_share(url, pwd="") -> {pan, share_id, name, files, size}`：解析分享链接（不落地）
+  - `save_share(resolved, dest_dir) -> {path, task_id}`：转存进本账号（服务端操作）
+  - `rename(remote_path, new_name) -> {path}`：服务端改名
+  - 三者默认抛 `UploadError(code="PUP-42x", hint="该网盘不支持转存/改名")`，**不用异常探测能力**（AC-10）
+- `run_line(line_cfg, *, ledger, progress=None) -> dict`：一条产线跑一轮，返回 `{line, picked, acquired, published, failed, skipped}`；内部串行、单轮上限、连续失败停机（AC-11）
+- 台账增量（`uploads` 表，迁移同 I-017 的 `_migrate()` 套路）：
+  - `origin TEXT`（`local` / `link` / `search`）、`source_ref TEXT`（原分享链接，脱敏后可展示）、`line TEXT`（产线名）
+  - 目的：同一资源既能查「我传的」也能查「我转的」，重传与巡检都要靠它
+- 热度表（阶段 3 第二段）：
+  - `heat_sample(id, kw, sampled_at, total, new_links, unique_sources, alive_links)`，唯一索引 `(kw, sampled_at)`
+  - `heat_score(kw, day, velocity, breadth, alive_rate, heat_pct, confidence)`：每天算一次落库，榜直接读表，不在请求里现算
+  - 分发落地页事件：`share_view(slug, at, kind)`，`kind ∈ view / intent / copy`
+- REST 草案：`POST /api/links`（粘贴链接 → 候选）、`POST /api/search`（关键词 → 候选池）、`GET /api/candidates?line=`、`POST /api/lines/{name}/run`、`GET /api/lines`、`GET /api/heat?days=7`
+
 - REST API（阶段 2，全部挂 `/api/*`，只监听 127.0.0.1）：
   - `POST /api/upload`（multipart：`files` 多值 + `paths`［JSON 数组，与 files 一一对应的相对路径，空则退回文件名］+ `pans`［JSON 数组，每项 `{pan, dir}`，`dir` 留空回退配置］+ `title` + `date_dir` + `doc` + `sync`）；旧字段 `file`（单值）仍收
     - 落盘：`data/inbox/<时间戳-随机>/<相对路径>`，逐段清洗（去掉 `\ / : * ? " < > |`、丢 `..`），保留拖进来的目录结构
