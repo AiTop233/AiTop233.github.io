@@ -38,7 +38,7 @@
   - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
 - Writer 基类：
   - `auth_check() -> None`：凭证可用性检查
-  - `append_record(record) -> dict`：向目标文档追加一行记录
+  - `append_record(record) -> dict`：向目标文档写入一节记录（版式与插入位置按 PRD F3 固定更新规则：h2「YYMMDD 文件名」小节插最顶 + 盘名链接行）
 - core 公开函数（未来 Web / 桌面 / MCP 入口共用）：
   - `publish_file(local_path, pan, remote_dir, *, writer_names=None, force=False) -> dict`：完整管道；返回链接与台账记录
   - `check_all() -> dict`：各网盘与写入端登录态体检
