@@ -21,6 +21,7 @@
   - `cli.py`（含 `__main__.py`）：命令入口
   - `watcher.py`：目录监控循环（阶段 2 支持约定目录动态规则）
   - `web/api.py`：本地管理台服务端（FastAPI REST + 托管 SPA，阶段 2）
+  - `web/jobs.py`：上传任务进度板（内存态，管道 `progress` 事件 → `GET /api/jobs/{id}` 快照，阶段 2）
   - `web/convention.py`：目录约定解析（`网盘@远端目录` → 规则，阶段 2）
   - `web/static/`：SPA 前端（index.html / app.js / styles.css，免构建）
 - 与 ARCHITECTURE 模块分类的对应：drivers / writers / core / cli / watcher / web / config 一一对应，目录一致。
@@ -40,7 +41,9 @@
   - `auth_check() -> dict`：凭证可用性检查
   - `append_task(task) -> dict`：向目标文档写入**一节**；`task = {title, filename, date, items: [{pan, link, pwd}]}`，`items` **只含成功的网盘**、按驱动注册顺序排列（版式与插入位置按 PRD F3：h2「YYMMDD 标题名」小节插最顶 + 每个成功盘一行「盘名：链接?pwd=提取码」）
 - core 公开函数（未来 Web / 桌面 / MCP 入口共用）：
-  - `publish_task(local_path, targets, *, title=None, writer_names=None, force=False, date_dir=False, period_days=0) -> dict`：**多盘上传任务**；`local_path` 可以是**单个文件或一个文件夹**；`targets = [{pan, remote_dir}]`，逐盘跑单盘管道（某盘失败不影响其他盘），全部跑完后**只写一次**文档；返回 `{group_id, title, items, failed, writers}`
+  - `publish_task(local_path, targets, *, title=None, writer_names=None, force=False, date_dir=False, period_days=0, on_progress=None, progress=None) -> dict`：**多盘上传任务**；`local_path` 可以是**单个文件或一个文件夹**；`targets = [{pan, remote_dir}]`，逐盘跑单盘管道（某盘失败不影响其他盘），全部跑完后**只写一次**文档；返回 `{group_id, title, items, failed, writers}`
+    - `progress`：结构化进度旁路（回调收到字典事件，形状见本节「进度事件」）；回调抛异常一律吞掉，**进度不许反噬上传**
+    - `on_progress`：驱动级 `(已传字节, 文件大小)` 回调，CLI 进度条沿用
     - 每盘落点为 `remote_dir/[日期/]标题/` 的资源文件夹，文件夹内按本地相对路径镜像；单文件也建这一层
     - **同名资源文件夹已存在 → 抛 `UploadError`（码 `PUP-3xx`）并提示换标题**，不合并、不覆盖；重传走 `group_id` 复用，不触发该检查
     - 重传（`force=True`）时，网盘上已存在且大小一致的文件跳过，只补缺的和坏的
@@ -48,12 +51,32 @@
   - `check_all() -> dict`：各网盘与写入端登录态体检
 - 错误契约：对外只抛 `ProjectError` 子类（`AuthError` / `UploadError` / `ShareError` / `WriterError` / `ConfigError`），携带 `code`、上游 `errno` 与「怎么办」恢复指引；不向调用方裸抛网络异常。
 - REST API（阶段 2，全部挂 `/api/*`，只监听 127.0.0.1）：
-  - `POST /api/upload`（multipart：`files` 可多个 + `paths` 与之一一对应的相对路径 + `pans`［JSON 数组，每项 `{pan, dir}`］+ `title` + `date_dir` + `doc`）→ `{group_id, title, items, failed, writers}`；只传一个文件时 `paths` 就是文件名
+  - `POST /api/upload`（multipart：`file`（当前一次一个；I-018 起改 `files` 多值 + `paths`）+ `pans`［JSON 数组，每项 `{pan, dir}`，`dir` 留空回退配置］+ `title` + `date_dir` + `doc` + `sync`）
+    - 默认（`sync` 缺省）：落盘后建 job、后台线程跑，立刻 `202 {job_id, status:"running", title, filename}`
+    - `sync=1`：同步跑完整单，返回 `{group_id, title, items, failed, writers}`（测试与 curl 用）
+  - `GET /api/jobs/{job_id}` → 进度快照 `{id, status, stage, title, filename, kind, file_count, size, pans, writer, steps, result, error, created_at, updated_at}`；`status ∈ running/done/failed`，未知任务 404 信封。job 只在内存（进程退出即丢），最终事实看台账
+  - `GET /api/options` → `{pans: [{name, default_dir}]}`：表单把 `default_dir` 回填进目录框（配置缺项给空串，不报错）
   - `GET /api/uploads?limit=&status=` → 台账记录列表（按 `group_id` 聚合展示，`status=failed` 即「待修」）；`POST /api/uploads/{id}/retry` → 失败项重传（只重跑该「资源 × 网盘」，跳过已成功的文件）
   - `GET /api/status` → 各网盘与写入端登录态体检（三灯）
   - `GET /api/rules` / `PUT /api/rules`（阶段 1 固定规则）；约定目录模式下由 convention 扫描动态生成（F5）
   - `GET /api/config` / `PUT /api/config` → 白名单配置项（默认目录、飞书 doc_token、监控参数）
   - 错误信封：`{code, msg, hint}`，HTTP 状态 4xx/5xx；前端直接展示 msg + hint
+- 进度事件（`publish_task(progress=…)` → `web/jobs.py` 聚合，BACKEND 与前端共用同一套字段）：
+
+| 事件 | 字段 | 时机 |
+|---|---|---|
+| `scanning` | `kind`、`file_count`、`size`、`title`、`pans` | 资源归一完成后（任务板据此建各盘行） |
+| `checking` | `pan`、`path` | 单盘开头，查台账去重与同名冲突前 |
+| `skipped` | `pan`、`link`、`path` | 台账已有 success 记录，直接复用链接 |
+| `mkdir` | `pan`、`path` | 资源文件夹建好 |
+| `uploading` | `pan`、`file_index`、`file`、`bytes_done`、`bytes_total` | 每个文件开始时一次 + 驱动每次字节回调（`bytes_*` 按**整个资源**累计） |
+| `sharing` | `pan`、`path` | 文件传完，创建分享链接 |
+| `done` | `pan`、`link`、`pwd`、`path` | 单盘成功 |
+| `failed` | `pan` 或 `writer`、`code`、`msg`、`hint` | 单盘 / 写入端失败（不中断其他盘） |
+| `writing` / `done` / `failed` | `writer`（`done`/`failed` 同 `pan` 字段位） | 写入端开始 / 成功 / 失败 |
+| `finished` | — | 任务收尾（任务板随后置 `status=done`） |
+
+  整体阶段由任务板推导：`queued`（未扫描）→ `uploading`（还有盘未结束）→ `writing`（盘都结束且写入端在写）→ `finalizing` → `finished`；任务级异常走 `fail(code,msg,hint)` 置 `status=failed`。
 
 ## 3. 数据与存储
 
@@ -72,10 +95,12 @@
 
 ## 5. 后台任务
 
-- 代码位置：`watcher.py`
-- 任务清单：目录监控循环（轮询，间隔默认 5 秒，可配置）
-- 重入 / 锁：单实例文件锁 `data/watch.lock`，防止双开导致重复上传
-- 死信与重试：单文件失败重试 3 次（退避 5 / 15 / 60 秒），仍失败台账记 `failed`；连续失败 5 个文件则停止循环并醒目提示；不做自动无限重试
+- 代码位置：`watcher.py`、`web/api.py`（Web 上传任务线程）、`web/jobs.py`（进度板）
+- 任务清单：
+  - 目录监控循环（轮询，间隔默认 5 秒，可配置）
+  - Web 上传任务：每个 `POST /api/upload` 起一个 daemon 线程跑 `publish_task`，跑完即退；线程内自建、自关 SQLite 连接（连接不跨线程）
+- 重入 / 锁：监控循环有单实例文件锁 `data/watch.lock`，防止双开导致重复上传；Web 任务不排队，前端用按钮禁用挡并发（本机单人使用），进度板 `JobStore` 用 `threading.Lock` 保护读写
+- 死信与重试：单文件失败重试 3 次（退避 5 / 15 / 60 秒），仍失败台账记 `failed`；连续失败 5 个文件则停止循环并醒目提示；不做自动无限重试。Web 任务失败写 `job.error`（`{code,msg,hint}`）并照常写台账，进度板只保留最近 50 个任务
 
 ## 6. 外部依赖
 
