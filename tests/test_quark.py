@@ -254,30 +254,34 @@ class QuarkContractTests(unittest.TestCase):
 
     def test_delete_resolves_fid_then_posts_file_delete(self):
         d = make_driver(self.wrapped())
-        res = d.delete("/a")
-        self.assertTrue(res["deleted"])
+        res = d.delete(["/a"])
+        self.assertEqual(res["deleted"], ["/a"])
         self.assertIn("POST /file/delete", calls)
 
     def test_delete_missing_dir_is_idempotent(self):
-        """解析不到 fid（目录不存在）→ missing=True，不抛错。"""
-        res = make_driver(self.wrapped()).delete("/nope")
-        self.assertFalse(res["deleted"])
-        self.assertTrue(res["missing"])
+        """解析不到 fid（目录不存在）→ 进 missing，不抛错。"""
+        res = make_driver(self.wrapped()).delete(["/nope"])
+        self.assertEqual(res["missing"], ["/nope"])
+        self.assertEqual(res["failed"], [])
 
     def test_delete_drops_stale_fid_cache(self):
         d = make_driver(self.wrapped())
         d._fid_cache["/a"] = "DA"
         d._fid_cache["/a/hello.txt"] = "FH"
-        d.delete("/a")
+        d.delete(["/a"])
         self.assertNotIn("/a", d._fid_cache)
         self.assertNotIn("/a/hello.txt", d._fid_cache)
 
-    def test_delete_root_refused_before_network(self):
+    def test_delete_root_is_reported_per_path(self):
         calls.clear()
-        with self.assertRaises(UploadError) as cm:
-            make_driver(self.wrapped()).delete("/")
-        self.assertEqual(cm.exception.code, "PUP-108")
+        res = make_driver(self.wrapped()).delete(["/"])
+        self.assertEqual(res["failed"][0]["code"], "PAN-quark-root")
         self.assertEqual(calls, [])
+
+    def test_delete_to_trash_false_is_rejected(self):
+        with self.assertRaises(UploadError) as cm:
+            make_driver(self.wrapped()).delete(["/a"], to_trash=False)
+        self.assertEqual(cm.exception.code, "PAN-quark-purge")
 
 
 if __name__ == "__main__":

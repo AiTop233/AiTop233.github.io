@@ -39,11 +39,11 @@ def _canned(method, url, *, params=None, data=None, files=None, headers=None):
             {"fs_id": 123, "path": "/a/hello.txt", "size": 6},
         ]})
     if "/api/filemanager" in url:
-        target = json.loads(data["filelist"])[0]["path"]
-        if target.endswith("gone"):
-            return json.dumps({"errno": -9, "info": []})
-        return json.dumps({"errno": 0, "taskid": 9,
-                           "info": [{"errno": 0, "path": target}]})
+        info = []
+        for p in json.loads(data["filelist"]):
+            info.append({"errno": -9 if p.endswith("gone") else 0, "path": p})
+        errno = 0 if all(i["errno"] == 0 for i in info) else 12
+        return json.dumps({"errno": errno, "taskid": 9, "info": info})
     if "/share/pset" in url:
         return json.dumps({"errno": 0, "link": "https://pan.baidu.com/s/1abc",
                            "pwd": "k9x2", "shareid": 7})
@@ -175,24 +175,32 @@ class BaiduContractTests(unittest.TestCase):
                 seen.update(params or {})
             return _canned(method, url, params=params, **kw)
 
-        res = make_driver(canned).delete("/panup验收-I017")
-        self.assertTrue(res["deleted"])
-        self.assertFalse(res["missing"])
+        res = make_driver(canned).delete(["/panup验收-I017"])
+        self.assertEqual(res["deleted"], ["/panup验收-I017"])
         self.assertEqual(seen.get("opera"), "delete")
         self.assertEqual(seen.get("onnest"), "fail")
 
     def test_delete_missing_path_is_idempotent(self):
-        """远端本来就没有 → missing=True 而不是抛错（删验收目录会重跑）。"""
-        res = make_driver().delete("/a/gone")
-        self.assertFalse(res["deleted"])
-        self.assertTrue(res["missing"])
+        """远端本来就没有 → 进 missing 而不是 failed（删验收目录会重跑）。"""
+        res = make_driver().delete(["/a/gone"])
+        self.assertEqual(res["missing"], ["/a/gone"])
+        self.assertEqual(res["failed"], [])
 
-    def test_delete_root_refused_before_network(self):
+    def test_delete_root_refused_without_network(self):
         calls.clear()
-        with self.assertRaises(UploadError) as cm:
-            make_driver().delete("/")
-        self.assertEqual(cm.exception.code, "PUP-108")
+        res = make_driver().delete(["/"])
+        self.assertEqual(res["failed"][0]["code"], "PAN-baidu-root")
         self.assertEqual(calls, [])
+
+    def test_delete_batch_mixes_ok_and_missing(self):
+        res = make_driver().delete(["/a", "/a/gone"])
+        self.assertEqual(res["deleted"], ["/a"])
+        self.assertEqual(res["missing"], ["/a/gone"])
+
+    def test_delete_to_trash_false_is_rejected(self):
+        with self.assertRaises(UploadError) as cm:
+            make_driver().delete(["/a"], to_trash=False)
+        self.assertEqual(cm.exception.code, "PAN-baidu-purge")
 
 
 if __name__ == "__main__":

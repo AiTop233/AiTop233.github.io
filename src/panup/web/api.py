@@ -76,6 +76,24 @@ class RemoteDeleteBody(BaseModel):
     path: str = ""
 
 
+def _delete_one(make_driver, pan: str, path: str) -> dict:
+    """跑一次单路径删除，把驱动的批量结果收敛成 `{deleted, missing}`。
+
+    驱动契约是批量的（与 I-027 文件页共用），这里只传一条；`missing`（远端本来
+    就没有）按成功处理，其余 `failed` 折算成可读的项目错误。
+    """
+    res = make_driver(pan).delete([path]) or {}
+    failed = res.get("failed") or []
+    if failed:
+        f = failed[0]
+        raise UploadError(
+            f.get("msg") or f"{pan} 删除失败",
+            code=f.get("code") or "PUP-422",
+            hint="刷新记录页确认路径后重试；必要时到网盘网页端手工删除")
+    missing = path in (res.get("missing") or [])
+    return {"deleted": not missing, "missing": missing}
+
+
 def _truthy(value) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "on", "yes"}
 
@@ -387,14 +405,14 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
             if row["status"] == "deleted":
                 return {"ok": True, "skipped": True, "record_id": record_id,
                         "message": "这条的远端已经删过了"}
-            result = make_driver(row["pan"]).delete(row["remote_path"])
+            outcome = _delete_one(make_driver, row["pan"], row["remote_path"])
             ledger.record_deleted(record_id)
         finally:
             ledger.close()
         return {"ok": True, "record_id": record_id, "pan": row["pan"],
-                "path": row["remote_path"], **result,
+                "path": row["remote_path"], **outcome,
                 "message": ("远端本来就没有这个目录，已标记为已删除"
-                            if result.get("missing") else "远端目录已删除")}
+                            if outcome["missing"] else "远端目录已删除")}
 
     @app.post("/api/remote/delete")
     def delete_remote(body: RemoteDeleteBody):
@@ -412,13 +430,14 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
         if not path.strip("/"):
             return _envelope(400, "PUP-108", "不能删除网盘根目录",
                              "给具体目录，例如 /panup验收-I017")
-        result = make_driver(pan).delete(path)
+        outcome = _delete_one(make_driver, pan, path)
         ledger = make_ledger()
         try:
             affected = ledger.mark_deleted_by_remote(pan, path)
         finally:
             ledger.close()
-        return {"ok": True, "pan": pan, **result, "records": affected}
+        return {"ok": True, "pan": pan, "path": path, **outcome,
+                "records": affected}
 
     @app.exception_handler(RequestValidationError)
     async def on_validation_error(request, exc: RequestValidationError):

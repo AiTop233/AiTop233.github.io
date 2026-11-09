@@ -401,28 +401,62 @@ class BaiduDriver(Driver):
         raise UploadError(f"查不到文件: {remote_path}", code="PAN-baidu-nofile",
                           hint="确认文件已上传成功（先跑 upload 再 share）")
 
-    def delete(self, remote_path):
-        """删远端一个路径（文件或整个目录，服务端递归）。
+    def _filemanager(self, opera, filelist, *, ondup="overwrite"):
+        """网页版文件管理接口：rename / delete / copy / move 共用同一个端点。
 
-        幂等：路径本来就不存在（errno -9 / 31066）返回 missing=True 而不是报错——
-        删验收目录时常常「上一轮已经删过一半」，重跑不该红。
+        `async=1` 让服务端自适应同步或异步；`allow` 放行 -9（不存在）、-7（名字非法）
+        与 111（token 过期重取），交给调用方逐条归因，而不是整批炸掉。
         """
-        p = _norm(remote_path)
-        if p == "/":
-            raise UploadError("不能删除网盘根目录", code="PUP-108",
-                              hint="删除具体目录，例如 /panup验收-I017")
-        payload = self._json(
+        return self._json(
             "POST", f"{PAN}/api/filemanager",
-            params={"opera": "delete", "async": 2, "onnest": "fail",
-                    "bdstoken": self.bdstoken, "clienttype": 0,
-                    "app_id": APP_ID, "web": 1},
-            data={"filelist": json.dumps([{"path": p}], ensure_ascii=False,
-                                         separators=(",", ":"))},
-            allow=(-9, 31066),
+            params={"opera": opera, "async": "1", "onnest": "fail",
+                    "channel": "chunlei", "web": 1, "app_id": APP_ID,
+                    "bdstoken": self.bdstoken, "clienttype": 0},
+            data={"filelist": json.dumps(filelist, ensure_ascii=False),
+                  **({"ondup": ondup} if ondup else {})},
+            allow=(-9, -7, 111, 31066, 12),
         )
-        if payload.get("errno") in (-9, 31066):
-            return {"path": p, "deleted": False, "missing": True}
-        return {"path": p, "deleted": True, "missing": False}
+
+    @staticmethod
+    def _info_errno(payload) -> tuple[int, dict]:
+        """取整体 errno 与「path → 单条 errno」映射；info 缺失时按整体判定。"""
+        info = {}
+        for it in payload.get("info") or []:
+            if isinstance(it, dict) and it.get("path"):
+                info[it["path"]] = int(it.get("errno") or 0)
+        return int(payload.get("errno") or 0), info
+
+    def delete(self, remote_paths, *, to_trash=True):
+        """批量删除（百度这边本身就是移入回收站）。逐条归因，一条失败不中断。"""
+        if not to_trash:
+            raise UploadError(
+                "百度不支持直接彻底删除", code="PAN-baidu-purge",
+                hint="这里只把条目移入回收站；要彻底删除请到网盘网页端清空回收站")
+        paths = [_norm(x) for x in (remote_paths or [])]
+        result: dict = {"deleted": [], "missing": [], "failed": []}
+        targets = []
+        for p in paths:
+            if p == "/":
+                result["failed"].append({"path": p, "code": "PAN-baidu-root",
+                                         "msg": "不能删除根目录"})
+            else:
+                targets.append(p)
+        if not targets:
+            return result
+        payload = self._filemanager("delete", targets, ondup="")
+        errno, info = self._info_errno(payload)
+        for p in targets:
+            code = info.get(p, errno)
+            if code == 0:
+                result["deleted"].append(p)
+            elif code in (-9, 31066):
+                result["missing"].append(p)
+            else:
+                result["failed"].append({
+                    "path": p, "code": f"PAN-baidu-{code}",
+                    "msg": ERRNO_TEXT.get(code, f"删除失败（errno={code}）")})
+        return result
+
 
     # -- 上传 ------------------------------------------------------------------
 

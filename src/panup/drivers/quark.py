@@ -338,30 +338,67 @@ class QuarkDriver(Driver):
                 created = True
         return {"path": p, "created": created, "fid": fid}
 
-    def delete(self, remote_path):
-        """删远端一个路径（文件或整个目录，服务端递归）。
-
-        幂等：路径不存在（解析不到 fid）返回 missing=True 而不是报错；删成功后把该
-        路径及其子路径的 fid 缓存清掉，免得后续操作拿着已失效的 fid 继续跑。
-        """
-        p = self._norm(remote_path)
-        if p == "/":
-            raise UploadError("不能删除网盘根目录", code="PUP-108",
-                              hint="删除具体目录，例如 /panup验收-I017")
+    def _fid_of(self, remote_path):
+        """路径 → fid，报错文案用「路径不存在」（文件与目录都适用）。"""
         try:
-            fid = self._fid_cache.get(p) or self._resolve_fid(p)
+            return self._fid_cache.get(self._norm(remote_path)) \
+                or self._resolve_fid(remote_path)
         except ProjectError as e:
-            if getattr(e, "code", "") == "PAN-quark-nodir":
-                return {"path": p, "deleted": False, "missing": True}
-            raise
-        self._api("POST", "/file/delete", body={
-            "action": "DELETE", "filelist": [fid], "excl_filelist": [],
-            "from": "web",
-        })
-        prefix = p.rstrip("/") + "/"
-        for key in [k for k in self._fid_cache if k == p or k.startswith(prefix)]:
-            self._fid_cache.pop(key, None)
-        return {"path": p, "deleted": True, "missing": False}
+            raise UploadError(
+                f"路径不存在: {self._norm(remote_path)}", code="PAN-quark-nopath",
+                hint="刷新列表后再试；可能在别的客户端里被改名或删除了") from e
+
+    def delete(self, remote_paths, *, to_trash=True):
+        """批量删除（默认进回收站）。一条失败不影响其余，逐条记进 failed。
+
+        夸克只做「移入回收站」（`action_type=1`）：彻底删除要用户自己到网页端清空
+        回收站，这样即使批量选错也有一步反悔的机会。解析不到 fid 的路径归到
+        `missing`（远端本来就没有，幂等）。
+        """
+        if not to_trash:
+            raise UploadError(
+                "夸克不支持直接彻底删除", code="PAN-quark-purge",
+                hint="这里只把条目移入回收站；要彻底删除请到网盘网页端清空回收站")
+        paths = [self._norm(x) for x in (remote_paths or [])]
+        result: dict = {"deleted": [], "missing": [], "failed": []}
+        by_fid: dict[str, str] = {}
+        for p in paths:
+            if p == "/":
+                result["failed"].append({"path": p, "code": "PAN-quark-root",
+                                         "msg": "不能删除根目录"})
+                continue
+            try:
+                by_fid[self._fid_of(p)] = p
+            except ProjectError as e:
+                if getattr(e, "code", "") == "PAN-quark-nopath":
+                    result["missing"].append(p)
+                else:
+                    result["failed"].append({"path": p, "code": e.code,
+                                             "msg": e.msg})
+        if not by_fid:
+            return result
+        body = {"action_type": 1, "exclude_fids": [], "filelist": list(by_fid)}
+        try:
+            self._api("POST", "/file/delete", body=body)
+            result["deleted"] = list(by_fid.values())
+        except ProjectError:
+            # 整批被拒（某条已被删/无权限）时逐条重试，把能删的删掉、剩下的归因
+            for fid, p in by_fid.items():
+                try:
+                    self._api("POST", "/file/delete",
+                              body={"action_type": 1, "exclude_fids": [],
+                                    "filelist": [fid]})
+                    result["deleted"].append(p)
+                except ProjectError as e:
+                    result["failed"].append({"path": p, "code": e.code,
+                                             "msg": e.msg})
+        for p in result["deleted"] + result["missing"]:
+            prefix = p.rstrip("/") + "/"
+            for key in [k for k in self._fid_cache
+                        if k == p or k.startswith(prefix)]:
+                self._fid_cache.pop(key, None)
+        return result
+
 
     # -- 上传 ------------------------------------------------------------------
 
