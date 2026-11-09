@@ -262,3 +262,13 @@
 - A6 真实：挪走夸克 cookie → `quark.stage=failed` + 可读原因、`baidu.done` 出链接、`writer=done` 只写 2 个块；前端该行走 `bad` 红色
 - 合并：`--no-ff` 合入 main；看板待验收 5 → 4
 - 现在只剩 I-018（批量）+ 标准未批的 I-025 / I-027 / I-028
+
+## 2026-11-09（I-018 验收通过，已合入 main —— B2/B3 开发批次验收完毕）
+- A1/A9 机制：`test_batch.py` 22 例绿（含 `test_two_batches_never_run_at_the_same_time`）；main 全量 193 例
+- A2/A3/A6 真实（走页面同一套 `/api/upload` + `paths`）：一批两文件夹 → 两盘 `BatchA/{one.txt,nested/two.txt}`、`BatchB/three.txt` 结构一致、各 2 条链接；两个散文件合成一个资源「I018散文件验收」（folder/2）
+- A9/A10 实机：`BatchC`+`BatchD` 与 `BatchE` 两批同时提交 → 采样到 `BatchC:uploading` 时 `BatchD/BatchE:queued`，同一时刻只有 1 个资源在跑；用真实快照跑 `renderBatch` 得到「批量上传 · 2 个资源 / 0/2 个资源已结束 · 正在跑「BatchC」/ 排队中 / 当前资源分盘明细」
+- A7 用真实结果跑 `allLinksText()`：`【BatchC】百度…提取码 15nq / 夸克…` + `【BatchD】…`
+- A4/A5 补验：空文件夹前端提示「文件夹里没有文件；放入文件后再上传」+ 服务端 `PUP-414` 兜底且不写台账；记录页 `kindText` 渲染「文件夹 · N 个文件」（上一轮复核的两处缺口闭合）
+- 合并：`--no-ff` 合入 main；看板待验收 4 → 3，B2/B3 开发批次收官
+- 只剩 I-025 / I-027 / I-028：三条验收标准未批，按规矩要人先补批（规划模式）才能验
+- 遗留：远端累计验收目录（`/panup验收-I017`、`-I018`、`-I018B`、`-I019`、`/panup验收-无密码` 等）驱动无删除接口，需手工清；飞书文档顶部多出本轮验收产生的节
