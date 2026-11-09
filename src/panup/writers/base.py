@@ -23,9 +23,9 @@ class Writer(ABC):
 
     @abstractmethod
     def append_record(self, record: dict) -> dict:
-        """向目标文档追加一行「时间 · 文件名 · 链接（提取码）」。
+        """按 PRD F3 固定更新规则向目标文档写入一节记录（版式由实现决定）。
 
-        record 至少含 filename / link / pwd / pan；返回写入摘要（如块 id）。
+        record 至少含 filename / link / pwd / pan；返回写入摘要（如块 id 列表）。
         """
 
 
