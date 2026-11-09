@@ -174,9 +174,10 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
             failed.append({"pan": pan, "code": e.code, "msg": e.msg,
                            "hint": e.hint or ""})
 
+    fresh = [i for i in items if not i.get("dedup")]
     writers = []
-    if items:
-        writers = _run_writers(writer_names, _task_of(src, task_title, items), log)
+    if fresh:
+        writers = _run_writers(writer_names, _task_of(src, task_title, fresh), log)
     log("task.finished", group_id=group_id, ok=len(items), failed=len(failed))
     return {"group_id": group_id, "title": task_title, "items": items,
             "failed": failed, "writers": writers}
@@ -199,7 +200,8 @@ def publish_file(local_path, pan: str, remote_dir: str, *, ledger: Ledger,
                         date_dir=date_dir, period_days=period_days, pwd=pwd,
                         group_id=group_id, title=title, on_progress=on_progress,
                         log=log)
-    writers = _run_writers(writer_names, _task_of(src, title, [item]), log)
+    writers = _run_writers(writer_names, _task_of(src, title, [item]), log) \
+        if not item.get("dedup") else []
     return {**item, "writers": writers, "group_id": group_id, "title": title,
             "file_hash": fh, "size": size}
 

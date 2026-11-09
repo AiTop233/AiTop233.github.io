@@ -12,7 +12,7 @@ from pathlib import Path
 
 from panup.core.errors import ConfigError, ProjectError
 from panup.core.ledger import Ledger
-from panup.core.pipeline import publish_file
+from panup.core.pipeline import publish_task
 from panup.writers.base import WRITERS
 
 # 项目根：src/panup/cli.py → parents[2]
@@ -28,21 +28,48 @@ def build_driver(pan: str):
     return get_driver(pan)
 
 
-def _resolve_remote_dir(args) -> str:
-    if args.dir:
-        return args.dir
+def _default_dir_for(pan: str) -> str:
     from panup.config import load_config
 
     cfg = load_config()  # 缺配置文件会抛 ConfigError，含恢复指引
-    default = ((cfg.get("pan") or {}).get(f"{args.pan}_default_dir"))
+    default = (cfg.get("pan") or {}).get(f"{pan}_default_dir")
     if not default:
         raise ConfigError(
-            f"未指定 --dir，且配置里没有 {args.pan} 的默认目录",
+            f"未指定目录，且配置里没有 {pan} 的默认目录",
             code="PUP-104",
-            hint="命令加 --dir，或在 config.toml [pan] 里填 "
-                 f"{args.pan}_default_dir",
+            hint=f"命令写成 --pan {pan}:/远端目录，或在 config.toml [pan] 里填 "
+                 f"{pan}_default_dir",
         )
     return default
+
+
+def _parse_targets(pans, fallback_dir=None) -> list[dict]:
+    """`--pan 盘名:目录` / `盘名` → [{pan, remote_dir}]（I-016）。
+
+    盘名不带目录时：先看 --dir，再看该盘在 config.toml 的默认目录。
+    """
+    targets = []
+    for raw in pans or []:
+        text = str(raw).strip()
+        if not text:
+            continue
+        pan, sep, remote = text.partition(":")
+        pan = pan.strip()
+        remote = remote.strip()
+        if sep and not remote:
+            # 「盘名:」和「盘名」不是一回事：写了冒号就是声明要给目录，
+            # 空着不能静默退回默认目录，否则会传到意料之外的地方（I-016 A4）。
+            raise ConfigError(
+                f"网盘目录为空: {pan}:", code="PUP-104",
+                hint=f"要么写成 --pan {pan} 用默认目录，"
+                     f"要么补上目录 --pan {pan}:/远端目录")
+        if not remote:
+            remote = fallback_dir or _default_dir_for(pan)
+        targets.append({"pan": pan, "remote_dir": remote})
+    if not targets:
+        raise ConfigError("没有指定目标网盘", code="PUP-104",
+                          hint="至少给一个 --pan，如 --pan 夸克")
+    return targets
 
 
 def cmd_upload(args) -> int:
@@ -51,12 +78,17 @@ def cmd_upload(args) -> int:
         print(f"提示: 文档写入端 {w} 未启用（后续阶段提供），本次跳过写入")
     doc_names = [w for w in doc_names if w in WRITERS]
 
-    remote_dir = _resolve_remote_dir(args)
+    try:
+        targets = _parse_targets(args.pan, args.dir)
+    except ProjectError as e:
+        print(f"上传失败: {e}", file=sys.stderr)
+        return 1
+
     ledger = Ledger(args.db or DEFAULT_DB)
     try:
-        result = publish_file(
-            args.local_path, args.pan, remote_dir, ledger=ledger,
-            driver=build_driver(args.pan), force=args.force,
+        result = publish_task(
+            args.local_path, targets, ledger=ledger, title=args.title,
+            driver_factory=build_driver, force=args.force,
             date_dir=args.date_dir, period_days=args.period_days,
             writer_names=doc_names,
         )
@@ -66,21 +98,29 @@ def cmd_upload(args) -> int:
         return 1
     ledger.close()
 
-    if result["dedup"]:
-        print("去重命中，未重新上传（同文件同目录已分享过；--force 强制重传）")
-    else:
-        rapid = "（秒传）" if result.get("rapid") else ""
-        print(f"已上传 {result['pan']} {result['path']}{rapid}")
-    print(f"链接: {result['link']}")
-    if result.get("pwd"):
-        print(f"提取码: {result['pwd']}")
+    for item in result["items"]:
+        if item["dedup"]:
+            print(f"{item['pan']} 去重命中，未重新上传"
+                  "（同文件同目录已分享过；--force 强制重传）")
+        else:
+            rapid = "（秒传）" if item.get("rapid") else ""
+            print(f"已上传 {item['pan']} {item['path']}{rapid}")
+        print(f"  链接: {item['link']}")
+        if item.get("pwd"):
+            print(f"  提取码: {item['pwd']}")
+
+    for f in result["failed"]:
+        print(f"！{f['pan']} 上传失败: {f['msg']}", file=sys.stderr)
+        if f.get("hint"):
+            print(f"  {f['hint']}", file=sys.stderr)
+
     for w in result.get("writers") or []:
         if w["ok"]:
             print(f"已写入文档端 {w['writer']}: {w['detail']}")
         else:
             print(f"提示: 文档端 {w['writer']} 写入失败（不影响上传），"
                   f"原因: {w['error']}", file=sys.stderr)
-    return 0
+    return 1 if result["failed"] else 0
 
 
 def cmd_status(args) -> int:
@@ -163,8 +203,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     up = sub.add_parser("upload", help="上传文件/目录并返回分享链接")
     up.add_argument("local_path", help="本地文件路径")
-    up.add_argument("--pan", required=True, help="目标网盘: baidu | quark")
-    up.add_argument("--dir", default=None, help="网盘目标目录（缺省用配置默认值）")
+    up.add_argument("--pan", required=True, action="append",
+                    help="目标网盘，可重复：--pan 夸克 --pan baidu:/远端目录"
+                         "（写成「盘名:目录」；只写盘名时用该盘默认目录）")
+    up.add_argument("--title", default=None,
+                    help="写进文档的小节标题（缺省用文件名，不带扩展名）")
+    up.add_argument("--dir", default=None,
+                    help="单盘兜底目录：只给一个 --pan 且没写目录时用它")
     up.add_argument("--date-dir", action="store_true",
                     help="目标目录追加「年/月/日」三级子目录（如 /分享/26/11/09）")
     up.add_argument("--force", action="store_true", help="跳过去重，强制重传")

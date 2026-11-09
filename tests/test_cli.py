@@ -1,4 +1,4 @@
-"""I-004 A3/A4/A5/A6：CLI 行为（打桩驱动，不真连网盘）。"""
+"""I-004 A3/A4/A5/A6 + I-016 A1：CLI 行为（打桩驱动，不真连网盘）。"""
 
 import contextlib
 import io
@@ -9,7 +9,8 @@ from pathlib import Path
 import support  # noqa: F401  把 src 加入 sys.path
 
 import panup.cli as cli
-from panup.core.errors import UploadError
+import panup.drivers  # noqa: F401  触发驱动注册（--pan 的盘名要已注册）
+from panup.core.errors import ProjectError, UploadError
 
 
 class FakeCliDriver:
@@ -77,7 +78,7 @@ class CliTests(unittest.TestCase):
         self._tmp.cleanup()
 
     def _upload_args(self, extra=()):
-        return ["upload", str(self.src), "--pan", "fake", "--dir", "/分享",
+        return ["upload", str(self.src), "--pan", "baidu", "--dir", "/分享",
                 "--db", self.db, *extra]
 
     def test_upload_success_prints_link_and_status_lists(self):
@@ -132,6 +133,83 @@ class CliTests(unittest.TestCase):
         code, out, _ = run_cli(["check", "--pan", "fake"], FakeCliDriver())
         self.assertEqual(code, 0)
         self.assertIn("fake", out)
+
+
+class TargetParseTests(unittest.TestCase):
+    """I-016 A1：--pan 解析（盘名:目录 / 盘名 + --dir 兜底 / 空值）。"""
+
+    def test_split_pan_and_dir(self):
+        self.assertEqual(
+            cli._parse_targets(["baidu:/A", "quark:/B"]),
+            [{"pan": "baidu", "remote_dir": "/A"},
+             {"pan": "quark", "remote_dir": "/B"}])
+
+    def test_fallback_dir_applies_when_pan_has_no_dir(self):
+        self.assertEqual(cli._parse_targets(["baidu"], "/X"),
+                         [{"pan": "baidu", "remote_dir": "/X"}])
+
+    def test_explicit_dir_wins_over_fallback(self):
+        self.assertEqual(cli._parse_targets(["baidu:/Y"], "/X"),
+                         [{"pan": "baidu", "remote_dir": "/Y"}])
+
+    def test_empty_pans_raises(self):
+        with self.assertRaises(ProjectError):
+            cli._parse_targets([])
+
+    def test_colon_without_dir_raises(self):
+        """A4：`盘名:` 是「声明了要给目录但空着」，不能退回默认目录。"""
+        for raw in ("baidu:", "baidu:   "):
+            with self.subTest(raw=raw):
+                with self.assertRaises(ProjectError) as ctx:
+                    cli._parse_targets([raw], "/X")
+                self.assertIn("目录为空", str(ctx.exception))
+
+
+class MultiPanCliTests(unittest.TestCase):
+    """I-016 A2～A4：多盘一次上传 / 未知盘 / 重复盘。"""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = self._tmp.name
+        self.src = Path(self.tmp) / "b.txt"
+        self.src.write_text("hello", encoding="utf-8")
+        self.db = str(Path(self.tmp) / "ledger.db")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_two_pans_in_one_command(self):
+        driver = FakeCliDriver()
+        code, out, _ = run_cli(
+            ["upload", str(self.src), "--pan", "baidu:/A", "--pan", "quark:/B",
+             "--title", "主题", "--db", self.db], driver)
+        self.assertEqual(code, 0)
+        self.assertEqual(out.count("https://e/s/1"), 2)
+        uploads = [c for c in driver.calls if c[0] == "upload"]
+        self.assertEqual([c[1] for c in uploads], ["/A", "/B"])
+
+    def test_unknown_pan_exits_nonzero(self):
+        code, _out, err = run_cli(
+            ["upload", str(self.src), "--pan", "nope:/A", "--db", self.db],
+            FakeCliDriver())
+        self.assertNotEqual(code, 0)
+        self.assertIn("未注册的网盘", err)
+
+    def test_duplicate_pan_exits_nonzero(self):
+        code, _out, err = run_cli(
+            ["upload", str(self.src), "--pan", "baidu:/A", "--pan", "baidu:/B",
+             "--db", self.db], FakeCliDriver())
+        self.assertNotEqual(code, 0)
+        self.assertIn("重复指定", err)
+
+    def test_empty_dir_after_colon_exits_nonzero(self):
+        """A4：`--pan baidu:` 必须在真上传之前就报错，不能静默传默认目录。"""
+        driver = FakeCliDriver()
+        code, _out, err = run_cli(
+            ["upload", str(self.src), "--pan", "baidu:", "--db", self.db], driver)
+        self.assertNotEqual(code, 0)
+        self.assertIn("目录为空", err)
+        self.assertEqual([c for c in driver.calls if c[0] == "upload"], [])
 
 
 if __name__ == "__main__":
