@@ -730,6 +730,7 @@ function initUpload() {
   drop.addEventListener("drop", async (ev) => {
     const items = await readDrop(ev.dataTransfer || {});
     setPicked(items);
+    if (!items.length) showToast("文件夹里没有文件；放入文件后再上传");
   });
 
   // 拖歪了（落在拖拽区外）时别让浏览器把文件当页面打开——直接吞掉
@@ -785,7 +786,7 @@ function renderRecords() {
       <td class="nowrap">${esc(fmtTime(t.created_at))}</td>
       <td>
         <div class="cell-title">${esc(t.title)}</div>
-        <div class="cell-sub">${esc(t.filename)}${t.size ? ` · ${fmtSize(t.size)}` : ""}</div>
+        <div class="cell-sub">${esc(t.filename)} · ${esc(kindText(t))}${t.size ? ` · ${fmtSize(t.size)}` : ""}</div>
       </td>
       <td>${(t.items || []).map(itemCell).join("")}</td>
       <td>${statusBadge(t.status)}</td>
