@@ -156,6 +156,14 @@ class TargetParseTests(unittest.TestCase):
         with self.assertRaises(ProjectError):
             cli._parse_targets([])
 
+    def test_colon_without_dir_raises(self):
+        """A4：`盘名:` 是「声明了要给目录但空着」，不能退回默认目录。"""
+        for raw in ("baidu:", "baidu:   "):
+            with self.subTest(raw=raw):
+                with self.assertRaises(ProjectError) as ctx:
+                    cli._parse_targets([raw], "/X")
+                self.assertIn("目录为空", str(ctx.exception))
+
 
 class MultiPanCliTests(unittest.TestCase):
     """I-016 A2～A4：多盘一次上传 / 未知盘 / 重复盘。"""
@@ -193,6 +201,15 @@ class MultiPanCliTests(unittest.TestCase):
              "--db", self.db], FakeCliDriver())
         self.assertNotEqual(code, 0)
         self.assertIn("重复指定", err)
+
+    def test_empty_dir_after_colon_exits_nonzero(self):
+        """A4：`--pan baidu:` 必须在真上传之前就报错，不能静默传默认目录。"""
+        driver = FakeCliDriver()
+        code, _out, err = run_cli(
+            ["upload", str(self.src), "--pan", "baidu:", "--db", self.db], driver)
+        self.assertNotEqual(code, 0)
+        self.assertIn("目录为空", err)
+        self.assertEqual([c for c in driver.calls if c[0] == "upload"], [])
 
 
 if __name__ == "__main__":

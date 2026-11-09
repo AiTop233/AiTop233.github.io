@@ -1,4 +1,4 @@
-# 后端工程：网盘自动上传
+# 后端工程：网盘中控台
 
 > 通用规则见《后端工程规范》；本文件只写本项目与默认不同的地方。
 > 每个单位都写「代码位置」；没有额外约定的单位写「按 04 默认」，不硬造。
@@ -38,7 +38,7 @@
   - `auth_check() -> dict`：校验登录态，返回账号与容量摘要；失效抛 `AuthError`
   - `mkdir(remote_dir) -> dict`：建目录，已存在视为成功（幂等），父目录自动创建
   - `upload(local_path, remote_dir, *, overwrite=True, on_progress=None) -> dict`：分片上传，返回远端路径与大小；秒传命中时跳过字节上传
-  - `share(remote_path, *, pwd=None, period_days=0) -> dict`：创建分享链接，返回链接、提取码、有效期
+  - `share(remote_path, *, pwd=None, period_days=0) -> dict`：创建分享链接，返回链接、提取码、有效期；`pwd=None` 按各盘默认（百度随机 4 位、夸克不带，D-014），返回的 `pwd` 为空串即该盘无提取码
   - `publish(local_path, remote_dir, **kwargs) -> dict`：mkdir + upload + share 一步到位
   - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
 - Writer 基类：
