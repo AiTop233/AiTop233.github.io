@@ -10,22 +10,26 @@ GET  /                       页面壳（SPA index.html）
 GET  /static/*               静态资源（styles.css / app.js，免构建）
 GET  /api/status             三灯体检（百度 / 夸克 / 飞书登录态）
 GET  /api/options            上传表单的选项：各盘默认目录（远端目录不能留空）
-POST /api/upload             手动上传（multipart：file + pans + title + date_dir + doc
-                             + sync）→ 默认 202 {job_id} 交后台跑；sync=1 同步返回结果
-GET  /api/jobs/{id}          上传进度（阶段 / 各盘进度 / 是否已写飞书 / 时间线）
+POST /api/upload             手动上传（multipart：files 多值 + paths 相对路径一一对应
+                             + pans + title + date_dir + doc + sync）→ 默认 202
+                             {batch_id, resources}；sync=1 同步跑完返回结果
+GET  /api/jobs/{id}          单个资源的进度（阶段 / 各盘进度 / 是否已写飞书 / 时间线）
+GET  /api/batches/{id}       整批快照（多个资源时一次取回，前端只轮询这一个）
 GET  /api/uploads            记录：按任务聚合（status=failed 时给扁平「待修」列表）
 POST /api/uploads/{id}/retry 单条失败记录重传（只重跑该「文件 × 网盘」）
 
-文件落点：浏览器上传的字节流先落到 data/inbox/<时间戳-随机>/<原文件名>，
-再把该路径交给管道——台账里的 local_path 因此是持久路径，失败项才能一键重传。
+文件落点：浏览器上传的字节流先落到 data/inbox/<批次>/<相对路径>（保留拖进来的
+目录结构），再把「每个顶层目录 / 一组散文件」当成一个资源交给管道——台账里的
+local_path 因此是持久路径，失败项才能一键重传。
+
+并发（D-007）：**全局单并发**。一次只跑一个资源，批量内串行排队，第二个提交会
+等前一个跑完。这不是偷懒——驱动本身单线程顺序传、台账是无 WAL 的单文件 SQLite、
+网盘分享接口最容易被限频，三者都不适合并行；串行同时消掉了同名文件夹的竞态。
 """
 
 from __future__ import annotations
 
-import shutil
 import threading
-import uuid
-from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, UploadFile
@@ -38,6 +42,7 @@ from panup.core.errors import AuthError, ConfigError, ProjectError, UploadError
 from panup.core.ledger import Ledger
 from panup.core.pipeline import check_all, publish_task
 from panup.drivers.base import DRIVERS
+from panup.web.inbox import group_resources, ingest, new_batch_dir
 from panup.web.jobs import JobStore
 from panup.writers.base import WRITERS
 
@@ -62,15 +67,6 @@ def _envelope(status: int, code: str, msg: str, hint: str = "") -> JSONResponse:
 
 def _truthy(value) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "on", "yes"}
-
-
-def _safe_filename(name: str) -> str:
-    """只取最后一段并去掉危险字符，避免表单文件名里的路径穿越。"""
-    base = Path(str(name or "").replace("\\", "/")).name
-    base = base.replace("\x00", "").strip()
-    if not base or base in {".", ".."}:
-        return "upload.bin"
-    return base
 
 
 def _parse_pans(raw: str) -> list[dict]:
@@ -98,6 +94,31 @@ def _parse_pans(raw: str) -> list[dict]:
         out.append({"pan": str(item["pan"]).strip(),
                     "dir": str(item.get("dir") or "").strip()})
     return out
+
+
+def _parse_paths(raw: str, names: list[str]) -> list[str]:
+    """解析表单里的 paths：与 files 一一对应的相对路径（拖文件夹时带子目录）。
+
+    为空 → 退回各文件的 filename（等价于「选了几个散文件」）；个数对不上 → 直接
+    报错，不猜谁对应谁（猜错会把文件落到别的资源里）。
+    """
+    import json
+
+    text = (raw or "").strip()
+    if not text or text == "[]":
+        return list(names)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        raise UploadError("paths 不是合法 JSON", code="PUP-411",
+                          hint='形如 ["剧A/第1集.mp4","剧A/第2集.mp4"]')
+    if not isinstance(data, list) or len(data) != len(names):
+        got = len(data) if isinstance(data, list) else "?"
+        raise UploadError(
+            f"paths 与文件数不一致（{got} 个路径 vs {len(names)} 个文件）",
+            code="PUP-411",
+            hint="每个文件给一个相对路径，顺序与 files 一一对应")
+    return [str(x or names[i]) for i, x in enumerate(data)]
 
 
 def _default_dir(cfg: dict, pan: str) -> str:
@@ -130,6 +151,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     make_ledger = ledger_factory or (lambda: Ledger(DEFAULT_DB))
     inbox = Path(inbox_dir or DEFAULT_INBOX)
     jobs = job_store or JobStore()
+    upload_lock = threading.Lock()      # 全局单并发（D-007）：一次只跑一个资源
 
     def load_cfg() -> dict:
         if config_loader is not None:
@@ -161,11 +183,11 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
                           "default_dir": _configured_dir(cfg, name)}
                          for name in DRIVERS]}
 
-    def _run_job(job_id, src, targets, title, writer_names, date_dir):
-        """后台线程跑一次上传任务：进度写 job，事实写台账。"""
+    def _run_one(job_id, path, targets, title, writer_names, date_dir):
+        """跑一个资源：进度写 job，事实写台账；失败只记在这一条上，不影响同批其他资源。"""
         ledger = make_ledger()
         try:
-            result = run_task(str(src), targets, ledger=ledger, title=title,
+            result = run_task(str(path), targets, ledger=ledger, title=title,
                               writer_names=writer_names, date_dir=date_dir,
                               progress=lambda ev: jobs.event(job_id, ev))
             jobs.finish(job_id, result)
@@ -177,13 +199,35 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
         finally:
             ledger.close()
 
+    def _run_batch(plans, targets, writer_names, date_dir):
+        """批量串行队列（D-007）：全局上传锁内一次跑一个资源。
+
+        锁是**资源粒度**的：同一时刻只有一个上传任务在动网盘/写台账，第二个人提交
+        的批次会卡在锁外等（页面显示「排队中」），而不是两份请求同时去建同名目录、
+        同时写 SQLite、同时触发分享接口。
+        """
+        for plan in plans:
+            with upload_lock:
+                _run_one(plan["job_id"], plan["path"], targets, plan["title"],
+                         writer_names, date_dir)
+
     @app.post("/api/upload")
-    async def upload(file: UploadFile = File(...), pans: str = Form(""),
-                     title: str = Form(""), date_dir: str = Form("0"),
-                     doc: str = Form(""), sync: str = Form("0")):
-        if not file.filename:
+    def upload(files: list[UploadFile] = File(None),
+               file: UploadFile = File(None), paths: str = Form("[]"),
+               pans: str = Form(""), title: str = Form(""),
+               date_dir: str = Form("0"), doc: str = Form(""),
+               sync: str = Form("0")):
+        """接收一批文件后立刻返回：落盘与分组是同步的（快），上传是后台串行的。
+
+        写成同步函数（不是 async）：`ingest` 是磁盘 IO，会阻塞事件循环；交给
+        FastAPI 的线程池跑，页面的其它请求（状态灯、进度轮询）才不会被大文件夹堵住。
+        """
+        uploads = [u for u in (files or []) if u and u.filename]
+        if file is not None and file.filename:      # 旧字段 file 仍然收
+            uploads.append(file)
+        if not uploads:
             return _envelope(400, "PUP-401", "没有收到文件",
-                             "重新选一个文件再点上传")
+                             "重新选文件或文件夹再点上传")
         targets = _parse_pans(pans)
         cfg = load_cfg()
         resolved = [{"pan": t["pan"],
@@ -197,34 +241,61 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
                              f"未启用的文档写入端: {'、'.join(unknown)}",
                              "doc 目前只支持 feishu；不写文档就留空")
 
-        dest_dir = inbox / f"{datetime.now():%Y%m%d-%H%M%S}-{uuid.uuid4().hex[:6]}"
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest = dest_dir / _safe_filename(file.filename)
-        with dest.open("wb") as f:
-            shutil.copyfileobj(file.file, f, 1024 * 1024)
+        names = [u.filename for u in uploads]
+        rels = _parse_paths(paths, names)
+        batch_dir = new_batch_dir(inbox)
+        try:
+            saved = ingest([(u.filename, u.file, rel)
+                            for u, rel in zip(uploads, rels)], batch_dir)
+        except OSError as e:
+            return _envelope(
+                400, "PUP-413", f"接收文件失败: {e}",
+                "检查磁盘剩余空间；Windows 上目录层级过深（路径超过 260 字符）"
+                "也会失败，把文件夹挪到浅一点的位置再传")
+        if not saved:
+            return _envelope(400, "PUP-414", "没有可上传的内容",
+                             "空文件夹不会上传；放文件后再试")
+
+        form_title = (title or "").strip()
+        resources = group_resources(saved, root=batch_dir,
+                                    loose_title=form_title or None)
+        multi = len(resources) > 1
+        plans = [{"path": r["path"], "kind": r["kind"], "size": r["size"],
+                  "file_count": r["file_count"],
+                  # 只有一个资源时表单标题生效；批量时各用各自的名字（前端已禁用）
+                  "title": (r["title"] if multi else (form_title or r["title"]))}
+                 for r in resources]
 
         if _truthy(sync):
-            ledger = make_ledger()
-            try:
-                return run_task(str(dest), resolved, ledger=ledger,
-                                title=(title or "").strip() or None,
-                                writer_names=writer_names,
-                                date_dir=_truthy(date_dir))
-            finally:
-                ledger.close()
+            results = []
+            for plan in plans:
+                ledger = make_ledger()
+                try:
+                    results.append(run_task(
+                        plan["path"], resolved, ledger=ledger,
+                        title=plan["title"], writer_names=writer_names,
+                        date_dir=_truthy(date_dir)))
+                finally:
+                    ledger.close()
+            return {"count": len(results), "resources": results}
 
-        job_id = jobs.create(filename=dest.name, title=(title or "").strip(),
-                             pans=[t["pan"] for t in resolved],
-                             size=dest.stat().st_size,
-                             writer=writer_names[0] if writer_names else None)
+        batch_id, job_ids = jobs.create_batch(
+            [{"title": p["title"], "kind": p["kind"], "size": p["size"],
+              "file_count": p["file_count"], "pans": [t["pan"] for t in resolved],
+              "filename": Path(p["path"]).name} for p in plans],
+            writer=writer_names[0] if writer_names else None)
+        for job_id, plan in zip(job_ids, plans):
+            plan["job_id"] = job_id
+
         threading.Thread(
-            target=_run_job,
-            args=(job_id, dest, resolved, (title or "").strip() or None,
-                  writer_names, _truthy(date_dir)),
-            name=f"panup-job-{job_id}", daemon=True).start()
+            target=_run_batch,
+            args=(plans, resolved, writer_names, _truthy(date_dir)),
+            name=f"panup-batch-{batch_id}", daemon=True).start()
         return JSONResponse(status_code=202, content={
-            "job_id": job_id, "status": "running",
-            "title": (title or "").strip(), "filename": dest.name})
+            "batch_id": batch_id, "status": "running", "count": len(plans),
+            "resources": [{"job_id": j, "title": p["title"], "kind": p["kind"],
+                           "file_count": p["file_count"], "size": p["size"]}
+                          for j, p in zip(job_ids, plans)]})
 
     @app.get("/api/jobs/{job_id}")
     def job_detail(job_id: str):
@@ -233,6 +304,15 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
             return _envelope(404, "PUP-404", f"任务不存在: {job_id}",
                              "进度只保留最近 50 个任务；结果看「记录」页")
         return job
+
+    @app.get("/api/batches/{batch_id}")
+    def batch_detail(batch_id: str):
+        """整批快照：一次提交里的每个资源各自的状态、进度与结果（I-018）。"""
+        batch = jobs.get_batch(batch_id)
+        if batch is None:
+            return _envelope(404, "PUP-404", f"批次不存在: {batch_id}",
+                             "进度只保留最近 50 个任务；结果看「记录」页")
+        return batch
 
     @app.get("/api/uploads")
     def list_uploads(limit: int = 50, status: str | None = None):
@@ -281,7 +361,8 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     @app.exception_handler(RequestValidationError)
     async def on_validation_error(request, exc: RequestValidationError):
         return _envelope(400, "PUP-400", "请求参数不合法",
-                         "检查表单字段：file / pans / title / date_dir / doc / sync")
+                         "检查表单字段：files / paths / pans / title / "
+                         "date_dir / doc / sync")
 
     @app.exception_handler(ProjectError)
     async def on_project_error(request, exc: ProjectError):

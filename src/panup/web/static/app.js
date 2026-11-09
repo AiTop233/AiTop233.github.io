@@ -1,9 +1,10 @@
-/* 管理台前端（I-008 上传 + 记录 + 待修重传；I-019 上传进度与目录回填）。
+/* 管理台前端（I-008 上传 + 记录 + 待修重传；I-019 上传进度与目录回填；
+ * I-018 拖文件夹与批量上传）。
  * 约定见 docs/FRONTEND.md：无框架、无构建；state 整体刷新；错误统一 toast。 */
 
 const state = {
-  status: null, options: null, file: null, tasks: [], failures: [],
-  busy: false, job: null, jobTimer: null,
+  status: null, options: null, picked: [], tasks: [], failures: [],
+  busy: false, batch: null, batchTimer: null, lastResult: null,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -49,6 +50,7 @@ const ERR_INFO = {
   "PUP-000": ["未分类失败（旧记录）", "点「重传」再跑一次；仍失败就看 logs/ 里同一时间的日志"],
   "PUP-NET": ["连不上本地服务", "确认 python -m panup serve 还在跑"],
   "PAN-name-conflict": ["同名资源已存在", "换个标题再传（同名不合并）；要补传已有资源用「重传」"],
+  "PUP-106": ["读不了本地文件", "确认文件没被别的程序占用、路径有权限；改好后点「重传」"],
 };
 
 function errInfo(code) {
@@ -217,14 +219,50 @@ function tidyPath(path) {
   return String(path || "/").replace(/\/{2,}/g, "/");
 }
 
+/* 已选内容的「资源」视图：与后端 D-007 同一套分组规则——
+ * 顶层目录各算一个资源，散文件合成一个（只有一个散文件时就是它自己）。
+ * 只用于摘要与落点预览，真正的分组在后端做（这里算错也不会传错）。 */
+function pickedGroups() {
+  const dirs = new Map();
+  const loose = [];
+  for (const p of state.picked) {
+    const parts = String(p.rel || p.file.name).split("/");
+    if (parts.length > 1) {
+      const top = parts[0];
+      const g = dirs.get(top) || { name: top, kind: "folder", count: 0, size: 0 };
+      g.count += 1;
+      g.size += p.file.size;
+      dirs.set(top, g);
+    } else {
+      loose.push(p);
+    }
+  }
+  const out = [];
+  for (const p of state.picked) {
+    const top = String(p.rel || p.file.name).split("/")[0];
+    if (dirs.has(top) && !out.some((g) => g.name === top)) out.push(dirs.get(top));
+  }
+  if (loose.length) {
+    const typed = $("#title") && !$("#title").disabled
+      ? $("#title").value.trim() : "";
+    const first = loose[0].file.name.replace(/\.[^.]+$/, "") || loose[0].file.name;
+    out.push({
+      name: typed || (loose.length > 1 ? `${first} 等${loose.length}个` : first),
+      kind: loose.length > 1 ? "folder" : "file",
+      count: loose.length,
+      size: loose.reduce((s, p) => s + p.file.size, 0),
+    });
+  }
+  return out;
+}
+
 function titlePreview() {
   const typed = $("#title").value.trim();
-  if (typed) return typed;
-  if (state.file) {
-    const name = baseName(state.file.name);
-    return name.replace(/\.[^.]+$/, "") || name;
-  }
-  return "<标题>";
+  if (typed && !$("#title").disabled) return typed;
+  const groups = pickedGroups();
+  if (!groups.length) return "<标题>";
+  if (groups.length === 1) return groups[0].name;
+  return "<资源名>";
 }
 
 function landingOf(pan) {
@@ -252,15 +290,50 @@ async function refreshOptions() {
   renderPanList();
 }
 
-function setFile(file) {
-  state.file = file || null;
+function setPicked(items) {
+  state.picked = (items || []).filter((p) => p && p.file);
+  const groups = pickedGroups();
+  const files = state.picked.length;
+  const size = state.picked.reduce((s, p) => s + p.file.size, 0);
   const drop = $("#drop");
-  drop.classList.toggle("has-file", !!state.file);
-  $("#drop-title").textContent = state.file ? state.file.name : "把文件拖到这里";
-  $("#drop-hint").textContent = state.file
-    ? `${fmtSize(state.file.size)} · 点这里可重新选择`
-    : "或点击选择文件 · 一次一个";
+  drop.classList.toggle("has-file", files > 0);
+  if (!files) {
+    $("#drop-title").textContent = "把文件或文件夹拖到这里";
+    $("#drop-hint").textContent = "也可以点这里选文件，或用下面的「选择文件夹」";
+  } else if (groups.length === 1) {
+    const g = groups[0];
+    $("#drop-title").textContent = g.name;
+    $("#drop-hint").textContent = `${g.kind === "folder" ? "文件夹 · " : ""}`
+      + `${g.count} 个文件 · ${fmtSize(g.size)} · 点这里重选`;
+  } else {
+    $("#drop-title").textContent = `${groups.length} 个资源 · ${files} 个文件`;
+    $("#drop-hint").textContent = `${fmtSize(size)} · 点这里重选`;
+  }
+  renderPicked(groups);
+  // 批量时各资源用自己的名字，表单标题只会误导 → 禁用
+  const title = $("#title");
+  const multi = groups.length > 1;
+  title.disabled = multi;
+  title.placeholder = multi
+    ? "批量时各资源用各自的名字，这里不用填"
+    : "写进飞书文档的标题；留空用文件名";
   updateLanding();
+}
+
+function renderPicked(groups) {
+  const box = $("#pick-list");
+  $("#pick-clear").classList.toggle("hidden", !groups.length);
+  if (!groups.length) {
+    box.innerHTML = "";
+    box.classList.add("hidden");
+    return;
+  }
+  box.classList.remove("hidden");
+  box.innerHTML = groups.map((g) => `
+    <span class="pick-item">
+      <b>${esc(g.name)}</b>
+      <span class="pick-meta">${g.kind === "folder" ? `${g.count} 个文件 · ` : ""}${fmtSize(g.size)}</span>
+    </span>`).join("");
 }
 
 function setBusy(busy, text) {
@@ -268,6 +341,10 @@ function setBusy(busy, text) {
   const btn = $("#upload-btn");
   btn.disabled = busy;
   btn.textContent = busy ? (text || "上传中…") : "上传";
+  // 上传途中不再换选择：FormData 已经装好了，让人以为换了实际没换最坑
+  $("#drop").classList.toggle("busy", busy);
+  $("#pick-dir").disabled = busy;
+  $("#pick-clear").disabled = busy;
 }
 
 function selectedTargets() {
@@ -277,10 +354,16 @@ function selectedTargets() {
   });
 }
 
-function renderResult(r) {
+function writerTags(writers) {
+  return (writers || []).map((w) => w.ok
+    ? `<span class="tag ok">已写入${esc(writerLabel(w.writer))}</span>`
+    : `<span class="tag bad">${esc(writerLabel(w.writer))} 写入失败</span>`).join("");
+}
+
+function resRows(r) {
   const items = r.items || [];
   const fails = r.failed || [];
-  const rows = [
+  return [
     ...items.map((i) => `
       <div class="res-row">
         <span class="res-pan">${esc(panLabel(i.pan))}</span>
@@ -294,20 +377,60 @@ function renderResult(r) {
         <span class="res-pan">${esc(panLabel(f.pan))}</span>
         <span class="res-err">${esc(f.msg)}${f.hint ? ` · 怎么办: ${esc(f.hint)}` : ""}</span>
       </div>`),
-  ];
-  const writers = (r.writers || []).map((w) =>
-    w.ok ? `<span class="tag ok">已写入${esc(writerLabel(w.writer))}</span>`
-         : `<span class="tag bad">${esc(writerLabel(w.writer))} 写入失败</span>`).join("");
+  ].join("");
+}
+
+function kindText(r) {
+  if (r.kind === "folder") return `文件夹 · ${r.file_count || 0} 个文件`;
+  return "单文件";
+}
+
+/* 一批结果：单资源沿用旧样式；多个资源按资源分组，每组自己的链接与飞书状态。 */
+function renderResult(payload) {
+  state.lastResult = payload;
+  const list = payload.resources || [payload];
+  const multi = list.length > 1;
+  const okRes = list.filter((r) => (r.items || []).length).length;
+  const fails = list.reduce((n, r) => n + (r.failed || []).length, 0);
+  const head = multi
+    ? `批量上传 · ${list.length} 个资源`
+    : (list[0] && list[0].title) || "";
+
+  const body = list.map((r) => (multi ? `
+    <div class="res-group">
+      <div class="res-ghead">
+        <b>${esc(r.title || "")}</b>
+        <span class="tag">${kindText(r)}</span>
+        ${writerTags(r.writers)}
+      </div>
+      ${resRows(r)}
+    </div>` : resRows(r))).join("");
 
   const box = $("#result");
   box.className = "result";
   box.innerHTML = `
     <div class="res-head">
-      <h2 class="block-title">${esc(r.title || "")}</h2>
-      <span class="block-hint">${items.length} 个网盘成功${fails.length ? ` · ${fails.length} 个失败` : ""}</span>
-      ${writers}
+      <h2 class="block-title">${esc(head)}</h2>
+      <span class="block-hint">${okRes} 个资源成功${fails ? ` · ${fails} 处失败` : ""}</span>
+      ${multi ? `<button class="btn tiny" type="button" data-copy-all="1">复制全部链接</button>` : ""}
+      ${multi ? "" : writerTags(list[0] && list[0].writers)}
     </div>
-    ${rows.join("")}`;
+    ${body}`;
+}
+
+/* 「复制全部链接」的文本：标题 + 每个盘一行（带提取码），方便直接发出去。 */
+function allLinksText() {
+  const payload = state.lastResult || {};
+  const list = payload.resources || [payload];
+  const lines = [];
+  for (const r of list) {
+    if (!(r.items || []).length) continue;
+    lines.push(`【${r.title || ""}】`);
+    for (const i of r.items) {
+      lines.push(`${panLabel(i.pan)}：${i.link}${i.pwd ? ` 提取码 ${i.pwd}` : ""}`);
+    }
+  }
+  return lines.join("\n");
 }
 
 /* ---------------- 上传进度（I-019）----------------
@@ -339,30 +462,43 @@ function rowClass(stage) {
   return "";
 }
 
-function stageLine(job) {
+/* 单资源的一句话状态：给批量列表和单资源标题行共用。 */
+function jobSummary(job) {
   const rows = Object.values(job.pans || {});
-  const total = rows.length;
   if (job.status === "failed") return (job.error && job.error.msg) || "上传失败";
   if (job.status === "done") {
     const ok = rows.filter((r) => r.stage === "done" || r.stage === "skipped").length;
     const doc = job.writer
       ? ` · ${writerLabel(job.writer.name)}${job.writer.stage === "done" ? "已写入" : "未写入"}`
       : "";
-    return `已完成 · ${ok}/${total} 个网盘${doc}`;
+    return `完成 · ${ok}/${rows.length} 个网盘${doc}`;
   }
+  if (!job.scanned) return job.stage === "queued" ? "排队中" : "准备中";
   if (job.stage === "writing") {
     return `网盘已传完，正在写入${job.writer ? writerLabel(job.writer.name) : "文档"}…`;
   }
   if (job.stage === "finalizing") return "收尾中…";
-  if (job.stage === "queued") return "准备中…";
+  const cur = rows.find((r) => r.stage === "uploading");
+  if (cur) {
+    const done = rows.filter((r) => ["done", "skipped", "failed"].includes(r.stage)).length;
+    return `上传中 · ${done}/${rows.length} 个盘 · ${pctOf(cur)}%`;
+  }
   const settled = rows.filter((r) => ["done", "skipped", "failed"].includes(r.stage)).length;
-  return `上传到网盘 · 已完成 ${settled}/${total} 个网盘`;
+  return `已完成 ${settled}/${rows.length} 个网盘`;
+}
+
+/* 一个资源的总进度：各盘串行跑，取跑得最远的那个盘。 */
+function jobProgress(job) {
+  if (job.status === "done" || job.status === "failed") return 100;
+  const rows = Object.values(job.pans || {});
+  return rows.length ? Math.round(rows.reduce((m, r) => Math.max(m, pctOf(r)), 0)) : 0;
 }
 
 function renderTransfer(loaded, total) {
   const p = total ? Math.round((loaded / total) * 100) : 0;
+  const n = state.picked.length;
   $("#progress").classList.remove("hidden");
-  $("#pg-title").textContent = state.file ? state.file.name : "正在上传";
+  $("#pg-title").textContent = n > 1 ? `正在交 ${n} 个文件` : "正在上传";
   $("#pg-stage").textContent = `把文件交给本地服务 · ${p}%`;
   $("#pg-rows").innerHTML = `
     <div class="pg-row">
@@ -371,16 +507,11 @@ function renderTransfer(loaded, total) {
       <span class="pg-text">${fmtSize(loaded)} / ${fmtSize(total)}</span>
       <span class="pg-file"></span>
     </div>`;
+  $("#pg-detail").innerHTML = "";
   $("#pg-steps").innerHTML = "";
 }
 
-function renderProgress(job) {
-  state.job = job;
-  const box = $("#progress");
-  box.classList.remove("hidden");
-  $("#pg-title").textContent = job.title || job.filename || "正在上传";
-  $("#pg-stage").textContent = stageLine(job);
-
+function panRows(job) {
   const rows = Object.keys(job.pans || {}).map((name) => {
     const row = job.pans[name];
     const p = pctOf(row);
@@ -406,63 +537,124 @@ function renderProgress(job) {
       <span class="pg-file"></span>
     </div>`);
   }
+  return rows.join("");
+}
 
-  $("#pg-rows").innerHTML = rows.join("");
+function stepsHtml(job) {
   // 时间线「最新在上」：进度是看当下，不需要往下滚
-  $("#pg-steps").innerHTML = (job.steps || []).slice().reverse().map((s) => {
+  return ((job && job.steps) || []).slice().reverse().map((s) => {
     const who = s.pan ? panLabel(s.pan) : (s.writer ? writerLabel(s.writer) : "");
     return `<li><span class="pg-time">${esc(s.at)}</span>${who ? `<b>${esc(who)}</b> ` : ""}${esc(s.text)}</li>`;
   }).join("");
 }
 
-function stopJobPolling() {
-  if (state.jobTimer) {
-    clearInterval(state.jobTimer);
-    state.jobTimer = null;
+function batchLine(batch, list) {
+  const running = list.find((j) => j.status === "running");
+  const done = list.filter((j) => j.status !== "running").length;
+  if (batch.status !== "running") {
+    const failed = list.filter((j) => j.status === "failed").length;
+    return `全部结束 · ${list.length} 个资源${failed ? ` · ${failed} 个失败` : ""}`;
+  }
+  const where = running
+    ? `正在跑「${running.title || running.filename || ""}」`
+    : "准备中";
+  return `${done}/${list.length} 个资源已结束 · ${where}`;
+}
+
+/* 批量进度：资源清单（每行一条总进度）+ 当前资源的分盘细节 + 时间线。 */
+function renderBatch(batch) {
+  state.batch = batch;
+  const list = batch.resources || [];
+  const multi = list.length > 1;
+  $("#progress").classList.remove("hidden");
+  $("#pg-title").textContent = multi
+    ? `批量上传 · ${list.length} 个资源`
+    : (list[0] ? (list[0].title || list[0].filename) : "正在上传");
+  $("#pg-stage").textContent = multi
+    ? batchLine(batch, list)
+    : jobSummary(list[0] || {});
+
+  if (multi) {
+    $("#pg-rows").innerHTML = list.map((j) => `
+      <div class="pg-row pg-res-row${j.status === "failed" ? " bad" : (j.status === "done" ? " ok" : "")}">
+        <span class="pg-res-name" title="${esc(j.title || j.filename)}">${esc(j.title || j.filename)}</span>
+        <div class="pg-bar"><i style="width:${jobProgress(j)}%"></i></div>
+        <span class="pg-text">${esc(jobSummary(j))}</span>
+      </div>`).join("");
+    const cur = list.find((j) => j.status === "running") || list[list.length - 1];
+    $("#pg-detail").innerHTML = cur
+      ? `<p class="pg-detail-head">当前「${esc(cur.title || cur.filename)}」</p>${panRows(cur)}`
+      : "";
+    $("#pg-steps").innerHTML = stepsHtml(cur);
+  } else {
+    const job = list[0] || {};
+    $("#pg-rows").innerHTML = panRows(job);
+    $("#pg-detail").innerHTML = "";
+    $("#pg-steps").innerHTML = stepsHtml(job);
   }
 }
 
-function pollJob(jobId) {
-  stopJobPolling();
+function stopBatchPolling() {
+  if (state.batchTimer) {
+    clearInterval(state.batchTimer);
+    state.batchTimer = null;
+  }
+}
+
+function pollBatch(batchId) {
+  stopBatchPolling();
   const tick = async () => {
-    let job;
+    let batch;
     try {
-      job = await api(`/api/jobs/${jobId}`);
+      batch = await api(`/api/batches/${batchId}`);
     } catch (e) {
-      stopJobPolling();
+      stopBatchPolling();
       setBusy(false);
       showToast(`${e.msg}（${e.code}）${e.hint ? " 怎么办: " + e.hint : ""}`);
       return;
     }
-    renderProgress(job);
-    if (job.status === "running") return;
+    renderBatch(batch);
+    if (batch.status === "running") return;
 
-    stopJobPolling();
+    stopBatchPolling();
     setBusy(false);
-    if (job.status === "done") {
-      renderResult(job.result || {});
-      finishUpload(job.result || {});
-    } else {
-      refreshRecords();
-      const err = job.error || {};
-      showToast(`${err.msg || "上传失败"}${err.code ? `（${err.code}）` : ""}${err.hint ? " 怎么办: " + err.hint : ""}`);
+    const results = (batch.resources || [])
+      .filter((j) => j.status === "done" && j.result)
+      .map((j) => j.result);
+    if (results.length) {
+      renderResult(batch.resources.length > 1
+        ? { count: results.length, resources: results }
+        : results[0]);
     }
+    finishUpload(batch);
   };
-  state.jobTimer = setInterval(tick, 500);
+  state.batchTimer = setInterval(tick, 500);
   tick();
 }
 
-function finishUpload(r) {
-  const fails = r.failed || [];
+function finishUpload(batch) {
+  const list = batch.resources || [];
+  const fails = list.filter((j) => j.status === "failed");
+  const pansFailed = list.reduce((n, j) => n + ((j.result && j.result.failed) || []).length, 0);
+  const written = list.filter((j) => j.writer && j.writer.stage === "done").length;
   if (fails.length) {
-    showToast(fails.map((f) =>
-      `${panLabel(f.pan)}失败：${f.msg}${f.hint ? `（怎么办: ${f.hint}）` : ""}`).join("；"));
-  } else if (state.job && state.job.writer && state.job.writer.stage === "done") {
-    showToast("上传完成，飞书文档已写入", false);
+    showToast(fails.map((j) => {
+      const e = j.error || {};
+      return `「${j.title || j.filename}」失败：${e.msg || "未知原因"}`
+        + `${e.hint ? `（怎么办: ${e.hint}）` : ""}`;
+    }).join("；"));
+  } else if (pansFailed) {
+    // 部分盘失败时，提示条也要说清「哪个盘、为什么、怎么办」，别只报个数（I-008 A5）
+    const panFails = list.flatMap((j) => (j.result && j.result.failed) || []);
+    const text = panFails.slice(0, 2).map((f) =>
+      `${panLabel(f.pan)}失败：${f.msg}${f.hint ? `（怎么办: ${f.hint}）` : ""}`).join("；");
+    showToast(text + (panFails.length > 2 ? `；等 ${panFails.length} 个网盘` : ""));
+  } else if (written) {
+    showToast(`上传完成 · ${list.length} 个资源，飞书已写入 ${written} 节`, false);
   } else {
-    showToast("上传完成", false);
+    showToast(`上传完成 · ${list.length} 个资源`, false);
   }
-  setFile(null);
+  setPicked([]);
   refreshRecords();
 }
 
@@ -494,30 +686,35 @@ function uploadWithProgress(fd, onProgress) {
 async function doUpload(ev) {
   ev.preventDefault();
   if (state.busy) return;
-  if (!state.file) { showToast("先选一个文件，再点上传"); return; }
+  if (!state.picked.length) { showToast("先选文件或文件夹，再点上传"); return; }
   const targets = selectedTargets();
   if (!targets.length) { showToast("至少勾选一个网盘"); return; }
 
+  const size = state.picked.reduce((s, p) => s + p.file.size, 0);
   const fd = new FormData();
-  fd.append("file", state.file);
+  for (const p of state.picked) fd.append("files", p.file, p.file.name);
+  fd.append("paths", JSON.stringify(state.picked.map((p) => p.rel)));
   fd.append("pans", JSON.stringify(targets));
-  fd.append("title", $("#title").value.trim());
+  fd.append("title", $("#title").disabled ? "" : $("#title").value.trim());
   fd.append("date_dir", $("#date-dir").checked ? "1" : "0");
   fd.append("doc", $("#write-doc").checked ? "feishu" : "");
 
   setBusy(true, "上传中…");
   $("#result").className = "result hidden";
-  state.job = null;
-  renderTransfer(0, state.file.size);
+  state.batch = null;
+  renderTransfer(0, size);
   try {
     const r = await uploadWithProgress(fd, renderTransfer);
-    if (r && r.job_id) {          // 服务端交后台跑，进度靠轮询
-      pollJob(r.job_id);
+    if (r && r.batch_id) {        // 服务端交后台跑，进度靠轮询整批
+      pollBatch(r.batch_id);
       return;
     }
-    renderResult(r || {});        // 兼容同步返回（旧服务 / sync=1）
+    renderResult(r || {});        // 兼容同步返回（sync=1 / 旧服务）
     setBusy(false);
-    finishUpload(r || {});
+    if (r && r.resources) {
+      finishUpload({ resources: r.resources.map((res) => (
+        { status: "done", result: res, writer: null, title: res.title })) });
+    }
   } catch (e) {
     setBusy(false);
     $("#progress").classList.add("hidden");
@@ -525,15 +722,59 @@ async function doUpload(ev) {
   }
 }
 
+/* 把拖进来的东西读成 [{file, rel}]：目录递归展开并保留相对路径。
+ * `webkitGetAsEntry()` 是 Chrome/Edge 的能力；拿不到就退回平铺的 files。 */
+function walkEntry(entry, prefix, out) {
+  return new Promise((resolve) => {
+    if (!entry) { resolve(); return; }
+    if (entry.isFile) {
+      entry.file((file) => {
+        out.push({ file, rel: `${prefix}${file.name}` });
+        resolve();
+      }, resolve);
+      return;
+    }
+    const reader = entry.createReader();
+    const step = () => reader.readEntries(async (batch) => {
+      if (!batch.length) { resolve(); return; }
+      for (const child of batch) await walkEntry(child, `${prefix}${entry.name}/`, out);
+      step();               // readEntries 每次最多给 100 条，读到空为止
+    }, resolve);
+    step();
+  });
+}
+
+async function readDrop(dt) {
+  const entries = Array.from(dt.items || [])
+    .map((it) => (it.webkitGetAsEntry ? it.webkitGetAsEntry() : null))
+    .filter(Boolean);
+  if (!entries.length) {
+    return Array.from(dt.files || []).map((f) => ({ file: f, rel: f.name }));
+  }
+  const out = [];
+  for (const entry of entries) await walkEntry(entry, "", out);
+  return out;
+}
+
 function initUpload() {
   const drop = $("#drop");
   const input = $("#file-input");
+  const dirInput = $("#dir-input");
+  const pick = (box) => Array.from(box.files || []).map((f) => ({
+    file: f, rel: f.webkitRelativePath || f.name,
+  }));
 
   drop.addEventListener("click", () => input.click());
   drop.addEventListener("keydown", (ev) => {
     if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); input.click(); }
   });
-  input.addEventListener("change", () => setFile(input.files[0]));
+  input.addEventListener("change", () => { setPicked(pick(input)); input.value = ""; });
+  dirInput.addEventListener("change", () => {
+    setPicked(pick(dirInput));
+    dirInput.value = "";
+  });
+  $("#pick-dir").addEventListener("click", () => dirInput.click());
+  $("#pick-clear").addEventListener("click", () => setPicked([]));
 
   ["dragenter", "dragover"].forEach((name) =>
     drop.addEventListener(name, (ev) => {
@@ -545,10 +786,17 @@ function initUpload() {
       ev.preventDefault();
       drop.classList.remove("dragging");
     }));
-  drop.addEventListener("drop", (ev) => {
-    const f = ev.dataTransfer && ev.dataTransfer.files[0];
-    if (f) setFile(f);
+  drop.addEventListener("drop", async (ev) => {
+    const items = await readDrop(ev.dataTransfer || {});
+    setPicked(items);
+    if (!items.length) showToast("文件夹里没有文件；放入文件后再上传");
   });
+
+  // 拖歪了（落在拖拽区外）时别让浏览器把文件当页面打开——直接吞掉
+  ["dragover", "drop"].forEach((name) =>
+    document.addEventListener(name, (ev) => {
+      if (!ev.target.closest || !ev.target.closest("#drop")) ev.preventDefault();
+    }));
 
   $("#upload-form").addEventListener("submit", doUpload);
 
@@ -601,7 +849,7 @@ function renderRecords() {
       <td class="nowrap">${esc(fmtTime(t.created_at))}</td>
       <td>
         <div class="cell-title">${esc(t.title)}</div>
-        <div class="cell-sub">${esc(t.filename)}${t.size ? ` · ${fmtSize(t.size)}` : ""}</div>
+        <div class="cell-sub">${esc(t.filename)} · ${esc(kindText(t))}${t.size ? ` · ${fmtSize(t.size)}` : ""}</div>
       </td>
       <td>${(t.items || []).map(itemCell).join("")}</td>
       <td>${statusBadge(t.status)}</td>
@@ -673,6 +921,7 @@ async function copyText(text) {
 document.addEventListener("click", (ev) => {
   const copy = ev.target.closest("[data-copy]");
   if (copy) { copyText(copy.dataset.copy); return; }
+  if (ev.target.closest("[data-copy-all]")) { copyText(allLinksText()); return; }
   const retry = ev.target.closest("[data-retry]");
   if (retry) retryRecord(retry.dataset.retry, retry);
 });
