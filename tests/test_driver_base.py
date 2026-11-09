@@ -65,11 +65,11 @@ class RegistryTests(unittest.TestCase):
                 def list(self, remote_dir): ...
 
     def test_default_delete_says_unsupported(self):
-        """没实现 delete 的驱动（老驱动 / 测试桩）不因新增接口而崩：报 PUP-107。"""
+        """没实现 delete 的驱动（老驱动 / 测试桩）不因新增接口而崩：报 PUP-422。"""
         d = DummyDriver()
         with self.assertRaises(ProjectError) as cm:
-            d.delete("/a")
-        self.assertEqual(cm.exception.code, "PUP-107")
+            d.delete(["/a"])
+        self.assertEqual(cm.exception.code, "PUP-422")
         self.assertIn("不支持删除", str(cm.exception))
 
 

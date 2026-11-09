@@ -351,7 +351,7 @@ class RecordsTests(unittest.TestCase):
 
 
 class _DeleteDriver:
-    """假驱动：只实现 delete，记录被删的路径；missing 集合里的路径视为远端不存在。"""
+    """假驱动：只实现批量 delete；missing 集合里的路径视为远端不存在。"""
 
     name = "stubdel"
 
@@ -359,11 +359,15 @@ class _DeleteDriver:
         self.deleted = []
         self.missing = set(missing)
 
-    def delete(self, remote_path):
-        self.deleted.append(remote_path)
-        if remote_path in self.missing:
-            return {"path": remote_path, "deleted": False, "missing": True}
-        return {"path": remote_path, "deleted": True, "missing": False}
+    def delete(self, remote_paths, *, to_trash=True):
+        out = {"deleted": [], "missing": [], "failed": []}
+        for p in remote_paths:
+            if p in self.missing:
+                out["missing"].append(p)
+            else:
+                self.deleted.append(p)
+                out["deleted"].append(p)
+        return out
 
 
 class RemoteDeleteTests(unittest.TestCase):
