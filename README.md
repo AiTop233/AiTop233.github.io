@@ -10,7 +10,7 @@
 
 ```
 site/
-├── data/resources.json        ← 唯一内容源（540 条：分类 / 标题 / 链接 / 提取码 / 备注）
+├── data/resources.json        ← 唯一内容源（540 条：分类 / 标题 / 链接（可多盘）/ 提取码 / 备注）
 ├── index.md                   ← 首页（分类卡片，数量从 JSON 算）
 ├── bilibili/ geektime/ movies/ ebooks/ tutorials/ software/ music/
 │   └── index.md               ← 分类页：import JSON，只负责渲染
@@ -33,7 +33,17 @@ npm run add -- --category movies --title "片名" \
 
 - 分类只能是 `bilibili / geektime / movies / ebooks / tutorials / software / music`
 - 极客时间要带 `--group column`（专栏课）或 `--group video`（视频课）
-- 按 `--link` 去重：已存在的链接直接跳过（退出码 2），加 `--force` 才会覆盖
+- 一个资源同时传了多个盘时用 `--links`（卡片会按盘列出多条，各带各的提取码）：
+
+```bash
+npm run add -- --category movies --title "片名" --links '[
+  {"pan":"baidu","url":"https://pan.baidu.com/s/xxx","code":"k9x2"},
+  {"pan":"quark","url":"https://pan.quark.cn/s/yyy"}
+]'
+```
+
+  数据结构上 `links` 是权威，`link` / `code` 保留成第一条的镜像，旧读法照常可用
+- 按链接去重：任意一条链接已存在就跳过（退出码 2），加 `--force` 才替换
 - 批量：`npm run add -- --json '[{...},{...}]'` 或 `--json -` 从 stdin 读
 - 先看会改什么：加 `--dry-run`
 - 写完跑 `npm run build` 自查，再提交

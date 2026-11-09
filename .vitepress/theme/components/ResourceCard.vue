@@ -1,22 +1,39 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+
+const PAN_NAMES: Record<string, string> = {
+  baidu: '百度',
+  quark: '夸克',
+  uc: 'UC',
+  aliyun: '阿里',
+  '115': '115',
+  '123': '123',
+  xunlei: '迅雷',
+  tianyi: '天翼',
+}
 
 const props = defineProps<{
   title: string        // 资源名称
-  link: string         // 网盘链接
-  code?: string        // 提取码（可选）
+  links: Array<{ pan?: string; url: string; code?: string }>  // 一个资源可有多条（多盘）
   size?: string        // 文件大小（可选）
   note?: string        // 备注（可选）
 }>()
 
-const copied = ref(false)
+// 过滤掉空链接，并给盘型一个中文名（没写盘型的旧条目就不显示徽标）
+const shown = computed(() =>
+  (props.links || [])
+    .filter((l) => l && l.url)
+    .map((l) => ({ ...l, label: l.pan ? PAN_NAMES[l.pan] || l.pan : '' })),
+)
 
-function copyCode() {
-  if (!props.code) return
-  navigator.clipboard.writeText(props.code)
-  copied.value = true
+const copied = ref('')
+
+function copyCode(code?: string) {
+  if (!code) return
+  navigator.clipboard.writeText(code)
+  copied.value = code
   setTimeout(() => {
-    copied.value = false
+    if (copied.value === code) copied.value = ''
   }, 2000)
 }
 </script>
@@ -31,19 +48,22 @@ function copyCode() {
 
     <!-- 资源信息 -->
     <div class="card-body">
-      <div class="card-row link-row">
-        <span class="label">🔗 链接</span>
-        <a :href="link" target="_blank" rel="noopener noreferrer" class="link-text">
-          {{ link }}
-        </a>
-      </div>
+      <div v-for="l in shown" :key="l.url" class="link-block">
+        <div class="card-row link-row">
+          <span class="label">🔗 链接</span>
+          <span v-if="l.label" class="pan-badge">{{ l.label }}</span>
+          <a :href="l.url" target="_blank" rel="noopener noreferrer" class="link-text">
+            {{ l.url }}
+          </a>
+        </div>
 
-      <div v-if="code" class="card-row">
-        <span class="label">🔑 提取码</span>
-        <code class="code-badge">{{ code }}</code>
-        <button class="copy-btn" @click="copyCode">
-          {{ copied ? '✅ 已复制' : '📋 复制' }}
-        </button>
+        <div v-if="l.code" class="card-row">
+          <span class="label">🔑 提取码</span>
+          <code class="code-badge">{{ l.code }}</code>
+          <button class="copy-btn" @click="copyCode(l.code)">
+            {{ copied === l.code ? '✅ 已复制' : '📋 复制' }}
+          </button>
+        </div>
       </div>
 
       <div class="card-meta">
@@ -125,6 +145,26 @@ function copyCode() {
 
 .link-text:hover {
   text-decoration: underline;
+}
+
+/* 多盘：同一资源的第二条链接与上一条隔开 */
+.link-block + .link-block {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--vp-c-divider);
+}
+
+/* 盘型徽标：百度 / 夸克 …（旧条目没有盘型就不显示） */
+.pan-badge {
+  flex: 0 0 auto;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 /* 提取码 */

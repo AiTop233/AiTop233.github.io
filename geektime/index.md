@@ -14,6 +14,9 @@ head:
 import data from '../data/resources.json'
 const columnCourses = data.items.filter((r) => r.category === 'geektime' && r.group === 'column')
 const videoCourses = data.items.filter((r) => r.category === 'geektime' && r.group === 'video')
+
+// 旧条目是单链接（link/code），新条目可以是多盘（links）
+const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, code: r.code }])
 </script>
 
 极客时间课程资源合集，涵盖 **{{ columnCourses.length + videoCourses.length }}** 门优质课程（专栏课 {{ columnCourses.length }} 门 + 视频课 {{ videoCourses.length }} 门）。
@@ -28,10 +31,10 @@ Java · Python · Go · C++ · Rust · JavaScript · Vue · React · Kotlin · S
 
 <ResourceCard
   v-for="r in columnCourses"
-  :key="r.link"
+  :key="r.link || r.title"
   :title="r.title"
-  :link="r.link"
-  :code="r.code"
+  :links="linksOf(r)"
+  :size="r.size"
   :note="r.note"
 />
 
@@ -41,9 +44,9 @@ Java · Python · Go · C++ · Rust · JavaScript · Vue · React · Kotlin · S
 
 <ResourceCard
   v-for="r in videoCourses"
-  :key="r.link"
+  :key="r.link || r.title"
   :title="r.title"
-  :link="r.link"
-  :code="r.code"
+  :links="linksOf(r)"
+  :size="r.size"
   :note="r.note"
 />

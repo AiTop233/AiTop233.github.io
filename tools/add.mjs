@@ -7,10 +7,15 @@
  *
  * 用法：
  *   node tools/add.mjs --category movies --title "片名" --link https://pan.quark.cn/s/xxx \
- *                      [--code 8x2k] [--size 12.5GB] [--note 4K] [--group column]
+ *                      [--pan quark] [--code 8x2k] [--size 12.5GB] [--note 4K] [--group column]
+ *   node tools/add.mjs --category movies --title "片名" \
+ *                      --links '[{"pan":"baidu","url":"https://pan.baidu.com/s/x","code":"k9x2"},{"pan":"quark","url":"https://pan.quark.cn/s/y"}]'
  *   node tools/add.mjs --json -            # 从 stdin 读数组（批量同步用）
  *   node tools/add.mjs --file batch.json   # 从文件读数组
- *   加 --dry-run 只看会改什么，不落盘；--force 允许链接重复
+ *   加 --dry-run 只看会改什么，不落盘；--force 允许链接重复（会替换旧条目）
+ *
+ * 一个资源可以有多条链接（同一次上传的百度 + 夸克）：写 `links` 数组，
+ * `link` / `code` 自动保留成第一条的镜像，旧读法不受影响。
  *
  * 退出码：0 有写入（或 dry-run 正常）；2 全部被去重跳过；1 参数/数据有错。
  */
@@ -52,6 +57,34 @@ function parseArgs(argv) {
   return out
 }
 
+function cleanLinks(item, title, where) {
+  const raw = Array.isArray(item.links) && item.links.length
+    ? item.links
+    : [{ pan: item.pan, url: item.link, code: item.code }]
+
+  const links = raw.map((l, i) => {
+    const url = String(l.url || l.link || '').trim()
+    if (!/^https?:\/\//i.test(url)) {
+      throw new Error(`${where}: 「${title}」第 ${i + 1} 条链接不是 http(s) 链接`)
+    }
+    const out = { url }
+    const pan = String(l.pan || '').trim()
+    if (pan) out.pan = pan
+    const code = String(l.code || '').trim()
+    if (code) out.code = code
+    return out
+  })
+
+  const seen = new Set()
+  const unique = links.filter((l) => {
+    if (seen.has(l.url)) return false
+    seen.add(l.url)
+    return true
+  })
+  if (!unique.length) throw new Error(`${where}: 「${title}」没有可用链接`)
+  return unique
+}
+
 function clean(item, where) {
   const category = String(item.category || '').trim()
   if (!CATEGORIES[category]) {
@@ -59,8 +92,6 @@ function clean(item, where) {
   }
   const title = String(item.title || '').trim()
   if (!title) throw new Error(`${where}: 缺 title`)
-  const link = String(item.link || '').trim()
-  if (!/^https?:\/\//i.test(link)) throw new Error(`${where}: 「${title}」的 link 不是 http(s) 链接`)
 
   const out = { category }
   const group = item.group ? String(item.group).trim() : ''
@@ -71,14 +102,24 @@ function clean(item, where) {
     out.group = group
   }
   out.title = title
-  out.link = link
-  for (const f of ['code', 'size', 'note']) {
+  // links 是权威结构（一个资源可多盘）；link / code 保留成第一条的镜像，方便旧工具读
+  out.links = cleanLinks(item, title, where)
+  out.link = out.links[0].url
+  if (out.links[0].code) out.code = out.links[0].code
+
+  for (const f of ['size', 'note']) {
     const v = item[f]
     if (v === undefined || v === null) continue
     const s = String(v).trim()
     if (s) out[f] = s
   }
   return out
+}
+
+/** 一条记录涉及的全部链接（兼容只有 link 的旧条目） */
+function urlsOf(item) {
+  if (Array.isArray(item.links) && item.links.length) return item.links.map((l) => l.url)
+  return item.link ? [item.link] : []
 }
 
 function readPayload(args) {
@@ -98,7 +139,9 @@ function main() {
   const incoming = payload
     ? (Array.isArray(payload) ? payload : payload.items || [payload])
     : [{ category: args.category, title: args.title, link: args.link,
-         code: args.code, size: args.size, note: args.note, group: args.group }]
+         links: args.links ? JSON.parse(args.links) : undefined,
+         pan: args.pan, code: args.code, size: args.size, note: args.note,
+         group: args.group }]
 
   if (!incoming.length) {
     console.error('没有要写的条目')
@@ -108,16 +151,21 @@ function main() {
   const data = JSON.parse(readFileSync(DATA, 'utf8'))
   data.items = data.items || []
 
-  const byLink = new Map(data.items.map((it) => [it.link, it]))
+  // 去重按「任一条链接命中」算：同一个资源先发夸克、后补百度，不该变成两张卡片
+  const byUrl = new Map()
+  data.items.forEach((it) => urlsOf(it).forEach((u) => byUrl.set(u, it)))
+
   const fresh = []
   let skipped = 0
   incoming.forEach((raw, i) => {
     const item = clean(raw, `第 ${i + 1} 条`)
-    if (byLink.has(item.link) && !args.force) { skipped += 1; return }
-    if (byLink.has(item.link) && args.force) {
-      data.items = data.items.filter((it) => it.link !== item.link)
+    const hit = urlsOf(item).some((u) => byUrl.has(u))
+    if (hit && !args.force) { skipped += 1; return }
+    if (hit && args.force) {
+      const old = urlsOf(item).map((u) => byUrl.get(u)).filter(Boolean)
+      data.items = data.items.filter((it) => !old.includes(it))
     }
-    byLink.set(item.link, item)
+    urlsOf(item).forEach((u) => byUrl.set(u, item))
     fresh.push(item)
   })
 

@@ -13,6 +13,9 @@ head:
 // 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
 import data from '../data/resources.json'
 const resources = data.items.filter((r) => r.category === 'software')
+
+// 旧条目是单链接（link/code），新条目可以是多盘（links）
+const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, code: r.code }])
 </script>
 
 实用软件合集，按需取用。
@@ -25,8 +28,7 @@ const resources = data.items.filter((r) => r.category === 'software')
   v-for="r in resources"
   :key="r.title"
   :title="r.title"
-  :link="r.link"
-  :code="r.code"
+  :links="linksOf(r)"
   :size="r.size"
   :note="r.note"
 />
