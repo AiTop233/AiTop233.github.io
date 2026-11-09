@@ -12,17 +12,20 @@
 ## 2. 组件边界
 
 - 目录 / 文件：`static/app.js` 内按区块组织为独立函数组件（renderUpload / renderRecords / renderRules / renderSettings），共享 state 对象；不引入框架
-- 组件目录、顶层组件：上传区（拖拽区**支持文件夹** + 表单 + 结果列表）、记录表、规则卡片列表、设置表单、状态灯条
+- 组件目录、顶层组件：上传区（拖拽区**支持文件夹** + 表单 + **进度卡片** + 结果列表）、记录表、规则卡片列表、设置表单、状态灯条
+- 进度卡片（I-019）：标题行（任务标题 + 阶段句）、每盘一行（盘名 / 进度条 / 状态文字 / 当前文件名）、飞书一行、进展时间线（**最新在上**，最多回看 40 条）；组件边界仍是 `renderProgress(job)` 一个函数，输入是 `/api/jobs/{id}` 快照
 - 浮层：无模态框（错误用顶部提示条，确认用原生 confirm）
 
 ## 3. 状态归属
 
-- 目录 / 文件：`app.js` 顶层 `state = {records, rules, status, config}`
-- 局部（表单输入）留在 DOM；跨区块共享数据（记录 / 规则 / 状态）统一放 state，由 API 响应整体刷新；URL 不承载状态（单用户本地页）
+- 目录 / 文件：`app.js` 顶层 `state = {status, options, file, tasks, failures, busy, job, jobTimer}`
+- 局部（表单输入）留在 DOM；跨区块共享数据（记录 / 规则 / 状态 / 表单选项）统一放 state，由 API 响应整体刷新；URL 不承载状态（单用户本地页）
+- 进度是唯一「高频」状态：`state.job` 存最近一次轮询快照，`state.jobTimer` 存 `setInterval` 句柄；离开页面/任务结束必须 `clearInterval`（`stopJobPolling()`）
 
 ## 4. 数据访问
 
 - 目录 / 文件：`app.js` 顶部 `api()` 封装（fetch + JSON + 错误规整）；全部走 `/api/*`
+- 上传用 `XMLHttpRequest`（`uploadWithProgress`）：`fetch` 拿不到上传字节进度，而「把文件交给本地服务」这一段也要给人看见；服务端 `202` 后转 `GET /api/jobs/{id}` 轮询（0.5 秒）
 - 数据层、缓存、错误分类：不做本地缓存（每次操作后重拉对应区块）；错误按 HTTP 状态 + 响应体 code/hint 归类，hint 直接展示
 
 ## 5. 运行时错误与日志
@@ -44,5 +47,5 @@
 
 ## 8. 测试与目录
 
-- 目录 / 文件：`tests/test_web_api.py`（FastAPI TestClient 打桩 core）
+- 目录 / 文件：`tests/test_web_upload.py`（FastAPI TestClient 打桩 core）、`tests/test_jobs.py`（进度板状态机）
 - 测试位置、e2e、目录：API 契约测试（路由 / 状态码 / 错误信封）；SPA 交互不写自动化（人验收）；不引 e2e 框架
