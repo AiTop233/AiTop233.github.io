@@ -97,6 +97,11 @@ class WebUploadTests(unittest.TestCase):
         files = {"file": ("原名.txt", b"hello panup", "text/plain")}
         return TestClient(self._app()).post("/api/upload", data=data, files=files)
 
+    @staticmethod
+    def _one(r):
+        """同步返回的一批结果里的第一个资源（I-018 起接口返回 {count, resources}）。"""
+        return r.json()["resources"][0]
+
     def test_upload_passes_form_to_pipeline(self):
         r = self._post(pans=json.dumps(
             [{"pan": "baidu", "dir": "/来自电脑"},
@@ -108,7 +113,7 @@ class WebUploadTests(unittest.TestCase):
         self.assertEqual(call["title"], "主题名")
         self.assertFalse(call["date_dir"])
         self.assertEqual(call["writer_names"], [])
-        self.assertEqual(r.json()["items"][0]["link"], "https://pan.baidu.com/s/x")
+        self.assertEqual(self._one(r)["items"][0]["link"], "https://pan.baidu.com/s/x")
 
     def test_upload_keeps_original_filename_in_persistent_inbox(self):
         r = self._post()
@@ -140,7 +145,7 @@ class WebUploadTests(unittest.TestCase):
     def test_upload_title_and_date_flag(self):
         self._post(title="  ", date_dir="1", doc="feishu")
         call = self.runner.calls[0]
-        self.assertIsNone(call["title"])          # 空标题交给管道回退文件名
+        self.assertEqual(call["title"], "原名")   # 空标题 → 文件名去扩展名
         self.assertTrue(call["date_dir"])
         self.assertEqual(call["writer_names"], ["feishu"])
 
@@ -156,7 +161,7 @@ class WebUploadTests(unittest.TestCase):
                   "sync": "1"},
             files={"file": ("a.txt", b"x", "text/plain")})
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()["failed"][0]["code"], "PAN-quark-noauth")
+        self.assertEqual(self._one(r)["failed"][0]["code"], "PAN-quark-noauth")
 
     def test_upload_rejects_bad_pans(self):
         for raw in ("", "not json", "[]", '{"pan":"baidu"}'):
@@ -173,7 +178,8 @@ class WebUploadTests(unittest.TestCase):
         r = TestClient(self._app()).post(
             "/api/upload", data={"pans": json.dumps([{"pan": "baidu"}])})
         self.assertEqual(r.status_code, 400)
-        self.assertEqual(r.json()["code"], "PUP-400")
+        self.assertEqual(r.json()["code"], "PUP-401")
+        self.assertTrue(r.json()["hint"])
 
     def test_path_like_filename_is_flattened(self):
         client = TestClient(self._app())
@@ -200,7 +206,8 @@ class WebUploadTests(unittest.TestCase):
 
         r = self._post_async(client)
         self.assertEqual(r.status_code, 202, r.text)
-        job_id = r.json()["job_id"]
+        self.assertEqual(r.json()["count"], 1)
+        job_id = r.json()["resources"][0]["job_id"]
         self.assertTrue(job_id.startswith("j-"))
 
         # 跑在上传中：能看见「哪个盘、第几个文件、传了多少字节、飞书还没写」
@@ -229,7 +236,8 @@ class WebUploadTests(unittest.TestCase):
         client = TestClient(self._app(boom))
         r = self._post_async(client)
         self.assertEqual(r.status_code, 202)
-        done = _poll(client, r.json()["job_id"], lambda j: j["status"] != "running")
+        done = _poll(client, r.json()["resources"][0]["job_id"],
+                     lambda j: j["status"] != "running")
         self.assertEqual(done["status"], "failed")
         self.assertEqual(done["error"]["code"], "PAN-name-conflict")
         self.assertIn("换个标题", done["error"]["hint"])
