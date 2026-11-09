@@ -59,14 +59,23 @@ function normalize(raw, category, group, where) {
 
 const items = []
 const report = []
-for (const page of PAGES) {
-  const file = resolve(ROOT, page.file)
-  const text = readFileSync(file, 'utf8')
-  for (const [varName, group] of page.vars) {
-    const list = grabArray(text, varName, page.file)
-    list.forEach((raw) => items.push(normalize(raw, page.category, group, page.file)))
-    report.push(`${page.category}${group ? `/${group}` : ''}: ${list.length}`)
+try {
+  for (const page of PAGES) {
+    const file = resolve(ROOT, page.file)
+    const text = readFileSync(file, 'utf8')
+    for (const [varName, group] of page.vars) {
+      const list = grabArray(text, varName, page.file)
+      list.forEach((raw) => items.push(normalize(raw, page.category, group, page.file)))
+      report.push(`${page.category}${group ? `/${group}` : ''}: ${list.length}`)
+    }
   }
+} catch (e) {
+  if (String(e.message).includes('找不到 const')) {
+    console.error('分类页里已经没有内联数组了：内容以 data/resources.json 为准，不需要再抽取。')
+    console.error('本工具只在「从旧站迁移」时用一次；新增资源请用 tools/add.mjs。')
+    process.exit(1)
+  }
+  throw e
 }
 
 // 链接去重（同一分享被两处收录时留第一条）
