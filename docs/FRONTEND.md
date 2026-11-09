@@ -6,7 +6,7 @@
 ## 1. 入口与路由
 
 - 目录 / 文件：`src/panup/web/api.py`（FastAPI 应用与 REST 路由）、`src/panup/web/static/index.html` + `app.js` + `styles.css`（免构建 SPA，原生 JS）
-- 路由 / 布局 / 页面壳：单页三标签（上传 / 记录 / 监控）+ 设置页区块；`GET /` 返回 index.html；API 全部在 `/api/*` 下
+- 路由 / 布局 / 页面壳：单页四标签（上传 / 记录 / 监控 / 设置），顶部标签切换、无路由跳转；`GET /` 返回 index.html；API 全部在 `/api/*` 下
 - 权限入口：无登录（本机回环地址 127.0.0.1 单人使用；不做账号体系，与 PRD「不做」一致）
 
 ## 2. 组件边界
