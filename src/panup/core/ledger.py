@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS uploads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     group_id TEXT,
     title TEXT,
+    kind TEXT,
+    file_count INTEGER,
     local_path TEXT NOT NULL,
     file_hash TEXT NOT NULL,
     size INTEGER,
@@ -42,10 +44,11 @@ class Ledger:
         self._migrate()
 
     def _migrate(self) -> None:
-        """存量库补列（BACKEND §11）：旧库没有 group_id / title 时 ALTER 补上。
+        """存量库补列（BACKEND §11）：旧库没有 group_id / title / kind / file_count 时补上。
 
         旧行 group_id 回填 `legacy-<id>`（一次上传一行的旧语义），title 留空由
-        记录页回退显示文件名；不重建表、不丢数据。
+        记录页回退显示文件名；kind 视为 file、file_count 视为 1（旧语义即单文件）。
+        不重建表、不丢数据。
         """
         cols = {r[1] for r in self._conn.execute("PRAGMA table_info(uploads)")}
         if "group_id" not in cols:
@@ -55,6 +58,15 @@ class Ledger:
                 "WHERE group_id IS NULL OR group_id = ''")
         if "title" not in cols:
             self._conn.execute("ALTER TABLE uploads ADD COLUMN title TEXT")
+        if "kind" not in cols:
+            self._conn.execute("ALTER TABLE uploads ADD COLUMN kind TEXT")
+            self._conn.execute(
+                "UPDATE uploads SET kind = 'file' WHERE kind IS NULL")
+        if "file_count" not in cols:
+            self._conn.execute(
+                "ALTER TABLE uploads ADD COLUMN file_count INTEGER")
+            self._conn.execute(
+                "UPDATE uploads SET file_count = 1 WHERE file_count IS NULL")
         self._conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_uploads_group ON uploads(group_id)")
         self._conn.commit()
@@ -82,25 +94,28 @@ class Ledger:
 
     def record_start(self, *, local_path: str, file_hash: str, size: int,
                      pan: str, remote_path: str, group_id: str = "",
-                     title: str = "") -> int:
+                     title: str = "", kind: str = "file",
+                     file_count: int = 1) -> int:
         """记一条 pending；同键已有记录则复用该行（不违反唯一索引）。"""
         now = self._now()
         try:
             cur = self._conn.execute(
-                "INSERT INTO uploads (group_id, title, local_path, file_hash, "
-                "size, pan, remote_path, status, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)",
-                (group_id or f"legacy-{now}", title, local_path, file_hash,
-                 size, pan, remote_path, now, now))
+                "INSERT INTO uploads (group_id, title, kind, file_count, "
+                "local_path, file_hash, size, pan, remote_path, status, "
+                "created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)",
+                (group_id or f"legacy-{now}", title, kind, file_count,
+                 local_path, file_hash, size, pan, remote_path, now, now))
             self._conn.commit()
             return int(cur.lastrowid)
         except sqlite3.IntegrityError:
             self._conn.execute(
                 "UPDATE uploads SET status='pending', error_code=NULL, "
-                "group_id=?, title=?, updated_at=? WHERE local_path=? AND "
+                "group_id=?, title=?, kind=?, file_count=?, updated_at=? "
+                "WHERE local_path=? AND "
                 "file_hash=? AND pan=? AND remote_path=?",
-                (group_id or "", title, now, local_path, file_hash, pan,
-                 remote_path))
+                (group_id or "", title, kind, file_count, now, local_path,
+                 file_hash, pan, remote_path))
             self._conn.commit()
             cur = self._conn.execute(
                 "SELECT id FROM uploads WHERE local_path=? AND file_hash=? "
@@ -179,6 +194,8 @@ def _as_task(group_id: str, items: list[dict]) -> dict:
         "filename": Path(first["local_path"]).name,
         "local_path": first["local_path"],
         "size": first.get("size"),
+        "kind": first.get("kind") or "file",
+        "file_count": first.get("file_count") or 1,
         "created_at": min(i["created_at"] for i in items),
         "updated_at": max(i["updated_at"] for i in items),
         "status": status,

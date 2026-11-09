@@ -114,7 +114,7 @@ class CliTests(unittest.TestCase):
             ["upload", str(Path(self.tmp) / "nope.txt"), "--pan", "fake",
              "--dir", "/x", "--db", self.db], FakeCliDriver())
         self.assertNotEqual(code, 0)
-        self.assertIn("本地文件不存在", err)
+        self.assertIn("本地路径不存在", err)
 
     def test_date_dir_flag_reaches_pipeline(self):
         import panup.core.pipeline as pipeline
@@ -178,7 +178,23 @@ class MultiPanCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(out.count("https://e/s/1"), 2)
         uploads = [c for c in driver.calls if c[0] == "upload"]
-        self.assertEqual([c[1] for c in uploads], ["/A", "/B"])
+        # D-005：每个盘落成「远端目录/标题/」的资源文件夹
+        self.assertEqual([c[1] for c in uploads], ["/A/主题", "/B/主题"])
+
+    def test_upload_directory_creates_resource_folder(self):
+        pkg = Path(self.tmp) / "素材包"
+        (pkg / "子目录").mkdir(parents=True)
+        (pkg / "a.txt").write_text("a", encoding="utf-8")
+        (pkg / "子目录" / "b.txt").write_text("b", encoding="utf-8")
+        driver = FakeCliDriver()
+        code, out, _ = run_cli(
+            ["upload", str(pkg), "--pan", "baidu:/A", "--db", self.db], driver)
+        self.assertEqual(code, 0)
+        self.assertIn("文件夹（2 个文件）", out)
+        uploads = [c[1] for c in driver.calls if c[0] == "upload"]
+        self.assertEqual(sorted(uploads), ["/A/素材包", "/A/素材包/子目录"])
+        shares = [c[1] for c in driver.calls if c[0] == "share"]
+        self.assertEqual(shares, ["/A/素材包"])
 
     def test_unknown_pan_exits_nonzero(self):
         code, _out, err = run_cli(

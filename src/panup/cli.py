@@ -91,13 +91,21 @@ def cmd_upload(args) -> int:
         return 1
     ledger.close()
 
+    kind = result.get("kind") or "file"
+    count = result.get("file_count") or 1
+    shape = f"文件夹（{count} 个文件）" if kind == "folder" else "单文件"
+    print(f"资源「{result['title']}」{shape}")
+
     for item in result["items"]:
         if item["dedup"]:
             print(f"{item['pan']} 去重命中，未重新上传"
-                  "（同文件同目录已分享过；--force 强制重传）")
+                  "（同资源同标题已分享过；--force 强制重传）")
         else:
             rapid = "（秒传）" if item.get("rapid") else ""
-            print(f"已上传 {item['pan']} {item['path']}{rapid}")
+            skipped = item.get("skipped") or 0
+            skip_note = f"，跳过已存在 {skipped} 个" if skipped else ""
+            print(f"已上传 {item['pan']} {item['path']}{rapid}"
+                  f"（本次传 {item.get('uploaded', count)} 个{skip_note}）")
         print(f"  链接: {item['link']}")
         if item.get("pwd"):
             print(f"  提取码: {item['pwd']}")
@@ -194,13 +202,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    up = sub.add_parser("upload", help="上传文件/目录并返回分享链接")
-    up.add_argument("local_path", help="本地文件路径")
+    up = sub.add_parser("upload", help="上传文件或文件夹（一个资源 = 一个文件夹）")
+    up.add_argument("local_path", help="本地文件或文件夹路径（文件夹会整个传上去）")
     up.add_argument("--pan", required=True, action="append",
                     help="目标网盘，可重复：--pan 夸克 --pan baidu:/远端目录"
                          "（写成「盘名:目录」；只写盘名时用该盘默认目录）")
     up.add_argument("--title", default=None,
-                    help="写进文档的小节标题（缺省用文件名，不带扩展名）")
+                    help="资源标题，即网盘上的文件夹名（缺省用文件名/目录名）")
     up.add_argument("--dir", default=None,
                     help="单盘兜底目录：只给一个 --pan 且没写目录时用它")
     up.add_argument("--date-dir", action="store_true",
