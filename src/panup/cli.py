@@ -56,6 +56,13 @@ def _parse_targets(pans, fallback_dir=None) -> list[dict]:
         pan, sep, remote = text.partition(":")
         pan = pan.strip()
         remote = remote.strip()
+        if sep and not remote:
+            # 「盘名:」和「盘名」不是一回事：写了冒号就是声明要给目录，
+            # 空着不能静默退回默认目录，否则会传到意料之外的地方（I-016 A4）。
+            raise ConfigError(
+                f"网盘目录为空: {pan}:", code="PUP-104",
+                hint=f"要么写成 --pan {pan} 用默认目录，"
+                     f"要么补上目录 --pan {pan}:/远端目录")
         if not remote:
             remote = fallback_dir or _default_dir_for(pan)
         targets.append({"pan": pan, "remote_dir": remote})
