@@ -76,15 +76,24 @@ npm run assets      # 改了站点名/主色后重新生成图标与分享图
 自查脚本检查的是**产物**而不是配置，覆盖：canonical 唯一且指向自己、标题不重复、description 长度、
 JSON-LD 可解析、h1 唯一、favicon 存在、sitemap 覆盖所有页面、资源卡是否真的 SSR 进了 HTML。
 
-### 主动提交（可选）
+### 主动提交
 
 ```bash
 npm run ping -- --dry-run                 # 先看会提交哪些 URL
-BAIDU_TOKEN=xxx npm run ping              # 百度站长平台的 token
-INDEXNOW_KEY=xxx npm run ping             # 还需先建 public/<key>.txt，内容就是这串 key
+npm run ping                              # IndexNow 走 public/<key>.txt，key 自动认
+BAIDU_TOKEN=xxx npm run ping              # 百度站长平台的 token（没配就跳过）
+BING_API_KEY=xxx npm run ping             # Bing Webmaster Tools 的 API 密钥
 ```
 
-GitHub Pages 的服务器在境外，百度抓取间隔很长，主动推送能把收录从天级压到小时级。两个通道独立，没配就跳过。
+GitHub Pages 的服务器在境外，百度抓取间隔很长，主动推送能把收录从天级压到小时级。三个通道独立，没配就跳过。
+
+**IndexNow**（Bing 的即时提交，Yandex / Seznam / Naver 共用同一个端点）：key 是 `public/` 下那串
+32 位十六进制文件名，文件内容就是 key 本身，必须能按 `https://aitop233.github.io/<key>.txt`
+访问到——所以**改了 key 要等站点部署完成再推**，否则回 403。key 不是密码，可以放在仓库里。
+
+**Bing 官方 API** 反而需要账号：在 Bing Webmaster Tools 里添加站点（GitHub Pages 用 URL 前缀
+验证即可，`https://aitop233.github.io/`），然后「设置 → API 访问 → API 密钥」拿 key，每天 10000 条配额。
+它和 IndexNow 二选一都能推，一起跑会重复提交、浪费配额，日常用 IndexNow 就够。
 
 ## 本地预览
 
