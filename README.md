@@ -80,20 +80,34 @@ JSON-LD 可解析、h1 唯一、favicon 存在、sitemap 覆盖所有页面、�
 
 ```bash
 npm run ping -- --dry-run                 # 先看会提交哪些 URL
-npm run ping                              # IndexNow 走 public/<key>.txt，key 自动认
-BAIDU_TOKEN=xxx npm run ping              # 百度站长平台的 token（没配就跳过）
+npm run ping                              # 能上的都上，没配凭据的自动跳过
+npm run ping -- --global-only             # IndexNow 只打全球端点，不逐家打
+BAIDU_TOKEN=xxx npm run ping              # 百度普通收录的准入 token
+SO360_TOKEN=xxx npm run ping              # 360 站长平台的 URL 提交 token
 BING_API_KEY=xxx npm run ping             # Bing Webmaster Tools 的 API 密钥
 ```
 
-GitHub Pages 的服务器在境外，百度抓取间隔很长，主动推送能把收录从天级压到小时级。三个通道独立，没配就跳过。
+GitHub Pages 的服务器在境外，百度抓取间隔很长，主动推送能把收录从天级压到小时级。
 
-**IndexNow**（Bing 的即时提交，Yandex / Seznam / Naver 共用同一个端点）：key 是 `public/` 下那串
-32 位十六进制文件名，文件内容就是 key 本身，必须能按 `https://aitop233.github.io/<key>.txt`
-访问到——所以**改了 key 要等站点部署完成再推**，否则回 403。key 不是密码，可以放在仓库里。
+| 引擎 | 通道 | 要凭据吗 |
+|---|---|---|
+| Bing、Yandex、Naver、Seznam、Yep | IndexNow（全球端点分发 + 逐家直推） | 不要 |
+| Bing、DuckDuckGo、Yahoo | 同上（后两个用 Bing 的索引，跟着走） | 不要 |
+| 百度 | `data.zz.baidu.com` 普通收录 | 要 token |
+| 360 | `data.360.cn` 的 URL 提交 | 要 token |
+| Google | **没有可用通道** | — |
 
-**Bing 官方 API** 反而需要账号：在 Bing Webmaster Tools 里添加站点（GitHub Pages 用 URL 前缀
-验证即可，`https://aitop233.github.io/`），然后「设置 → API 访问 → API 密钥」拿 key，每天 10000 条配额。
-它和 IndexNow 二选一都能推，一起跑会重复提交、浪费配额，日常用 IndexNow 就够。
+**IndexNow**：key 是 `public/` 下那串 32 位十六进制文件名，文件内容就是 key 本身，必须能按
+`https://aitop233.github.io/<key>.txt` 访问到——所以**改了 key 要等站点部署完成再推**，否则回 403。
+key 不是密码，放仓库里没问题，`robots.txt` 里也声明了一份。全球端点会分发给所有参与方，逐家再打一遍
+是冗余兜底（每家独立计数，几条 URL 无压力）；2026-11-10 实测六个端点全部 200/202。
+
+**Google 确实推不了**：sitemap ping 端点 2023 年宣布废弃、2024 年起直接 404；Indexing API 只接受
+招聘页和直播页；唯一能主动提的是 Search Console 里手动提交 sitemap（要账号）。这里能做的是把
+`sitemap.xml` 写进 `robots.txt`，Googlebot 下次抓 robots 时会自己发现。
+
+**Bing 官方 API** 和 IndexNow 二选一都行：在 BWT 里添加站点（URL 前缀验证即可），「设置 → API 访问」
+拿密钥，每天 10000 条配额。日常用 IndexNow 就够，BWT 的价值更多是看抓取与索引数据。
 
 ## 本地预览
 
