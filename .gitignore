@@ -16,6 +16,9 @@ __pycache__/
 *.db-wal
 # 站点依赖：site/ 由 I-025 以 subtree 迁入，node_modules 不入库
 node_modules/
+# 站点构建产物与缓存
+**/.vitepress/dist/
+**/.vitepress/cache/
 # 会话工具目录（本机）
 .zcode/
 # 预留：若将来需要隔离环境，建在项目内
