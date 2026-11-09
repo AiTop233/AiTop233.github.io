@@ -217,6 +217,26 @@ class ResourceTests(unittest.TestCase):
         self.assertEqual(task["kind"], "folder")
         self.assertEqual(task["file_count"], 2)
 
+    def test_local_read_error_lands_as_failed(self):
+        """本地读不了（文件被占用等）也要落 failed，不能留一条 pending。
+
+        只捕 ProjectError 时，驱动里 open() 抛的 PermissionError 会直接冒到顶，
+        台账那条记录停在 pending —— 记录页既看不到它，也没法点重传。
+        """
+        pkg = self.root / "包"
+        pkg.mkdir()
+        (pkg / "a.txt").write_text("a", encoding="utf-8")
+        drv = RecordingDriver(
+            upload_error=PermissionError(13, "Permission denied"))
+        r = publish_task(str(pkg), [{"pan": "fake", "remote_dir": "/A"}],
+                         ledger=self.ledger, title="包",
+                         driver_factory=lambda pan: drv)
+        self.assertEqual(len(r["failed"]), 1)
+        self.assertEqual(r["failed"][0]["code"], "PUP-106")
+        row = self.ledger.recent()[0]
+        self.assertEqual(row["status"], "failed")
+        self.assertEqual(row["error_code"], "PUP-106")
+
     def test_folder_hash_stable_across_paths(self):
         """同一份内容换个目录，file_hash 不变（去重键只依赖相对路径与大小）。"""
         a = self.root / "一"
