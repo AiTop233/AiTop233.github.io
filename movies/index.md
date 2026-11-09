@@ -16,6 +16,9 @@ head:
 // 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
 import data from '../data/resources.json'
 const resources = data.items.filter((r) => r.category === 'movies')
+
+// 旧条目是单链接（link/code），新条目可以是多盘（links）
+const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, code: r.code }])
 </script>
 
 影视类资源按需分类整理。
@@ -28,8 +31,7 @@ const resources = data.items.filter((r) => r.category === 'movies')
   v-for="r in resources"
   :key="r.title"
   :title="r.title"
-  :link="r.link"
-  :code="r.code"
+  :links="linksOf(r)"
   :size="r.size"
   :note="r.note"
 />
