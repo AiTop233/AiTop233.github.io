@@ -10,9 +10,9 @@
 <header class="topbar">
   <h1>网盘自动上传</h1>
   <nav class="tabs" id="tabs" aria-label="功能导航">
-    <button class="tab active" data-tab="upload" type="button">上传</button>
+    <button class="tab active" data-tab="upload" type="button">手动上传</button>
+    <button class="tab" data-tab="watch" type="button">自动上传</button>
     <button class="tab" data-tab="records" type="button">记录</button>
-    <button class="tab" data-tab="watch" type="button">监控</button>
     <button class="tab" data-tab="settings" type="button">设置</button>
   </nav>
 </header>
@@ -40,7 +40,7 @@
   <div class="panel" data-panel="watch" id="panel-watch">
     <div class="empty">
       <p class="empty-title">还没有监控规则</p>
-      <p class="empty-hint">去监控根目录建「网盘@远端目录」文件夹，丢进去的文件会自动上传</p>
+      <p class="empty-hint">暂时在 config.toml 的 [watch].dirs 里配本地目录与网盘目标，再运行 panup watch；按文件夹名自动识别（quark@目录）还没做</p>
     </div>
   </div>
   <div class="panel" data-panel="settings" id="panel-settings">

@@ -5,6 +5,7 @@
 """
 
 import json
+import re
 import socket
 import threading
 import time
@@ -57,8 +58,11 @@ class WebApiTests(unittest.TestCase):
         r = self.client.get("/")
         self.assertEqual(r.status_code, 200)
         self.assertIn("text/html", r.headers["content-type"])
-        for marker in ("上传", "记录", "监控", "设置", "statusbar", "baidu"):
+        for marker in ("手动上传", "自动上传", "记录", "设置", "statusbar", "baidu"):
             self.assertIn(marker, r.text)
+        # 两个上传入口必须相邻，否则又会分不清哪个是哪个
+        order = re.findall(r'data-tab="([a-z]+)"', r.text)
+        self.assertEqual(order, ["upload", "watch", "records", "settings"])
 
     def test_status_passthrough_lights(self):
         r = self.client.get("/api/status")
