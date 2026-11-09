@@ -204,5 +204,6 @@
 - **I-016 A4 后半不通过**：`--pan "baidu:"` 空目录静默退回默认目录并真的上传（台账 #32 落点 `/流量生意/十八线资源/config`），标准要求报错；待人裁「修实现」还是「改标准」，误传文件夹待删
 - 已修（I-008 分支，沿链合到 I-018）：记录页与待修列表的失败原因改 `errInfo(code)` 输出「原因 + 怎么办」，原始码只留 title；覆盖 name-conflict / quark-31001（登录态失效）/ 31002 / baidu--9 / html / token / share / part / oss / pre / nofile / quota
 - 已改（I-007 分支，沿链合到 I-018）：标签改为「手动上传 / 自动上传 / 记录 / 设置」，两个上传入口相邻，`data-tab` 值不动，`test_web_api` 加顺序断言；监控空态改写成当前真实路径（config.toml + panup watch），文件夹名字约定仍归 I-009
+- **更名（2026-11-09，验收期人提出）**：产品名「网盘自动上传」→「网盘中控台」——页面 title/h1、CLI description、包 docstring、配置模板注释都改；`panup` 包名、仓库目录名、`PUP-` / `PAN-` 错误码前缀不动；五份主文档（PRD / ARCHITECTURE / BACKEND / FRONTEND / DESIGN_SYSTEM）首行标题在 main 单独提交
 - 合并：I-007 → I-015 一处冲突（`pipeline.py` 两边尾块都留、`I-015.md` 取 I-007/main 版），其余干净；链顶 188 例绿
 - 停在：I-018 链顶，服务常驻 8256；待其余条目人验 + 三条待定（`--pan` 空目录、I-025/I-027/I-028 标准补批、误传 config 文件夹删除）
