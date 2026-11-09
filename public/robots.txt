@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+# 不屏蔽 /assets/：Google 需要抓取 CSS/JS 才能正确渲染页面，挡了反而亏
+
+# 百度 / 谷歌 / 必应共用同一份 sitemap
 Sitemap: https://aitop233.github.io/sitemap.xml
