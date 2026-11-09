@@ -643,7 +643,11 @@ function finishUpload(batch) {
         + `${e.hint ? `（怎么办: ${e.hint}）` : ""}`;
     }).join("；"));
   } else if (pansFailed) {
-    showToast(`${pansFailed} 个网盘没传成功，见结果里的红字；修好后到记录页重传`);
+    // 部分盘失败时，提示条也要说清「哪个盘、为什么、怎么办」，别只报个数（I-008 A5）
+    const panFails = list.flatMap((j) => (j.result && j.result.failed) || []);
+    const text = panFails.slice(0, 2).map((f) =>
+      `${panLabel(f.pan)}失败：${f.msg}${f.hint ? `（怎么办: ${f.hint}）` : ""}`).join("；");
+    showToast(text + (panFails.length > 2 ? `；等 ${panFails.length} 个网盘` : ""));
   } else if (written) {
     showToast(`上传完成 · ${list.length} 个资源，飞书已写入 ${written} 节`, false);
   } else {
