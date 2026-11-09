@@ -10,22 +10,9 @@ head:
 # 🎓 教程
 
 <script setup>
-const resources = [
-  {
-    title: 'CS50 哈佛计算机科学导论 (2024)',
-    link: 'https://pan.baidu.com/s/1example_tut1',
-    code: 'h4n7',
-    size: '22GB',
-    note: '中英字幕 · 含全部作业材料',
-  },
-  {
-    title: 'Blender 3D 建模完全教程',
-    link: 'https://pan.quark.cn/s/example_tut2',
-    code: '',
-    size: '18GB',
-    note: '从入门到精通 · 含项目文件',
-  },
-]
+// 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
+import data from '../data/resources.json'
+const resources = data.items.filter((r) => r.category === 'tutorials')
 </script>
 
 各类教程资源，持续更新中。

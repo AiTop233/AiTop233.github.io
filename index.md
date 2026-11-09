@@ -31,6 +31,12 @@ head:
       }
 ---
 
+<script setup>
+// 数量从数据算，别手写：加资源时不用回来改数字
+import data from './data/resources.json'
+const count = (c) => data.counts[c] || 0
+</script>
+
 <div class="hero-section">
   <h1>📂 资源合集</h1>
   <p class="subtitle">整理互联网优质资源 · 分类清晰 · 持续更新</p>
@@ -42,12 +48,12 @@ head:
   <a class="category-card" href="/bilibili/">
     <div class="icon">🎬</div>
     <div class="name">B站付费课程</div>
-    <div class="count">260+ 门 · 编程·理财·摄影·历史</div>
+    <div class="count">{{ count("bilibili") }} 门 · 编程·理财·摄影·历史</div>
   </a>
   <a class="category-card" href="/geektime/">
     <div class="icon">⏰</div>
     <div class="name">极客时间</div>
-    <div class="count">276门 · 专栏课+视频课</div>
+    <div class="count">{{ count("geektime") }} 门 · 专栏课+视频课</div>
   </a>
   <a class="category-card" href="/movies/">
     <div class="icon">🎥</div>

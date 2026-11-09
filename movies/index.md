@@ -13,29 +13,9 @@ head:
 # 🎬 影视
 
 <script setup>
-const resources = [
-  {
-    title: '星际穿越 Interstellar (2014)',
-    link: 'https://pan.baidu.com/s/1example123',
-    code: 'k9x2',
-    size: '12.5GB',
-    note: 'IMAX 4K 原盘压制 · 中英双字',
-  },
-  {
-    title: '甄嬛传 全76集',
-    link: 'https://pan.quark.cn/s/example456',
-    code: '',
-    size: '48GB',
-    note: '1080P 高清修复版',
-  },
-  {
-    title: 'Planet Earth 脉动地球 全3季',
-    link: 'https://www.aliyundrive.com/s/example789',
-    code: 'm3f7',
-    size: '36GB',
-    note: 'BBC 纪录片 · 4K HDR · 中英字幕',
-  },
-]
+// 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
+import data from '../data/resources.json'
+const resources = data.items.filter((r) => r.category === 'movies')
 </script>
 
 影视类资源按需分类整理。

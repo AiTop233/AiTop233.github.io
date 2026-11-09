@@ -10,22 +10,9 @@ head:
 # 💻 软件
 
 <script setup>
-const resources = [
-  {
-    title: 'JetBrains 全家桶 2024.2',
-    link: 'https://pan.baidu.com/s/1example_sw1',
-    code: 'j9t3',
-    size: '5.2GB',
-    note: '含激活工具 · Windows/Mac/Linux',
-  },
-  {
-    title: 'Adobe Creative Cloud 2024 套装',
-    link: 'https://pan.quark.cn/s/example_sw2',
-    code: '',
-    size: '28GB',
-    note: 'PS/AI/PR/AE · 一键安装版',
-  },
-]
+// 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
+import data from '../data/resources.json'
+const resources = data.items.filter((r) => r.category === 'software')
 </script>
 
 实用软件合集，按需取用。

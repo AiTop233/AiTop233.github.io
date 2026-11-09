@@ -10,22 +10,9 @@ head:
 # 🎵 音乐
 
 <script setup>
-const resources = [
-  {
-    title: '周杰伦 全专辑 FLAC 无损合集',
-    link: 'https://pan.baidu.com/s/1example_music1',
-    code: 'w8k2',
-    size: '12GB',
-    note: 'FLAC 无损 · 含全部录音室专辑',
-  },
-  {
-    title: 'Hans Zimmer 汉斯·季默 电影原声精选',
-    link: 'https://pan.quark.cn/s/example_music2',
-    code: '',
-    size: '6.5GB',
-    note: 'FLAC + MP3 · 50首经典配乐',
-  },
-]
+// 数据在 data/resources.json，页面只负责渲染（同步由 tools/add.mjs 写入）
+import data from '../data/resources.json'
+const resources = data.items.filter((r) => r.category === 'music')
 </script>
 
 音乐资源，主打无损品质。
