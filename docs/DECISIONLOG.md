@@ -97,3 +97,16 @@
 - 原话：
   > 「另外一个需求是，我想知道当前什么资源比较热门，这里或许需要做一个热度检测工具，你有什么思绪吗」
 - 落点：`SOURCES.md` §8；ARCHITECTURE AC-12；BACKEND 热度表与 REST 草案；PRD F9；ISSUES（I-024）
+
+## D-010 · 2026-11-09 · 内容站并入本仓库（subtree，保留历史），内容收敛到一份 JSON，发布仍归站点仓库
+
+- 原：资源站是另一个目录里的独立仓库（`D:/Coding/ZCode/18线资源（Github网站）` → `AiTop233/AiTop233.github.io`），540 条资源以内联 `const resources = [...]` 的形式写在 7 个 markdown 里。上传工具与内容站互不相识，要「顺带同步」就得先解决两个问题：东西在两个仓库、内容没有稳定的写入点
+- 现：`git subtree add --prefix=site` 把站点并入 `site/`（3 个提交、历史完整，`subtree split` 与原 HEAD 树一致，可反向快进推送）；分类页改 `import data from '../data/resources.json'`，540 条收敛成一个文件；新增 `tools/add.mjs` 作为唯一写入点（单条 / 批量 / 按链接去重 / `--dry-run`）；首页计数改为从 JSON 算，不再手写「260+ 门」
+- 关键判断一：**用 subtree 而不是拷贝或 submodule**。拷贝会丢历史，往后没法把改动推回站点仓库；submodule 让「一处 clone 就有全部」失效，还要多一套指针同步。subtree 两全：本仓库里有完整文件，`git subtree push --prefix=site site-pages main` 又能原样推回去
+- 关键判断二：**部署源不迁**。线上仍是 `AiTop233.github.io`（GitHub Pages + Actions），SEO 的 canonical / sitemap / 外链都指着它。原以为走 Vercel，实际 `aitop233.vercel.app` 返回 404，仓库里没有任何 `vercel.json` / `.vercel`——所以「Vercel」只作为将来可选项写进 README（Root Directory 填 `site`）
+- 关键判断三：**数据与页面分离**。同步如果靠「往 markdown 的数组里插一行」，每次都要正则改源码，格式一抖就写坏；分成 `data/resources.json` + 模板渲染后，同步只剩「追加一个 JSON 对象」，页面零改动。这也是把 `add.mjs` 做成唯一写入点的原因——手工、脚本、将来的 panup 都走同一条路，不会各写各的格式
+- 关键判断四：**写内容可以自动，发布必须人按**。写 JSON 是本地的、可回退的；`git push` 到站点仓库等于对外公开。界面上线时只提示「已写入本地，需你确认后推送」
+- 副作用修复：根 `.gitignore` 的 `data/` 会连带忽略 `site/data/`（`git status` 里根本看不见新文件，极易漏提交），改成锚定的 `/data/`；顺手用 `*.db` 挡住 `src/data/ledger.db` 这种在 `src/` 下跑脚本留下的遗留库
+- 原话：
+  > 「我本地之前有一个使用vercel和Github搭建的网盘站点，你帮我找一找，我感觉内容也可以顺带同步到那里——或许你可以把那个项目迁移到当前这个项目的目录里面来」
+- 落点：`site/README.md`；ARCHITECTURE §2 模块表与 AC-13；ISSUES（I-025 待验收 / I-026 待定）；docs/issues/I-025.md、I-026.md
