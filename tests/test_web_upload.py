@@ -1,4 +1,5 @@
 """I-008 A1：上传 / 记录 / 重传接口契约（multipart → pipeline 打桩）。
+I-019：上传改「后台任务 + 进度轮询」后，表单与 job 契约的验证也在这里。
 
 只验 Web 层契约与信封：不真连网盘、不真写文档。管道行为由 test_task /
 test_pipeline 覆盖，这里断言「表单怎么变成 publish_task 的参数」。
@@ -6,6 +7,8 @@ test_pipeline 覆盖，这里断言「表单怎么变成 publish_task 的参数�
 
 import json
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -36,6 +39,37 @@ class _Recorder:
                 "items": self.items, "failed": self.failed, "writers": []}
 
 
+class _PacedRunner(_Recorder):
+    """跑到「上传中」就停住，等测试看过进度再放行（验中间态真的可见）。"""
+
+    def __init__(self, release: threading.Event, **kw):
+        super().__init__(**kw)
+        self.release = release
+        self.reached = threading.Event()
+
+    def __call__(self, path, targets, **kw):
+        progress = kw.get("progress")
+        if progress:
+            progress({"stage": "scanning", "kind": "file", "title": "主题名",
+                      "file_count": 1, "size": 11, "pans": ["baidu"]})
+            progress({"stage": "uploading", "pan": "baidu", "file_index": 1,
+                      "file": "原名.txt", "bytes_done": 5, "bytes_total": 11})
+        self.reached.set()
+        self.release.wait(5)
+        return super().__call__(path, targets, **kw)
+
+
+def _poll(client, job_id, pred, tries=200):
+    """轮询任务直到 pred(快照) 成立；超时返回最后一次快照（由断言兜底）。"""
+    body = {}
+    for _ in range(tries):
+        body = client.get(f"/api/jobs/{job_id}").json()
+        if pred(body):
+            return body
+        time.sleep(0.02)
+    return body
+
+
 class WebUploadTests(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -58,7 +92,7 @@ class WebUploadTests(unittest.TestCase):
 
     def _post(self, **over):
         data = {"pans": json.dumps([{"pan": "baidu", "dir": "/来自电脑"}]),
-                "title": "主题名", "date_dir": "0", "doc": ""}
+                "title": "主题名", "date_dir": "0", "doc": "", "sync": "1"}
         data.update(over)
         files = {"file": ("原名.txt", b"hello panup", "text/plain")}
         return TestClient(self._app()).post("/api/upload", data=data, files=files)
@@ -118,7 +152,8 @@ class WebUploadTests(unittest.TestCase):
         r = TestClient(self._app(runner)).post(
             "/api/upload",
             data={"pans": json.dumps([{"pan": "baidu", "dir": "/d"},
-                                      {"pan": "quark", "dir": "/d"}])},
+                                      {"pan": "quark", "dir": "/d"}]),
+                  "sync": "1"},
             files={"file": ("a.txt", b"x", "text/plain")})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["failed"][0]["code"], "PAN-quark-noauth")
@@ -143,10 +178,73 @@ class WebUploadTests(unittest.TestCase):
     def test_path_like_filename_is_flattened(self):
         client = TestClient(self._app())
         r = client.post("/api/upload",
-                        data={"pans": json.dumps([{"pan": "baidu", "dir": "/d"}])},
+                        data={"pans": json.dumps([{"pan": "baidu", "dir": "/d"}]),
+                              "sync": "1"},
                         files={"file": ("../../evil.txt", b"x", "text/plain")})
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(Path(self.runner.calls[0]["path"]).name, "evil.txt")
+
+    # ---- I-019：默认走后台任务，进度可轮询 ----
+
+    def _post_async(self, client, **over):
+        data = {"pans": json.dumps([{"pan": "baidu", "dir": "/来自电脑"}]),
+                "title": "主题名", "date_dir": "0", "doc": "feishu"}
+        data.update(over)
+        files = {"file": ("原名.txt", b"hello panup", "text/plain")}
+        return client.post("/api/upload", data=data, files=files)
+
+    def test_upload_returns_job_and_exposes_progress(self):
+        release = threading.Event()
+        runner = _PacedRunner(release)
+        client = TestClient(self._app(runner))
+
+        r = self._post_async(client)
+        self.assertEqual(r.status_code, 202, r.text)
+        job_id = r.json()["job_id"]
+        self.assertTrue(job_id.startswith("j-"))
+
+        # 跑在上传中：能看见「哪个盘、第几个文件、传了多少字节、飞书还没写」
+        mid = _poll(client, job_id, lambda j: j["pans"]["baidu"]["stage"] == "uploading")
+        self.assertEqual(mid["status"], "running")
+        self.assertEqual(mid["pans"]["baidu"]["bytes_done"], 5)
+        self.assertEqual(mid["pans"]["baidu"]["file_index"], 1)
+        self.assertEqual(mid["writer"]["stage"], "pending")
+        self.assertEqual(mid["stage"], "uploading")
+
+        release.set()
+        done = _poll(client, job_id, lambda j: j["status"] != "running")
+        self.assertEqual(done["status"], "done")
+        self.assertEqual(done["stage"], "finished")
+        self.assertEqual(done["result"]["items"][0]["link"],
+                         "https://pan.baidu.com/s/x")
+        self.assertTrue(any(s["pan"] == "baidu" for s in done["steps"]))
+        self.assertNotIn("key", done["steps"][0])
+
+    def test_upload_job_failure_is_reported_in_job(self):
+        def boom(path, targets, **kw):
+            from panup.core.errors import UploadError
+
+            raise UploadError("同名文件夹已存在", code="PAN-name-conflict",
+                              hint="换个标题")
+        client = TestClient(self._app(boom))
+        r = self._post_async(client)
+        self.assertEqual(r.status_code, 202)
+        done = _poll(client, r.json()["job_id"], lambda j: j["status"] != "running")
+        self.assertEqual(done["status"], "failed")
+        self.assertEqual(done["error"]["code"], "PAN-name-conflict")
+        self.assertIn("换个标题", done["error"]["hint"])
+
+    def test_unknown_job_is_404_envelope(self):
+        r = TestClient(self._app()).get("/api/jobs/j-nope")
+        self.assertEqual(r.status_code, 404)
+        self.assertEqual(r.json()["code"], "PUP-404")
+
+    def test_options_returns_configured_default_dirs(self):
+        r = TestClient(self._app()).get("/api/options")
+        self.assertEqual(r.status_code, 200, r.text)
+        pans = {p["name"]: p["default_dir"] for p in r.json()["pans"]}
+        self.assertEqual(pans["baidu"], "/百度默认")
+        self.assertEqual(pans["quark"], "/夸克默认")
 
 
 class RecordsTests(unittest.TestCase):

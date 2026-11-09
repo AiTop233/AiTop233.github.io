@@ -9,7 +9,10 @@ REST：
 GET  /                       页面壳（SPA index.html）
 GET  /static/*               静态资源（styles.css / app.js，免构建）
 GET  /api/status             三灯体检（百度 / 夸克 / 飞书登录态）
-POST /api/upload             手动上传（multipart：file + pans + title + date_dir + doc）
+GET  /api/options            上传表单的选项：各盘默认目录（远端目录不能留空）
+POST /api/upload             手动上传（multipart：file + pans + title + date_dir + doc
+                             + sync）→ 默认 202 {job_id} 交后台跑；sync=1 同步返回结果
+GET  /api/jobs/{id}          上传进度（阶段 / 各盘进度 / 是否已写飞书 / 时间线）
 GET  /api/uploads            记录：按任务聚合（status=failed 时给扁平「待修」列表）
 POST /api/uploads/{id}/retry 单条失败记录重传（只重跑该「文件 × 网盘」）
 
@@ -20,6 +23,7 @@ POST /api/uploads/{id}/retry 单条失败记录重传（只重跑该「文件 ×
 from __future__ import annotations
 
 import shutil
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +37,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from panup.core.errors import AuthError, ConfigError, ProjectError, UploadError
 from panup.core.ledger import Ledger
 from panup.core.pipeline import check_all, publish_task
+from panup.drivers.base import DRIVERS
+from panup.web.jobs import JobStore
 from panup.writers.base import WRITERS
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -106,8 +112,13 @@ def _default_dir(cfg: dict, pan: str) -> str:
     return str(default)
 
 
+def _configured_dir(cfg: dict, pan: str) -> str:
+    """配置里的默认目录（可能为空）——给表单回填用，不抛错。"""
+    return str((cfg.get("pan") or {}).get(f"{pan}_default_dir") or "")
+
+
 def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
-               config_loader=None, inbox_dir=None) -> FastAPI:
+               config_loader=None, inbox_dir=None, job_store=None) -> FastAPI:
     """构建应用；下列参数都是测试打桩点，缺省走真实实现。"""
     import panup.drivers  # noqa: F401 —— 触发驱动注册（AC-02）
     import panup.writers  # noqa: F401 —— 触发写入端注册
@@ -118,6 +129,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     run_task = task_runner or publish_task
     make_ledger = ledger_factory or (lambda: Ledger(DEFAULT_DB))
     inbox = Path(inbox_dir or DEFAULT_INBOX)
+    jobs = job_store or JobStore()
 
     def load_cfg() -> dict:
         if config_loader is not None:
@@ -129,6 +141,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     app.state.status_provider = provider
     app.state.task_runner = run_task
     app.state.ledger_factory = make_ledger
+    app.state.jobs = jobs
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
@@ -140,10 +153,34 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     def status():
         return provider()
 
+    @app.get("/api/options")
+    def options():
+        """上传表单的选项：各盘默认目录由配置给（表单不留空，日期层另加）。"""
+        cfg = load_cfg()
+        return {"pans": [{"name": name,
+                          "default_dir": _configured_dir(cfg, name)}
+                         for name in DRIVERS]}
+
+    def _run_job(job_id, src, targets, title, writer_names, date_dir):
+        """后台线程跑一次上传任务：进度写 job，事实写台账。"""
+        ledger = make_ledger()
+        try:
+            result = run_task(str(src), targets, ledger=ledger, title=title,
+                              writer_names=writer_names, date_dir=date_dir,
+                              progress=lambda ev: jobs.event(job_id, ev))
+            jobs.finish(job_id, result)
+        except ProjectError as e:
+            jobs.fail(job_id, e.code, e.msg, e.hint or "")
+        except Exception as e:  # noqa: BLE001 —— 后台线程不能把异常丢给人
+            jobs.fail(job_id, "PUP-500", f"服务内部错误: {e}",
+                      "查看 logs/ 下的 JSON 日志定位；反复出现请带日志反馈")
+        finally:
+            ledger.close()
+
     @app.post("/api/upload")
     async def upload(file: UploadFile = File(...), pans: str = Form(""),
                      title: str = Form(""), date_dir: str = Form("0"),
-                     doc: str = Form("")):
+                     doc: str = Form(""), sync: str = Form("0")):
         if not file.filename:
             return _envelope(400, "PUP-401", "没有收到文件",
                              "重新选一个文件再点上传")
@@ -166,14 +203,36 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
         with dest.open("wb") as f:
             shutil.copyfileobj(file.file, f, 1024 * 1024)
 
-        ledger = make_ledger()
-        try:
-            return run_task(str(dest), resolved, ledger=ledger,
-                            title=(title or "").strip() or None,
-                            writer_names=writer_names,
-                            date_dir=_truthy(date_dir))
-        finally:
-            ledger.close()
+        if _truthy(sync):
+            ledger = make_ledger()
+            try:
+                return run_task(str(dest), resolved, ledger=ledger,
+                                title=(title or "").strip() or None,
+                                writer_names=writer_names,
+                                date_dir=_truthy(date_dir))
+            finally:
+                ledger.close()
+
+        job_id = jobs.create(filename=dest.name, title=(title or "").strip(),
+                             pans=[t["pan"] for t in resolved],
+                             size=dest.stat().st_size,
+                             writer=writer_names[0] if writer_names else None)
+        threading.Thread(
+            target=_run_job,
+            args=(job_id, dest, resolved, (title or "").strip() or None,
+                  writer_names, _truthy(date_dir)),
+            name=f"panup-job-{job_id}", daemon=True).start()
+        return JSONResponse(status_code=202, content={
+            "job_id": job_id, "status": "running",
+            "title": (title or "").strip(), "filename": dest.name})
+
+    @app.get("/api/jobs/{job_id}")
+    def job_detail(job_id: str):
+        job = jobs.get(job_id)
+        if job is None:
+            return _envelope(404, "PUP-404", f"任务不存在: {job_id}",
+                             "进度只保留最近 50 个任务；结果看「记录」页")
+        return job
 
     @app.get("/api/uploads")
     def list_uploads(limit: int = 50, status: str | None = None):
@@ -222,7 +281,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     @app.exception_handler(RequestValidationError)
     async def on_validation_error(request, exc: RequestValidationError):
         return _envelope(400, "PUP-400", "请求参数不合法",
-                         "检查表单字段：file / pans / title / date_dir / doc")
+                         "检查表单字段：file / pans / title / date_dir / doc / sync")
 
     @app.exception_handler(ProjectError)
     async def on_project_error(request, exc: ProjectError):

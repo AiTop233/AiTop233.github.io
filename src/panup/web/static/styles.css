@@ -237,11 +237,26 @@ body {
 
 .pan-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--sp-3);
 }
 
-.pan-row .check { flex: 0 0 76px; }
+.pan-row .check { flex: 0 0 76px; padding-top: 7px; }
+
+.pan-dir-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pan-note {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+  word-break: break-all;
+}
 
 .check {
   display: inline-flex;
@@ -338,6 +353,105 @@ body {
 .res-row.bad .res-err {
   color: var(--c-danger);
   font-size: var(--fs-small);
+}
+
+/* 上传进度（I-019）：接收 → 各盘进度条 → 写文档 → 时间线 */
+.progress {
+  margin-top: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.pg-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--c-border);
+  margin-bottom: var(--sp-2);
+}
+
+.pg-head .block-hint { margin: 0; }
+
+.pg-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+.pg-pan { flex: 0 0 52px; }
+
+.pg-bar {
+  flex: 1 1 auto;
+  min-width: 80px;
+  height: 6px;
+  border-radius: 3px;
+  background: #eef1f5;
+  overflow: hidden;
+}
+
+.pg-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--c-accent);
+  transition: width 0.2s ease;
+}
+
+.pg-row.ok .pg-bar i { background: var(--c-ok); }
+.pg-row.bad .pg-bar i { background: var(--c-danger); }
+
+.pg-text {
+  flex: 0 0 auto;
+  min-width: 96px;
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-row.bad .pg-text { color: var(--c-danger); }
+.pg-row.ok .pg-text { color: var(--c-ok); }
+
+.pg-file {
+  flex: 1 1 28%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pg-steps {
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-2) 0 0;
+  border-top: 1px dashed var(--c-border);
+  list-style: none;
+  max-height: 168px;
+  overflow-y: auto;
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+.pg-steps li { padding: 2px 0; }
+
+.pg-steps b {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.pg-time {
+  display: inline-block;
+  min-width: 62px;
+  color: var(--c-unknown);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 记录页 */
