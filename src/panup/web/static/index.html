@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>网盘中控台</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>网盘中控台</h1>
+  <nav class="tabs" id="tabs" aria-label="功能导航">
+    <button class="tab active" data-tab="upload" type="button">手动上传</button>
+    <button class="tab" data-tab="watch" type="button">自动上传</button>
+    <button class="tab" data-tab="records" type="button">记录</button>
+    <button class="tab" data-tab="settings" type="button">设置</button>
+  </nav>
+</header>
+
+<section class="statusbar" id="statusbar" aria-label="凭据状态灯">
+  <span class="light" data-light="baidu"><i class="dot unknown"></i>百度</span>
+  <span class="light" data-light="quark"><i class="dot unknown"></i>夸克</span>
+  <span class="light" data-light="feishu"><i class="dot unknown"></i>飞书</span>
+  <button id="refresh-status" type="button">刷新状态</button>
+</section>
+
+<main id="panels">
+  <div class="panel active" data-panel="upload" id="panel-upload">
+    <div class="empty">
+      <p class="empty-title">把文件拖到这里开始上传</p>
+      <p class="empty-hint">上传功能正在开发中，开放后可直接选网盘、拿分享链接</p>
+    </div>
+  </div>
+  <div class="panel" data-panel="records" id="panel-records">
+    <div class="empty">
+      <p class="empty-title">暂无记录</p>
+      <p class="empty-hint">上传成功后，每次的文件、网盘与分享链接都会列在这里</p>
+    </div>
+  </div>
+  <div class="panel" data-panel="watch" id="panel-watch">
+    <div class="empty">
+      <p class="empty-title">还没有监控规则</p>
+      <p class="empty-hint">暂时在 config.toml 的 [watch].dirs 里配本地目录与网盘目标，再运行 panup watch；按文件夹名自动识别（quark@目录）还没做</p>
+    </div>
+  </div>
+  <div class="panel" data-panel="settings" id="panel-settings">
+    <div class="empty">
+      <p class="empty-title">设置项正在开发中</p>
+      <p class="empty-hint">登录态、默认网盘与远端目录会在这里调整</p>
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="hidden" role="alert"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

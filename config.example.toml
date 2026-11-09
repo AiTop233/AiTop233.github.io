@@ -1,4 +1,4 @@
-# 网盘自动上传 配置模板
+# 网盘中控台 配置模板
 # 用法：复制为 config.toml 后按注释填写；config.toml 不入库（.gitignore 已忽略）。
 # 必填项缺失时启动会一次性列出全部缺失清单。
 
@@ -26,6 +26,10 @@ retry_limit = 3
 [feishu]
 # 目标飞书文档 token（文档链接中 /docx/ 后那串）；应用凭证放 secrets/feishu_app.json
 doc_token = ""
+
+[web]
+# 本地管理台端口（I-007；服务只监听 127.0.0.1，host 不可配置）
+port = 8256
 
 [log]
 # 日志目录与保留天数
