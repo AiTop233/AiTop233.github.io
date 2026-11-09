@@ -24,6 +24,8 @@
 
 **找代码位置**：先看 `ARCHITECTURE.md` 的模块表（模块 + 代码目录）→ 再看 `BACKEND.md` 对应单位的「代码位置」→ 最后按文件颗粒度判断该读哪个文件。
 
+**内容站**：`site/` 是 VitePress 资源站（独立 node 构建，不属于 Python 模块）。加资源用 `node site/tools/add.mjs`，**不要**往分类页的 markdown 里写数组（AC-13）；目录、构建、部署见 `site/README.md`。
+
 ### 写文档的规则
 
 - **一条信息只写在一处**，其他地方用编号引用，不复制内容：需求 F1、约束 AC-01、issue I-004、验收条目 A1。
