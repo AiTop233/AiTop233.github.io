@@ -41,6 +41,7 @@
   - `share(remote_path, *, pwd=None, period_days=0) -> dict`：创建分享链接，返回链接、提取码、有效期；`pwd=None` 按各盘默认（百度随机 4 位、夸克不带，D-014），返回的 `pwd` 为空串即该盘无提取码
   - `publish(local_path, remote_dir, **kwargs) -> dict`：mkdir + upload + share 一步到位
   - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
+  - `delete(remote_path) -> dict`：删远端文件或整个目录（服务端递归），返回 `{path, deleted, missing}`；`missing=True` 表示远端本来就没有（幂等，不算失败）。基类默认实现报 `PUP-107`「驱动不支持删除」，百度/夸克已实现；根目录拒绝（`PUP-108`）
 - Writer 基类：
   - `auth_check() -> dict`：凭证可用性检查
   - `append_task(task) -> dict`：向目标文档写入**一节**；`task = {title, filename, date, items: [{pan, link, pwd}]}`，`items` **只含成功的网盘**、按驱动注册顺序排列（版式与插入位置按 PRD F3：h2「YYMMDD 标题名」小节插最顶 + 每个成功盘一行「盘名：链接?pwd=提取码」）
@@ -93,6 +94,8 @@
   - `GET /api/batches/{batch_id}` → 整批快照 `{batch_id, status, count, ok, failed, created_at, resources:[job 快照…]}`；`status ∈ running/done`（任一资源未结束即 running）
   - `GET /api/options` → `{pans: [{name, default_dir}]}`：表单把 `default_dir` 回填进目录框（配置缺项给空串，不报错）
   - `GET /api/uploads?limit=&status=` → 台账记录列表（按 `group_id` 聚合展示，`status=failed` 即「待修」）；`POST /api/uploads/{id}/retry` → 失败项重传（只重跑该「资源 × 网盘」，跳过已成功的文件）
+  - `POST /api/uploads/{id}/delete-remote` → 删掉这条记录的远端目录（`remote_path`），台账行置 `deleted`、`link`/`pwd` 清空（行保留可追溯）；已删过的再调返回 `skipped`；远端本来就不存在时 `missing:true` 也算成功（幂等）
+  - `POST /api/remote/delete`（JSON `{pan, path}`）→ 按显式路径删远端目录，用于台账里查不到的路径（如整批验收目录）；该前缀下的成功记录一并标 `deleted`（返回 `records` 为受影响行数）。两道闸：`pan` 必须是已注册网盘（否则 `PUP-405`），`path` 不许是根目录（`PUP-108`）
   - `GET /api/status` → 各网盘与写入端登录态体检（三灯）
   - `GET /api/rules` / `PUT /api/rules`（阶段 1 固定规则）；约定目录模式下由 convention 扫描动态生成（F5）
   - `GET /api/config` / `PUT /api/config` → 白名单配置项（默认目录、飞书 doc_token、监控参数）
