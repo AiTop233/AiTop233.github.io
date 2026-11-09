@@ -1,6 +1,6 @@
 ---
 title: 软件资源
-description: 实用工具、设计软件、开发工具等软件资源合集
+description: 实用工具、设计软件、开发工具等软件资源合集，标注版本号、系统要求与是否便携版
 head:
   - - meta
     - name: keywords
@@ -18,7 +18,7 @@ const resources = data.items.filter((r) => r.category === 'software')
 const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, code: r.code }])
 </script>
 
-实用软件合集，按需取用。
+软件以 Windows 工具为主，安装包与绿色版混放，目前收录 {{ resources.length }} 个。下载前先看卡片里的备注：版本号、是否便携版、支持的系统，这几个信息比体积更有用。
 
 ---
 

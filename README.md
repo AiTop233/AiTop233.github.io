@@ -19,7 +19,10 @@ site/
 │   └── theme/                 ← ResourceCard 组件与自定义样式
 ├── tools/
 │   ├── add.mjs                ← 追加资源（唯一写入点）
-│   └── extract.mjs            ← 一次性迁移工具：从旧 markdown 内联数组抽 JSON
+│   ├── extract.mjs            ← 一次性迁移工具：从旧 markdown 内联数组抽 JSON
+│   ├── gen-assets.py          ← 生成 favicon / 分享图（产物已提交，改了才需要重跑）
+│   ├── seo-check.mjs          ← 检查构建产物的 SEO（canonical / sitemap / 结构化数据）
+│   └── ping.mjs               ← 把 sitemap 主动推给百度 / IndexNow
 └── .github/workflows/deploy.yml  ← 站点仓库的构建部署（在本仓库不生效，见下）
 ```
 
@@ -47,6 +50,41 @@ npm run add -- --category movies --title "片名" --links '[
 - 批量：`npm run add -- --json '[{...},{...}]'` 或 `--json -` 从 stdin 读
 - 先看会改什么：加 `--dry-run`
 - 写完跑 `npm run build` 自查，再提交
+
+## SEO
+
+改配置时最容易被忽略的一点：**每页的 canonical 必须是它自己**。上一版把 canonical 写死成
+`https://aitop233.github.io`，等于告诉搜索引擎「所有分类页都是首页的副本」，这是整站不被单独收录的头号原因。
+
+现在这些都从 `config.ts` 一处生成，`SITE` 常量换域名时全部跟着走：
+
+| 项目 | 做法 |
+|---|---|
+| canonical / og:url | `transformHead` 按页面路径生成，一页一个，不再重复 |
+| 分享卡片 | og:title / description / image（1200×630，`public/og-cover.png`） |
+| 结构化数据 | 首页 `WebSite`+`SearchAction`，分类页 `CollectionPage` + `BreadcrumbList` |
+| 标题层级 | 每条资源是 `<h3>` 且带锚点（`#java并发-a1b2`），可深链；`ignore-header` 让它不进右侧大纲 |
+| sitemap | 扫实际产出的 HTML，带 `lastmod`，新增分类页不会漏 |
+| robots | `Allow: /`，不屏蔽 `/assets/`（Google 要抓 CSS 才能完整渲染） |
+| 404 | `noindex`，不进 sitemap |
+
+```bash
+npm run verify      # 构建 + 检查，提交前跑一遍
+npm run assets      # 改了站点名/主色后重新生成图标与分享图
+```
+
+自查脚本检查的是**产物**而不是配置，覆盖：canonical 唯一且指向自己、标题不重复、description 长度、
+JSON-LD 可解析、h1 唯一、favicon 存在、sitemap 覆盖所有页面、资源卡是否真的 SSR 进了 HTML。
+
+### 主动提交（可选）
+
+```bash
+npm run ping -- --dry-run                 # 先看会提交哪些 URL
+BAIDU_TOKEN=xxx npm run ping              # 百度站长平台的 token
+INDEXNOW_KEY=xxx npm run ping             # 还需先建 public/<key>.txt，内容就是这串 key
+```
+
+GitHub Pages 的服务器在境外，百度抓取间隔很长，主动推送能把收录从天级压到小时级。两个通道独立，没配就跳过。
 
 ## 本地预览
 

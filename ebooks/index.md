@@ -1,6 +1,6 @@
 ---
 title: 电子书资源
-description: 技术、文学、社科等各类电子书网盘资源合集 - PDF/EPUB/MOBI 格式
+description: 技术、文学、社科等电子书网盘资源合集，涵盖 PDF、EPUB、MOBI 格式，附阅读与推送建议
 head:
   - - meta
     - name: keywords
@@ -18,7 +18,7 @@ const resources = data.items.filter((r) => r.category === 'ebooks')
 const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, code: r.code }])
 </script>
 
-电子书资源，涵盖技术、文学、社科等多个领域。
+电子书以技术类为主，兼顾文学与社科，格式以 PDF、EPUB、MOBI 居多，目前收录 {{ resources.length }} 本。手机阅读建议选 EPUB（能重排、省电），要做笔记或打印选 PDF；往 Kindle 推送前记得先转格式。
 
 ---
 
@@ -32,9 +32,3 @@ const linksOf = (r) => (r.links && r.links.length ? r.links : [{ url: r.link, co
   :size="r.size"
   :note="r.note"
 />
-
----
-
-::: info 添加资源
-在 `ebooks/` 下创建新的 `.md` 文件，使用 `<ResourceCard>` 组件添加。
-:::
