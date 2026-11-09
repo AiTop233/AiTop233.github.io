@@ -232,6 +232,15 @@ def _publish_one(res, pan: str, remote_dir: str, *, ledger,
         log("upload.failed", pan=pan, file=res["local_path"], code=e.code,
             msg=e.msg)
         raise
+    except OSError as e:
+        # 本地读不了（文件被占用、权限不足、磁盘错误）：不算驱动报错，但同样要
+        # 落成 failed，否则台账留一条 pending —— 页面上既看不到也重传不了
+        err = UploadError(f"读取本地文件失败: {e}", code="PUP-106",
+                          hint="确认文件没被其他程序占用、路径可读；改好后点重传")
+        ledger.record_failed(record_id, err.code)
+        log("upload.failed", pan=pan, file=res["local_path"], code=err.code,
+            msg=err.msg)
+        raise err from e
     return {"dedup": False, "link": sh["link"], "pwd": sh.get("pwd") or "",
             "path": resource_dir, "pan": pan, "record_id": record_id,
             "rapid": rapid, "kind": res["kind"],
