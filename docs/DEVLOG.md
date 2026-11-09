@@ -74,3 +74,9 @@
 - 过程：① 代删文档末尾旧行踩 batch_delete 参数坑（body 需 start_index + end_index 且 end_index 为开区间），文档已清干净（API 形状记入 I-012 过程记录）；② 期间误把 main 快进到未验收提交，已用 update-ref 挪回 bc86d9e——教训：转「待验收」前不在 main 上做任何 merge 动作
 - 停在：main（转待验收例外）；分支 I-012-feishu-section-rule 未合并
 - 下次：人验收 I-012（文档顶部三节 + 点链接）→ 合并收尾；I-007 浏览器验收；I-008 开工
+
+## 2026-11-09（第十三次会话记录）
+- 做了：I-012 人验收通过（A2～A5 全部核验、链接可点），合并 main（aa7e293）、验收结果表回填、看板移入已完成；I-007 验收前按回程护栏合并 main——`cli.py` 冲突两边保留（watch + serve 并存）、修正 `test_output_sorted_by_name` 对全局 writer 注册表的隐式依赖（89 例绿，提交 c9d1e73），起 127.0.0.1:8256 实机给人看，三灯全绿（百度「在阴天大雨」/ 夸克 / 飞书）
+- [补空白] 环境：本机 `pip` 指向 anaconda、`python` 是另一套 3.13，装依赖必须 `python -m pip install -r requirements.txt`（已记 I-007 过程记录）
+- 停在：main；I-007 待人验收（分支 I-007-web-skeleton）
+- 下次：人验收 I-007（A2 页面壳 / A3 Ctrl+C / A4 一条命令起服）→ I-008；另：人提出「标题名由他开工前给定、需协定传递方式」，讨论中，定案后记想法并走规划模式改 PRD F3
