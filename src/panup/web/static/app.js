@@ -42,16 +42,70 @@ function showToast(text, isError = true) {
   showToast._timer = setTimeout(() => t.classList.add("hidden"), 8000);
 }
 
-function errText(code) {
+/* 错误码 → 「发生了什么 + 怎么办」。
+ * 台账只存 error_code（不存 msg / hint），所以人话只能在前端还原；
+ * 表里没有的走模式匹配，仍不认识的显示成「上传失败（码）」，不把原始码当原因。 */
+const ERR_INFO = {
+  "PUP-000": ["未分类失败（旧记录）", "点「重传」再跑一次；仍失败就看 logs/ 里同一时间的日志"],
+  "PUP-NET": ["连不上本地服务", "确认 python -m panup serve 还在跑"],
+  "PAN-name-conflict": ["同名资源已存在", "换个标题再传（同名不合并）；要补传已有资源用「重传」"],
+};
+
+function errInfo(code) {
   const c = String(code || "");
-  if (!c) return "未知原因";
-  if (c === "PUP-000") return "未分类失败（旧记录）";
-  if (c.includes("noauth")) return "登录态失效（cookie 过期）";
-  if (c.includes("nodir") || c.endsWith("-9")) return "远端目录不存在";
-  if (c.includes("net") || c.includes("retry")) return "网络请求失败";
-  if (c.includes("share")) return "创建分享链接失败";
-  if (c.includes("quota") || c.includes("space")) return "网盘空间不足";
-  return c;
+  if (!c) return { reason: "未知原因", hint: "" };
+  const hit = ERR_INFO[c];
+  if (hit) return { reason: hit[0], hint: hit[1] };
+  if (c.includes("noauth") || c.endsWith("-31001")) {
+    return { reason: "登录态失效（cookie 过期）", hint: "重新导出 cookie 放进 secrets/，再点「重传」" };
+  }
+  if (c.includes("token")) {
+    return { reason: "登录态不完整", hint: "重新导出一份完整 cookie（含 bdstoken 等字段）" };
+  }
+  if (c.includes("nodir") || c.endsWith("-9")) {
+    return { reason: "远端目录不存在", hint: "目录可能被删或改名，换一个目录再传" };
+  }
+  if (c.endsWith("-31002")) {
+    return { reason: "同名文件已存在", hint: "换标题，或先在网盘里删掉旧文件" };
+  }
+  if (c.includes("html")) {
+    return { reason: "网盘返回了异常页面", hint: "多半是登录态失效或被风控，重新登录后再试" };
+  }
+  if (c.includes("net")) {
+    return { reason: "网络请求失败", hint: "检查网络后点「重传」" };
+  }
+  if (c.includes("retry")) {
+    return { reason: "重试次数用尽", hint: "稍等一会儿点「重传」；反复失败先查登录态" };
+  }
+  if (c.includes("share")) {
+    return { reason: "创建分享链接失败", hint: "点「重传」再建一次；多次失败查登录态或限频" };
+  }
+  if (c.includes("quota") || c.includes("space")) {
+    return { reason: "网盘空间不足", hint: "清一下盘或换一个盘" };
+  }
+  if (c.includes("exists")) {
+    return { reason: "远端已有同名文件", hint: "换标题，或先删旧文件" };
+  }
+  if (c.includes("part")) {
+    return { reason: "分片上传失败", hint: "点「重传」，已传完的文件会跳过" };
+  }
+  if (c.includes("oss")) {
+    return { reason: "直传通道失败", hint: "点「重传」；连续失败可能是被限频，隔几分钟再试" };
+  }
+  if (c.includes("pre")) {
+    return { reason: "预上传失败", hint: "点「重传」；反复失败先查登录态" };
+  }
+  if (c.includes("nofile")) {
+    return { reason: "远端找不到这个文件", hint: "可能已被删除，重新上传一次" };
+  }
+  return { reason: `上传失败（${c}）`, hint: "点「重传」再试；仍失败就把这个码和当时的日志一起看" };
+}
+
+/* 待修/记录里的失败原因：一行人话 + 一行怎么办；原始码只留在 title 里备查 */
+function failCell(code) {
+  const info = errInfo(code);
+  return `<div>${esc(info.reason)}</div>${info.hint
+    ? `<div class="cell-sub">怎么办：${esc(info.hint)}</div>` : ""}`;
 }
 
 function fmtSize(n) {
@@ -530,8 +584,12 @@ function itemCell(item) {
       rel="noreferrer">${esc(item.link)}</a>${item.pwd
       ? `<button class="btn tiny" type="button" data-copy="${esc(item.pwd)}">复制码</button>` : ""}</div>`;
   }
-  const reason = item.status === "failed" ? errText(item.error_code) : "传输中";
-  return `<div class="cell-item bad">${pan}<span title="${esc(item.error_code || "")}">${esc(reason)}</span></div>`;
+  const info = item.status === "failed" ? errInfo(item.error_code) : null;
+  const reason = info ? info.reason : "传输中";
+  const tip = info
+    ? (info.hint ? `${info.reason} · 怎么办：${info.hint}` : info.reason)
+    : (item.error_code || "");
+  return `<div class="cell-item bad">${pan}<span title="${esc(tip)}">${esc(reason)}</span></div>`;
 }
 
 function renderRecords() {
@@ -558,7 +616,7 @@ function renderRecords() {
       <td class="nowrap">${esc(fmtTime(r.updated_at))}</td>
       <td>${esc(baseName(r.local_path))}</td>
       <td>${esc(panLabel(r.pan))}</td>
-      <td class="err" title="${esc(r.error_code || "")}">${esc(errText(r.error_code))}</td>
+      <td class="err" title="${esc(r.error_code || "")}">${failCell(r.error_code)}</td>
       <td><button class="btn tiny" type="button" data-retry="${r.id}">重传</button></td>
     </tr>`).join("");
 }
