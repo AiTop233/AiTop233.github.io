@@ -17,6 +17,9 @@ GET  /api/jobs/{id}          单个资源的进度（阶段 / 各盘进度 / 是
 GET  /api/batches/{id}       整批快照（多个资源时一次取回，前端只轮询这一个）
 GET  /api/uploads            记录：按任务聚合（status=failed 时给扁平「待修」列表）
 POST /api/uploads/{id}/retry 单条失败记录重传（只重跑该「文件 × 网盘」）
+POST /api/uploads/{id}/delete-remote  删掉这条记录的远端目录，台账行标 deleted
+POST /api/remote/delete      按「盘 + 路径」删远端目录（验收目录这类不在台账里的
+                             也走这条），顺带把该前缀下的成功记录标 deleted
 
 文件落点：浏览器上传的字节流先落到 data/inbox/<批次>/<相对路径>（保留拖进来的
 目录结构），再把「每个顶层目录 / 一组散文件」当成一个资源交给管道——台账里的
@@ -36,12 +39,13 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from panup.core.errors import AuthError, ConfigError, ProjectError, UploadError
 from panup.core.ledger import Ledger
 from panup.core.pipeline import check_all, publish_task
-from panup.drivers.base import DRIVERS
+from panup.drivers.base import DRIVERS, get_driver
 from panup.web.inbox import group_resources, ingest, new_batch_dir
 from panup.web.jobs import JobStore
 from panup.writers.base import WRITERS
@@ -63,6 +67,13 @@ def resolve_bind(cfg: dict) -> tuple[str, int]:
 def _envelope(status: int, code: str, msg: str, hint: str = "") -> JSONResponse:
     return JSONResponse(status_code=status,
                         content={"code": code, "msg": msg, "hint": hint})
+
+
+class RemoteDeleteBody(BaseModel):
+    """按路径删远端：pan 必须是已注册网盘，path 必须是具体路径（不许根目录）。"""
+
+    pan: str = ""
+    path: str = ""
 
 
 def _truthy(value) -> bool:
@@ -139,7 +150,8 @@ def _configured_dir(cfg: dict, pan: str) -> str:
 
 
 def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
-               config_loader=None, inbox_dir=None, job_store=None) -> FastAPI:
+               config_loader=None, inbox_dir=None, job_store=None,
+               driver_factory=None) -> FastAPI:
     """构建应用；下列参数都是测试打桩点，缺省走真实实现。"""
     import panup.drivers  # noqa: F401 —— 触发驱动注册（AC-02）
     import panup.writers  # noqa: F401 —— 触发写入端注册
@@ -149,6 +161,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
     provider = status_provider or check_all
     run_task = task_runner or publish_task
     make_ledger = ledger_factory or (lambda: Ledger(DEFAULT_DB))
+    make_driver = driver_factory or get_driver
     inbox = Path(inbox_dir or DEFAULT_INBOX)
     jobs = job_store or JobStore()
     upload_lock = threading.Lock()      # 全局单并发（D-007）：一次只跑一个资源
@@ -357,6 +370,55 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
         return {"ok": True, "record_id": record_id,
                 "item": items[0] if items else None,
                 "message": "重传成功；飞书文档未追加（避免同一资源出现两节）"}
+
+    @app.post("/api/uploads/{record_id}/delete-remote")
+    def delete_record_remote(record_id: int):
+        """删掉这条记录的远端目录（记录页「删远端」按钮）。
+
+        只删台账里记的那个路径，不碰同名的其它资源；删完把行标 deleted、链接清空——
+        行保留，历史还在，点开不会 404。远端本来就没有也算成功（幂等）。
+        """
+        ledger = make_ledger()
+        try:
+            row = ledger.get(record_id)
+            if row is None:
+                return _envelope(404, "PUP-404", f"记录不存在: {record_id}",
+                                 "刷新记录页后再试")
+            if row["status"] == "deleted":
+                return {"ok": True, "skipped": True, "record_id": record_id,
+                        "message": "这条的远端已经删过了"}
+            result = make_driver(row["pan"]).delete(row["remote_path"])
+            ledger.record_deleted(record_id)
+        finally:
+            ledger.close()
+        return {"ok": True, "record_id": record_id, "pan": row["pan"],
+                "path": row["remote_path"], **result,
+                "message": ("远端本来就没有这个目录，已标记为已删除"
+                            if result.get("missing") else "远端目录已删除")}
+
+    @app.post("/api/remote/delete")
+    def delete_remote(body: RemoteDeleteBody):
+        """按「盘 + 路径」删远端目录，用于台账里查不到的路径（如整批验收目录）。
+
+        危险动作的两道闸：不认根目录；路径必须完全显式给（不猜、不拼日期层）。
+        该前缀下的成功记录一并标 deleted，记录页不会留下点开就 404 的链接。
+        """
+        pan = (body.pan or "").strip()
+        path = (body.path or "").strip()
+        if pan not in DRIVERS:
+            known = "、".join(sorted(DRIVERS)) or "无"
+            return _envelope(400, "PUP-405", f"未启用的网盘: {pan or '(空)'}",
+                             f"pan 可选: {known}")
+        if not path.strip("/"):
+            return _envelope(400, "PUP-108", "不能删除网盘根目录",
+                             "给具体目录，例如 /panup验收-I017")
+        result = make_driver(pan).delete(path)
+        ledger = make_ledger()
+        try:
+            affected = ledger.mark_deleted_by_remote(pan, path)
+        finally:
+            ledger.close()
+        return {"ok": True, "pan": pan, **result, "records": affected}
 
     @app.exception_handler(RequestValidationError)
     async def on_validation_error(request, exc: RequestValidationError):

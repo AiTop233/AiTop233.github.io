@@ -820,6 +820,7 @@ function statusBadge(status) {
   const map = {
     success: ["ok", "成功"], partial: ["warn", "部分成功"],
     failed: ["bad", "失败"], pending: ["muted", "进行中"],
+    deleted: ["muted", "已删除"],
   };
   const [cls, text] = map[status] || ["muted", status || "—"];
   return `<span class="badge ${cls}">${esc(text)}</span>`;
@@ -827,10 +828,15 @@ function statusBadge(status) {
 
 function itemCell(item) {
   const pan = `<span class="cell-pan">${esc(panLabel(item.pan))}</span>`;
+  if (item.status === "deleted") {
+    return `<div class="cell-item deleted">${pan}<span>远端已删除</span></div>`;
+  }
+  const del = `<button class="btn tiny danger" type="button" data-delremote="${item.id}"
+    title="删除远端目录 ${esc(item.remote_path || "")}">删远端</button>`;
   if (item.status === "success" && item.link) {
     return `<div class="cell-item">${pan}<a href="${esc(item.link)}" target="_blank"
       rel="noreferrer">${esc(item.link)}</a>${item.pwd
-      ? `<button class="btn tiny" type="button" data-copy="${esc(item.pwd)}">复制码</button>` : ""}</div>`;
+      ? `<button class="btn tiny" type="button" data-copy="${esc(item.pwd)}">复制码</button>` : ""}${del}</div>`;
   }
   const info = item.status === "failed" ? errInfo(item.error_code) : null;
   const reason = info ? info.reason : "传输中";
@@ -901,6 +907,22 @@ async function retryRecord(id, btn) {
   }
 }
 
+async function deleteRemote(id, btn) {
+  if (!window.confirm("确定删除这个资源在网盘上的目录吗？链接会立刻失效，且不能撤销。")) {
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "删除中…";
+  try {
+    const r = await api(`/api/uploads/${id}/delete-remote`, { method: "POST" });
+    showToast(r.message || "远端已删除", false);
+  } catch (e) {
+    showToast(`${e.msg}（${e.code}）${e.hint ? " 怎么办: " + e.hint : ""}`);
+  } finally {
+    await refreshRecords();
+  }
+}
+
 /* ---------------- 通用 ---------------- */
 
 function switchTab(name) {
@@ -924,6 +946,8 @@ document.addEventListener("click", (ev) => {
   if (ev.target.closest("[data-copy-all]")) { copyText(allLinksText()); return; }
   const retry = ev.target.closest("[data-retry]");
   if (retry) retryRecord(retry.dataset.retry, retry);
+  const del = ev.target.closest("[data-delremote]");
+  if (del) deleteRemote(del.dataset.delremote, del);
 });
 
 document.addEventListener("DOMContentLoaded", () => {

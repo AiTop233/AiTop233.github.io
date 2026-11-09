@@ -308,6 +308,10 @@ body {
   font-size: var(--fs-small);
 }
 
+/* 危险动作（删远端）：默认低调，悬停才染红 */
+.btn.danger { color: var(--c-danger); }
+.btn.danger:hover:not(:disabled) { border-color: var(--c-danger); }
+
 /* 结果卡片 */
 .result {
   margin-top: var(--sp-4);
@@ -518,6 +522,8 @@ body {
 .cell-item a { color: var(--c-accent); }
 
 .cell-item.bad { color: var(--c-danger); }
+
+.cell-item.deleted { color: var(--c-muted); }
 
 .cell-pan {
   flex: 0 0 34px;

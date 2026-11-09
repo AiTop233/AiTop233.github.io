@@ -38,6 +38,12 @@ def _canned(method, url, *, params=None, data=None, files=None, headers=None):
         return json.dumps({"errno": 0, "info": [
             {"fs_id": 123, "path": "/a/hello.txt", "size": 6},
         ]})
+    if "/api/filemanager" in url:
+        target = json.loads(data["filelist"])[0]["path"]
+        if target.endswith("gone"):
+            return json.dumps({"errno": -9, "info": []})
+        return json.dumps({"errno": 0, "taskid": 9,
+                           "info": [{"errno": 0, "path": target}]})
     if "/share/pset" in url:
         return json.dumps({"errno": 0, "link": "https://pan.baidu.com/s/1abc",
                            "pwd": "k9x2", "shareid": 7})
@@ -160,6 +166,33 @@ class BaiduContractTests(unittest.TestCase):
         items = make_driver().list("/a")
         self.assertEqual(items[0]["name"], "x.txt")
         self.assertFalse(items[0]["isdir"])
+
+    def test_delete_calls_filemanager_with_opera_delete(self):
+        seen = {}
+
+        def canned(method, url, *, params=None, **kw):
+            if "/api/filemanager" in url:
+                seen.update(params or {})
+            return _canned(method, url, params=params, **kw)
+
+        res = make_driver(canned).delete("/panup验收-I017")
+        self.assertTrue(res["deleted"])
+        self.assertFalse(res["missing"])
+        self.assertEqual(seen.get("opera"), "delete")
+        self.assertEqual(seen.get("onnest"), "fail")
+
+    def test_delete_missing_path_is_idempotent(self):
+        """远端本来就没有 → missing=True 而不是抛错（删验收目录会重跑）。"""
+        res = make_driver().delete("/a/gone")
+        self.assertFalse(res["deleted"])
+        self.assertTrue(res["missing"])
+
+    def test_delete_root_refused_before_network(self):
+        calls.clear()
+        with self.assertRaises(UploadError) as cm:
+            make_driver().delete("/")
+        self.assertEqual(cm.exception.code, "PUP-108")
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":

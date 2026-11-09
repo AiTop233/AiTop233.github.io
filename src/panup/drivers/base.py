@@ -40,6 +40,18 @@ class Driver(ABC):
     def list(self, remote_dir: str) -> list[dict]:
         """列目录：[{"fs_id", "name", "path", "size", "isdir", "md5"}]。"""
 
+    def delete(self, remote_path: str) -> dict:
+        """删除远端一个路径（文件或整个目录），幂等。
+
+        返回 {"path", "deleted": bool, "missing": bool}：`deleted=True` 表示本次真的
+        删掉了；`missing=True` 表示远端本来就没有（续跑/重试时视为已达成目标，不报错）。
+        默认实现直接报「不支持删除」——老驱动与测试桩不必跟着改，只有实现了的盘能用。
+        """
+        raise ProjectError(
+            f"{self.name or '该网盘'}驱动不支持删除",
+            code="PUP-107",
+            hint="目前只有百度与夸克支持远端删除；需要别的盘就手工到网页端删")
+
     def publish(self, local_path, remote_dir: str, *, pwd: str | None = None,
                 period_days: int = 0, overwrite: bool = True,
                 on_progress: Callable[[int, int], None] | None = None) -> dict:

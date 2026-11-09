@@ -1,7 +1,8 @@
 """上传台账 —— SQLite 单文件（data/ledger.db），BACKEND.md §3。
 
 幂等键 = (local_path, file_hash, pan, remote_path)，唯一索引支撑 AC-07 去重；
-status: pending → success / failed。时间戳本地时区 ISO 8601。
+status: pending → success / failed；远端被删后置 deleted（行保留，链接清空）。
+时间戳本地时区 ISO 8601。
 """
 
 from __future__ import annotations
@@ -136,6 +137,28 @@ class Ledger:
             "WHERE id=?", (error_code, self._now(), record_id))
         self._conn.commit()
 
+    def record_deleted(self, record_id: int) -> None:
+        """标记「远端已删除」：留着行做历史，链接置空（点开必然 404）。"""
+        self._conn.execute(
+            "UPDATE uploads SET status='deleted', link='', pwd='', error_code=NULL, "
+            "updated_at=? WHERE id=?", (self._now(), record_id))
+        self._conn.commit()
+
+    def mark_deleted_by_remote(self, pan: str, remote_path: str) -> int:
+        """把某个远端前缀下的成功记录批量标记为已删除（删验收目录用）。
+
+        `remote_path` 本身或它的子路径都算——删 /panup验收-I017 会连带把
+        /panup验收-I017/26/11/09/标题 这类记录标掉。返回受影响行数。
+        """
+        prefix = remote_path.rstrip("/") + "/"
+        cur = self._conn.execute(
+            "UPDATE uploads SET status='deleted', link='', pwd='', error_code=NULL, "
+            "updated_at=? WHERE pan=? AND status='success' "
+            "AND (remote_path=? OR remote_path LIKE ?)",
+            (self._now(), pan, remote_path.rstrip("/"), prefix + "%"))
+        self._conn.commit()
+        return cur.rowcount
+
     def recent(self, limit: int = 10, status: str | None = None) -> list[dict]:
         """按 id 倒序取记录；status 给定时只取该状态（failed 即「待修」）。"""
         if status:
@@ -184,6 +207,8 @@ def _as_task(group_id: str, items: list[dict]) -> dict:
         status = "success"
     elif statuses == {"failed"}:
         status = "failed"
+    elif statuses == {"deleted"}:
+        status = "deleted"
     elif "pending" in statuses:
         status = "pending"
     else:
