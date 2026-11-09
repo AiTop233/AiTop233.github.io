@@ -146,8 +146,19 @@ def cmd_watch(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    """本地管理台：起 FastAPI 服务（只监听 127.0.0.1，BACKEND.md §2）。"""
+    from panup.web.api import serve
+
+    try:
+        return serve()
+    except ProjectError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
+    p = argparse.ArgumentParser(prog="panup", description="网盘中控台（手动 / 自动上传到百度、夸克网盘）")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     up = sub.add_parser("upload", help="上传文件/目录并返回分享链接")
@@ -176,6 +187,9 @@ def build_parser() -> argparse.ArgumentParser:
     wa = sub.add_parser("watch", help="监控配置目录，自动上传（需 config.toml）")
     wa.add_argument("--db", default=None, help="台账数据库路径（默认 data/ledger.db）")
     wa.set_defaults(func=cmd_watch)
+
+    sv = sub.add_parser("serve", help="本地管理台服务（127.0.0.1:8256）")
+    sv.set_defaults(func=cmd_serve)
     return p
 
 

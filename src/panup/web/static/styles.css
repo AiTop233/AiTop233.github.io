@@ -1,0 +1,141 @@
+/* 设计令牌与基础样式（I-007 页面壳；完整视觉 I-008 定稿）。
+   语义变量是数值唯一真源（docs/DESIGN_SYSTEM.md）：白底深字浅描边，
+   成功绿 / 危险红 / 说明灰，克制工具风——无渐变、小圆角、动效仅按钮与提示条。 */
+:root {
+  --c-bg: #ffffff;
+  --c-text: #1f2430;
+  --c-muted: #6b7280;
+  --c-border: #d5d9e0;
+  --c-accent: #33415c;
+  --c-ok: #178a50;
+  --c-danger: #c0392b;
+  --c-unknown: #9aa3af;
+
+  --fs-body: 14px;
+  --fs-small: 12px;
+  --fs-title: 18px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --radius: 6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+  background: var(--c-bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: var(--fs-title);
+}
+
+.tabs { display: flex; gap: var(--sp-1); }
+
+.tab {
+  border: 0;
+  background: none;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-body);
+  color: var(--c-muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tab.active {
+  color: var(--c-text);
+  background: #eef1f5;
+  font-weight: 600;
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+.light {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  cursor: help;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.ok { background: var(--c-ok); }
+.dot.bad { background: var(--c-danger); }
+.dot.unknown { background: var(--c-unknown); }
+
+#refresh-status {
+  margin-left: auto;
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: none;
+  font-size: var(--fs-small);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.panel { display: none; padding: var(--sp-5); }
+.panel.active { display: block; }
+
+/* 空态（DESIGN_SYSTEM §2：写明「发生了什么 / 下一步去哪」） */
+.empty {
+  padding: 64px var(--sp-4);
+  text-align: center;
+  border: 1px dashed var(--c-border);
+  border-radius: var(--radius);
+}
+.empty-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+.empty-hint {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
+
+#toast {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--c-accent);
+  color: #fff;
+  transition: opacity 0.15s ease;
+}
+
+#toast.error { background: var(--c-danger); }
+#toast.hidden { display: none; }
