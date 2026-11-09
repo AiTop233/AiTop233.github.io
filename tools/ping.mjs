@@ -6,18 +6,21 @@
  * GitHub Pages 的服务器在境外，百度的抓取间隔会拉得很长，主动推送能把
  * 收录从天级压到小时级。
  *
- * 三个通道，各自独立，没配就跳过：
- *   Baidu    —— 站长平台的 token（环境变量 BAIDU_TOKEN）
- *   IndexNow —— key 默认从 public/<key>.txt 自动认（也可用 INDEXNOW_KEY 指定）；
- *               Bing / Yandex / Seznam / Naver 共用这一个端点
- *   Bing API —— Bing Webmaster Tools 的 API 密钥（环境变量 BING_API_KEY），
- *               在 BWT「设置 → API 访问 → API 密钥」拿，每天 10000 条配额
+ * 通道一览，各自独立，没配凭据的自动跳过：
+ *   IndexNow  —— 不需要账号。key 从 public/<32hex>.txt 自动认。分发到
+ *                Bing / Yandex / Naver / Seznam / Yep（Amazon 那个端点是商品库，资源站推了没意义）
+ *   Bing API  —— Bing Webmaster Tools 的 API 密钥（BING_API_KEY），每天 10000 条
+ *   百度       —— 普通收录的准入 token（BAIDU_TOKEN）
+ *   360        —— URL 提交接口（SO360_TOKEN；接口地址变了就用 SO360_ENDPOINT 覆盖）
+ *   Google    —— 没有可用通道：sitemap ping 端点 2024 年已经 404，Indexing API 只收
+ *                招聘/直播页。只能靠 robots.txt 的 Sitemap 行 + Search Console 手动提交
  *
- * IndexNow 的响应码：200 已接收；202 已接收但 key 待验证；403 key 文件取不到或内容不符；
- * 422 URL 与 host 不匹配；429 提交过快。除了 200/202 都算没推成功。
+ * IndexNow 的响应码：200 已接收；202 已接收但 key 待验证（首次提交常见，之后再提交就变 200）；
+ * 403 key 文件取不到或内容不符；422 URL 与 host 不匹配；429 提交过快。除了 200/202 都算没推成功。
  *
  * 用法：
  *   node tools/ping.mjs --dry-run      # 只列将要提交的 URL，不发请求
+ *   node tools/ping.mjs --global-only  # IndexNow 只打全球端点，不逐家打
  *   node tools/ping.mjs                # 有几个通道跑几个
  */
 
@@ -28,6 +31,8 @@ const DIST = '.vitepress/dist'
 const SITE = 'https://aitop233.github.io'
 const HOST = new URL(SITE).host
 const dryRun = process.argv.includes('--dry-run')
+const globalOnly = process.argv.includes('--global-only')
+const TIMEOUT = 15000
 
 const sitemap = join(DIST, 'sitemap.xml')
 if (!existsSync(sitemap)) {
@@ -59,27 +64,39 @@ function findIndexNowKey() {
   return null
 }
 
+// 打全球端点会分发给所有参与方；逐家再打一遍是冗余但无害（每家独立计数），
+// 用来兜住「共享端点转发丢了」的情况。--global-only 只打第一条。
+const INDEXNOW_ENDPOINTS = [
+  ['IndexNow 全球', 'https://api.indexnow.org/indexnow'],
+  ['Bing', 'https://www.bing.com/indexnow'],
+  ['Yandex', 'https://yandex.com/indexnow'],
+  ['Naver', 'https://searchadvisor.naver.com/indexnow'],
+  ['Seznam', 'https://search.seznam.cz/indexnow'],
+  ['Yep', 'https://indexnow.yep.com/indexnow'],
+]
+
 const results = []
 
-async function baidu() {
-  const token = process.env.BAIDU_TOKEN
-  if (!token) {
-    console.log('\n百度：跳过（没有 BAIDU_TOKEN）')
-    return
+async function post(name, url, headers, body) {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body,
+      signal: AbortSignal.timeout(TIMEOUT),
+    })
+    const text = (await res.text()).slice(0, 160).replace(/\s+/g, ' ').trim()
+    return { name, status: res.status, ok: res.ok || res.status === 202, text }
+  } catch (e) {
+    const why = e.name === 'TimeoutError' ? `超时（>${TIMEOUT / 1000}s）` : String(e.message)
+    return { name, status: 0, ok: false, text: why }
   }
-  const endpoint = `http://data.zz.baidu.com/urls?site=${SITE}&token=${token}`
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: urls.join('\n'),
-  })
-  results.push(['百度', `${res.status} ${await res.text()}`])
 }
 
 async function indexNow() {
   const key = findIndexNowKey()
   if (!key) {
-    console.log('\nIndexNow：跳过（public/ 下没有 key 文件，也没有 INDEXNOW_KEY）')
+    console.log('IndexNow：跳过（public/ 下没有 key 文件，也没有 INDEXNOW_KEY）')
     return
   }
   // key 文件必须真的能访问到，否则接口会拒
@@ -87,17 +104,18 @@ async function indexNow() {
     console.log(`IndexNow：跳过（缺 public/${key}.txt，内容应为这串 key 本身）`)
     return
   }
-  const keyLocation = `${SITE}/${key}.txt`
-  const res = await fetch('https://api.indexnow.org/indexnow', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({ host: HOST, key, keyLocation, urlList: urls }),
+
+  const payload = JSON.stringify({
+    host: HOST,
+    key,
+    keyLocation: `${SITE}/${key}.txt`,
+    urlList: urls,
   })
-  const ok = res.status === 200 || res.status === 202
-  results.push([
-    'IndexNow',
-    `${res.status} ${res.statusText}${ok ? '' : `（key 文件是否已上线？先试 ${keyLocation}）`}`,
-  ])
+  const headers = { 'Content-Type': 'application/json; charset=utf-8' }
+  const targets = globalOnly ? INDEXNOW_ENDPOINTS.slice(0, 1) : INDEXNOW_ENDPOINTS
+
+  const settled = await Promise.all(targets.map(([name, url]) => post(name, url, headers, payload)))
+  settled.forEach((r) => results.push(r))
 }
 
 async function bingApi() {
@@ -106,24 +124,50 @@ async function bingApi() {
     console.log('Bing API：跳过（没有 BING_API_KEY）')
     return
   }
-  const res = await fetch(
-    `https://ssl.bing.com/webmaster/api.svc/json/SubmitUrlbatch?apikey=${encodeURIComponent(apiKey)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({ siteUrl: `${SITE}/`, urlList: urls }),
-    },
-  )
-  results.push(['Bing API', `${res.status} ${(await res.text()).slice(0, 200)}`])
+  const url = `https://ssl.bing.com/webmaster/api.svc/json/SubmitUrlbatch?apikey=${encodeURIComponent(apiKey)}`
+  const body = JSON.stringify({ siteUrl: `${SITE}/`, urlList: urls })
+  results.push(await post('Bing API', url, { 'Content-Type': 'application/json; charset=utf-8' }, body))
 }
 
-await baidu()
+async function baidu() {
+  const token = process.env.BAIDU_TOKEN
+  if (!token) {
+    console.log('百度：跳过（没有 BAIDU_TOKEN）')
+    return
+  }
+  const url = `http://data.zz.baidu.com/urls?site=${encodeURIComponent(SITE)}&token=${encodeURIComponent(token)}`
+  results.push(await post('百度', url, { 'Content-Type': 'text/plain' }, urls.join('\n')))
+}
+
+async function so360() {
+  const token = process.env.SO360_TOKEN
+  if (!token) {
+    console.log('360：跳过（没有 SO360_TOKEN）')
+    return
+  }
+  // 平台给的接口地址万一换了，用 SO360_ENDPOINT 覆盖，别改代码
+  const endpoint = process.env.SO360_ENDPOINT || 'https://data.360.cn/api/submit'
+  const site = process.env.SO360_SITE || HOST
+  const url = `${endpoint}?site=${encodeURIComponent(site)}&token=${encodeURIComponent(token)}`
+  results.push(await post('360', url, { 'Content-Type': 'text/plain' }, urls.join('\n')))
+}
+
+console.log('')
 await indexNow()
 await bingApi()
+await baidu()
+await so360()
 
-if (results.length) {
-  console.log('')
-  results.forEach(([name, body]) => console.log(`${name}：${body}`))
-} else {
-  console.log('\n没有配置任何通道，什么也没发')
+if (!results.length) {
+  console.log('没有配置任何通道，什么也没发')
+  process.exit(0)
 }
+
+console.log('\n提交结果：')
+let failed = 0
+for (const r of results) {
+  console.log(`  ${r.ok ? '✓' : '✗'} ${r.name}: ${r.status || '—'} ${r.text}`)
+  if (!r.ok) failed++
+}
+console.log(`\n成功 ${results.length - failed} / ${results.length}`)
+if (failed) process.exitCode = 1

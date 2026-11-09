@@ -3,5 +3,9 @@ Allow: /
 
 # 不屏蔽 /assets/：Google 需要抓取 CSS/JS 才能正确渲染页面，挡了反而亏
 
-# 百度 / 谷歌 / 必应共用同一份 sitemap
+# 百度 / 谷歌 / 必应 / Yandex / Naver / Seznam 共用同一份 sitemap
 Sitemap: https://aitop233.github.io/sitemap.xml
+
+# IndexNow 的 key：和 /cdd4bd5ca2debb84965bfcc1473ebc49.txt 同一个值，
+# 放在这里让爬虫一读 robots 就知道该去验哪把 key（内容是公开的，不是密码）
+IndexNow: cdd4bd5ca2debb84965bfcc1473ebc49
