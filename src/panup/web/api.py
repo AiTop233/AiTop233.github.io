@@ -198,7 +198,7 @@ def create_app(status_provider=None, *, task_runner=None, ledger_factory=None,
                 return {"ok": True, "skipped": True, "record_id": record_id,
                         "message": "这条已经成功，无需重传"}
             src = Path(row["local_path"])
-            if not src.is_file():
+            if not src.exists():
                 return _envelope(
                     409, "PUP-409", "原文件已不在，无法重传",
                     f"重新拖一次该文件；原路径: {row['local_path']}")
