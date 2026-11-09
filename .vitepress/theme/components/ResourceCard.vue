@@ -26,6 +26,20 @@ const shown = computed(() =>
     .map((l) => ({ ...l, label: l.pan ? PAN_NAMES[l.pan] || l.pan : '' })),
 )
 
+// 资源名要给搜索引擎当标题用（<h3>），而不是一个纯 <div>：
+// 一页两百多条资源，如果全是 div，正文里没有一个能被识别成「标题」的层级。
+// 锚点由标题派生，同一页两条同名资源也能共存（加短哈希去重）。
+const cardId = computed(() => {
+  const slug = props.title
+    .toLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+  let h = 0
+  for (const ch of props.title) h = (h * 31 + ch.codePointAt(0)!) >>> 0
+  return `${slug || 'res'}-${h.toString(36).slice(0, 4)}`
+})
+
 const copied = ref('')
 
 function copyCode(code?: string) {
@@ -40,11 +54,14 @@ function copyCode(code?: string) {
 
 <template>
   <div class="resource-card">
-    <!-- 资源名称 -->
-    <div class="card-title">
+    <!-- 资源名称：用 h3，标题层级与锚点都留给搜索引擎和深链接。
+         ignore-header 是 VitePress 的约定：有这个 class 的标题不进右侧大纲，
+         否则一页 276 张卡会把大纲撑成一份目录。 -->
+    <h3 :id="cardId" class="card-title ignore-header">
       <span class="card-icon">📦</span>
-      <span>{{ title }}</span>
-    </div>
+      <span class="card-name">{{ title }}</span>
+      <a class="card-anchor" :href="`#${cardId}`" :aria-label="`链接到「${title}」`">#</a>
+    </h3>
 
     <!-- 资源信息 -->
     <div class="card-body">
@@ -52,7 +69,8 @@ function copyCode(code?: string) {
         <div class="card-row link-row">
           <span class="label">🔗 链接</span>
           <span v-if="l.label" class="pan-badge">{{ l.label }}</span>
-          <a :href="l.url" target="_blank" rel="noopener noreferrer" class="link-text">
+          <a :href="l.url" target="_blank" rel="noopener noreferrer nofollow"
+             :title="`打开「${title}」${l.label ? `（${l.label}网盘）` : ''}`" class="link-text">
             {{ l.url }}
           </a>
         </div>
@@ -100,12 +118,36 @@ function copyCode(code?: string) {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin: 0;
   padding: 14px 16px;
   background: var(--vp-c-bg-soft);
   border-bottom: 1px solid var(--vp-c-border);
   font-weight: 600;
   font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: normal;
   color: var(--vp-c-text-1);
+  border-top: none;
+}
+
+/* 锚点：鼠标移上去才出现，平时不干扰阅读（和正文标题的行为一致） */
+.card-anchor {
+  margin-left: auto;
+  padding-left: 8px;
+  font-weight: 400;
+  color: var(--vp-c-text-3);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.resource-card:hover .card-anchor,
+.card-anchor:focus-visible {
+  opacity: 1;
+}
+
+.card-name {
+  word-break: break-word;
 }
 
 .card-icon {
