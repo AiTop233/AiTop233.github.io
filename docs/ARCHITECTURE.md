@@ -27,6 +27,7 @@ core 上传任务（publish_task）：一个资源 → 按网盘逐个跑单盘�
           │                         任务聚合：资源 + 各盘文件夹链接 + 失败项
           │                                   │
           │                                   ├─► writer（飞书）：最顶插入**一节**（h2「YYMMDD 标题名」+ 成功盘各一行，链接指向文件夹）
+          │                                   ├─► 内容站（可选）：追加一条资源到 site/data/resources.json，公开页按分类渲染（D-010）
           │                                   └─► 待修列表：失败项留台账，页面与 CLI 可重试
           ▼
 输出：CLI 打印各盘链接 / watch 日志 / Web 页面展示链接与记录
@@ -73,6 +74,7 @@ publish_task（与本地来源同一条投放管道：同名检查 → 建文件
 | watcher | 目录监控，产出新文件事件交给 core；阶段 2 支持约定目录动态规则 | `src/panup/watcher.py` | core | drivers、writers |
 | web | 本地管理台服务端（FastAPI REST API + 托管 SPA 静态资源） | `src/panup/web/` | core、watcher | drivers、writers |
 | config | 配置与密钥加载、启动校验 | `src/panup/config.py` | — | — |
+| site | 内容站（VitePress）：把资源的「标题 + 分享链接 + 提取码」渲染成公开页面；内容源是 `data/resources.json`，唯一写入点 `tools/add.mjs`（D-010） | `site/` | — （独立 node 构建，不 import Python 代码） | 入口、core、drivers（只通过 JSON 文件与 CLI 交互） |
 
 依赖方向：入口（cli / watcher / web）→ core → drivers / writers / sources / transforms → config，单向；drivers、writers、sources、transforms 四者之间互不依赖（sources 只认链接格式，不认驱动；transforms 只认字符串）。
 
@@ -115,6 +117,7 @@ publish_task（与本地来源同一条投放管道：同名检查 → 建文件
 - **AC-08** cookie 方案的操作保持低频串行（批量场景逐文件间隔 ≥ 1 秒），不做高频并发，降低风控风险 ｜ 检查：评审批量路径代码无并发上传调用
 - **AC-11** 转存与分享一律串行，单轮候选有上限（默认 3），连续失败 3 次停线亮红灯，不自动无限重试 ｜ 检查：评审产线循环代码 + 人为断网跑一轮，确认真会停
 - **AC-12** 热度榜不得把代理指标（点击/复制）写成「转存数」；样本不足必须显示「样本不足」，不得输出无置信度的精确分数 ｜ 检查：评审接口字段名与页面文案
+- **AC-13** 内容站只消费 `site/data/resources.json`，分类页不得内联资源数组；任何写入走 `site/tools/add.mjs`（手工、脚本、同步共用一条路）｜ 检查：评审时确认分类页只有 `import ... data/resources.json`，无 `const resources = [...]` 字面量
 
 项目私有规则：以上全部为本项目私有约束，不与其他项目共用。
 

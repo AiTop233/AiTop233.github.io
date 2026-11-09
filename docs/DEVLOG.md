@@ -140,3 +140,16 @@
 - 没写代码：这一轮只做设计与调研，实现按 I-020 → I-021 → I-022 → I-024 排
 - 停在：main（只改了 docs）；`I-018-batch-upload` 等七条分支仍待人验收
 - 悬而未决：PanSou 自建还是外接、转存源先夸克还是 UC、落地页是否对外、广告注入做不做（已进看板「待决问题」）
+
+## 2026-11-09（第二十次会话记录 · 执行）
+- 前置：人要把「之前用 Vercel + GitHub 搭的网盘站点」找出来，把内容顺带同步过去，并考虑把项目迁进当前目录
+- 定位：先按 `vercel.json` / `.vercel` 搜（D 盘与用户目录全无），再列浅层 `package.json` 命中 `D:/Coding/ZCode/18线资源（Github网站）`；`git remote` → `AiTop233/AiTop233.github.io`。**实际不是 Vercel 部署**：仓库里没有 vercel 配置，`aitop233.vercel.app` 返回 404，线上是 GitHub Pages + Actions（`aitop233.github.io` 返回 200）
+- 规模：VitePress 1.x，7 个分类页，540 条真实链接（bilibili 252 / 极客时间 230 专栏 + 46 视频 / 影视 3 / 电子书 3 / 教程软件音乐各 2），原仓库仅 3 个提交
+- 迁移：`git subtree add --prefix=site`（保留历史；`subtree split` 与原 HEAD 同树 `265c9d6`，可 `subtree push` 快进回原仓库）；本地登记 `site-pages` 远端，但**没有推送**
+- 数据化：`tools/extract.mjs` 抽出 540 条 → `data/resources.json`；7 个分类页改成 `import data` + filter；首页「260+ 门 / 276门」改为按 `counts` 算；`tools/add.mjs` 作为唯一写入点（单条 / 批量 / 去重退出码 2 / 未知分类退出码 1 / `--dry-run`），并补了顶层 try 让错误不带堆栈
+- 验证：`npm run build` 成功，产物里 7 页卡片数与 JSON 完全一致（252/276/3/3/2/2/2），首页数字随数据变；预览服务截图核对首页与极客时间页，样式与迁移前一致
+- 踩坑：① 根 `.gitignore` 的 `data/` 把 `site/data/resources.json` 一起吃掉了（`git status` 看不见，差点漏提交）→ 改锚定 `/data/`，并加 `*.db` 挡住 `src/data/ledger.db`；② 本机沙箱拦截批量删除，`vite` 清空 `dist` 时报 `ETIMEDOUT`，先手动 `rm -rf dist` 再构建即可（已写进 `site/README.md`）
+- 文档：新增 `site/README.md`（目录、加资源、构建、部署、与 panup 的关系）；记 D-010；架构模块表加 `site`、数据流加内容站分支、加 AC-13；看板加阶段 4（I-025 待验收 / I-026 待定）；建 `docs/issues/I-025.md`、`I-026.md`（含三个待定：分类映射 / 多盘怎么展示 / 何时写）
+- 未做：没有向站点仓库推任何提交（线上内容未变）；I-026 的同步代码未写，等三项决策
+- 停在：`I-025-site-merge`（叠加在 main 之上）；main 只有文档、`.gitignore` 与两张截图
+- 下次：人验收 I-025 → 定 I-026 的三项 → 再排 I-009 / I-020
