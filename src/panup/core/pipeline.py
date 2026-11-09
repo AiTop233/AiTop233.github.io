@@ -55,17 +55,36 @@ def _check_writer_names(writer_names) -> None:
                 hint="先实现并注册该写入端（I-005 后 feishu 可用），或去掉 --doc 参数")
 
 
-def _run_writers(writer_names, task, log) -> list[dict]:
+def _emitter(progress):
+    """把结构化进度回调包成旁路发射器：回调出错只丢这一条事件，不影响上传。"""
+    if progress is None:
+        return lambda event: None
+
+    def emit(event: dict) -> None:
+        try:
+            progress(event)
+        except Exception:  # noqa: BLE001 —— 进度是旁路，绝不让它反噬上传
+            pass
+
+    return emit
+
+
+def _run_writers(writer_names, task, log, progress=None) -> list[dict]:
     """逐个写入端追加任务（一节）；失败记录结果但不上抛（PRD F3）。"""
+    emit = _emitter(progress)
     results = []
     for name in writer_names or []:
+        emit({"stage": "writing", "writer": name})
         try:
             summary = get_writer(name).append_task(task)
             results.append({"writer": name, "ok": True, "detail": summary})
             log("writer.appended", writer=name)
+            emit({"stage": "done", "writer": name})
         except ProjectError as e:
             results.append({"writer": name, "ok": False, "error": str(e)})
             log("writer.failed", writer=name, code=e.code, msg=e.msg)
+            emit({"stage": "failed", "writer": name, "code": e.code,
+                  "msg": e.msg})
     return results
 
 
@@ -171,18 +190,26 @@ def _existing_child(drv, remote_dir: str, name: str) -> bool:
 
 def _publish_one(res, pan: str, remote_dir: str, *, ledger,
                  driver, force, date_dir, period_days, pwd, group_id, title,
-                 on_progress, log) -> dict:
-    """单盘上传一个资源：去重 → 同名检查 → 建目录 → 逐文件上传 → 分享文件夹。"""
+                 on_progress, log, progress=None) -> dict:
+    """单盘上传一个资源：去重 → 同名检查 → 建目录 → 逐文件上传 → 分享文件夹。
+
+    progress 是结构化进度旁路（Web 轮询用），事件见 BACKEND §2「进度事件」；
+    on_progress 仍是驱动级的 (已传字节, 文件大小) 回调（CLI 进度条沿用）。
+    """
+    emit = _emitter(progress)
     base = str(remote_dir or "/")
     effective_dir = date_subdir(base, _today()) if date_dir else base.rstrip("/") or "/"
     resource_dir = f"{effective_dir.rstrip('/')}/{title}"
 
+    emit({"stage": "checking", "pan": pan, "path": resource_dir})
     if not force:
         hit = ledger.find_success(local_path=res["local_path"],
                                   file_hash=res["file_hash"], pan=pan,
                                   remote_path=resource_dir)
         if hit:
             log("watch.dedup_skipped", pan=pan, file=res["local_path"])
+            emit({"stage": "skipped", "pan": pan, "link": hit["link"],
+                  "path": hit["remote_path"]})
             return {"dedup": True, "link": hit["link"],
                     "pwd": hit.get("pwd") or "", "path": hit["remote_path"],
                     "pan": pan, "record_id": hit["id"], "rapid": False,
@@ -209,26 +236,50 @@ def _publish_one(res, pan: str, remote_dir: str, *, ledger,
         exists = _existing_child(drv, effective_dir, title)
         skip = _remote_index(drv, resource_dir) if (exists and force) else {}
         drv.mkdir(resource_dir)
+        emit({"stage": "mkdir", "pan": pan, "path": resource_dir})
         uploaded = skipped = 0
         rapid = False
-        for f in res["files"]:
+        total_bytes = int(res["size"] or 0)
+        sent = 0
+        for idx, f in enumerate(res["files"], 1):
             rel = f["rel"]
             if rel in skip and skip[rel] == f["size"]:
                 skipped += 1
+                sent += f["size"]
                 log("file.skipped", pan=pan, file=rel, reason="exists_same_size")
+                emit({"stage": "uploading", "pan": pan, "file_index": idx,
+                      "file": rel, "bytes_done": sent,
+                      "bytes_total": total_bytes})
                 continue
             parent = f"{resource_dir}/{rel}".rsplit("/", 1)[0]
             if parent != resource_dir:   # 顶层文件已在 resource_dir 里
                 drv.mkdir(parent)
-            up = drv.upload(f["abs"], parent, on_progress=on_progress)
+            emit({"stage": "uploading", "pan": pan, "file_index": idx,
+                  "file": rel, "bytes_done": sent,
+                  "bytes_total": total_bytes})
+
+            def _bytes_progress(done_b, total_b, *, idx=idx, rel=rel, base=sent):
+                emit({"stage": "uploading", "pan": pan, "file_index": idx,
+                      "file": rel, "bytes_done": base + int(done_b or 0),
+                      "bytes_total": total_bytes or int(total_b or 0)})
+                if on_progress:
+                    on_progress(done_b, total_b)
+
+            up = drv.upload(f["abs"], parent, on_progress=_bytes_progress)
             rapid = rapid or bool(up.get("rapid"))
             uploaded += 1
+            sent += f["size"]
+        emit({"stage": "sharing", "pan": pan, "path": resource_dir})
         sh = drv.share(resource_dir, pwd=pwd, period_days=period_days)
         ledger.record_success(record_id, sh["link"], sh.get("pwd") or "")
+        emit({"stage": "done", "pan": pan, "link": sh["link"],
+              "pwd": sh.get("pwd") or "", "path": resource_dir})
         log("upload.success", pan=pan, file=res["local_path"], link=sh["link"],
             uploaded=uploaded, skipped=skipped)
     except ProjectError as e:
         ledger.record_failed(record_id, e.code)
+        emit({"stage": "failed", "pan": pan, "code": e.code, "msg": e.msg,
+              "hint": e.hint or ""})
         log("upload.failed", pan=pan, file=res["local_path"], code=e.code,
             msg=e.msg)
         raise
@@ -282,7 +333,7 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
                  driver_factory=None, force: bool = False, date_dir: bool = False,
                  period_days: int = 0, pwd: str | None = None,
                  writer_names=None, on_progress=None, log=None,
-                 group_id: str | None = None) -> dict:
+                 group_id: str | None = None, progress=None) -> dict:
     """多盘上传任务（D-004 + D-005）：各盘独立成败，全部跑完后只写一次文档。
 
     local_path 可以是单个文件，也可以是文件夹（整个文件夹当一次「资源」上传，
@@ -290,6 +341,7 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
     返回 {group_id, title, kind, file_count, items, failed, writers}；items 只含
     成功的盘，failed 里是 {pan, code, msg, hint}。
     group_id 可注入：失败项重传时沿用原任务号，让记录归位而不是另起一条任务。
+    progress：结构化进度旁路（字典事件），供 Web 轮询展示「上传到哪一步了」。
     """
     log = log or (lambda *a, **k: None)
     _check_writer_names(writer_names)
@@ -298,6 +350,10 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
 
     group_id = group_id or _new_group_id()
     task_title = clean_title(title, _default_title(res))
+    emit = _emitter(progress)
+    emit({"stage": "scanning", "kind": res["kind"], "title": task_title,
+          "file_count": len(res["files"]), "size": res["size"],
+          "pans": [t["pan"] for t in targets]})
     log("task.started", group_id=group_id, file=res["local_path"],
         kind=res["kind"], files=len(res["files"]),
         pans=[t["pan"] for t in targets])
@@ -311,7 +367,7 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
                 res, pan, remote_dir, ledger=ledger, driver=driver, force=force,
                 date_dir=date_dir, period_days=period_days, pwd=pwd,
                 group_id=group_id, title=task_title,
-                on_progress=on_progress, log=log))
+                on_progress=on_progress, log=log, progress=progress))
         except ProjectError as e:
             failed.append({"pan": pan, "code": e.code, "msg": e.msg,
                            "hint": e.hint or ""})
@@ -319,7 +375,9 @@ def publish_task(local_path, targets, *, ledger: Ledger, title=None,
     fresh = [i for i in items if not i.get("dedup")]
     writers = []
     if fresh:
-        writers = _run_writers(writer_names, _task_of(res, task_title, fresh), log)
+        writers = _run_writers(writer_names, _task_of(res, task_title, fresh),
+                               log, progress=progress)
+    emit({"stage": "finished"})
     log("task.finished", group_id=group_id, ok=len(items), failed=len(failed))
     return {"group_id": group_id, "title": task_title, "kind": res["kind"],
             "file_count": len(res["files"]), "items": items,
@@ -330,7 +388,7 @@ def publish_file(local_path, pan: str, remote_dir: str, *, ledger: Ledger,
                  driver: Driver | None = None, force: bool = False,
                  date_dir: bool = False, period_days: int = 0,
                  pwd: str | None = None, writer_names=None,
-                 on_progress=None, log=None) -> dict:
+                 on_progress=None, log=None, progress=None) -> dict:
     """单盘特例（watcher 与既有调用方）：语义等同只有一个 target 的任务。"""
     log = log or (lambda *a, **k: None)
     _check_writer_names(writer_names)
@@ -342,8 +400,9 @@ def publish_file(local_path, pan: str, remote_dir: str, *, ledger: Ledger,
                         ledger=ledger, driver=driver, force=force,
                         date_dir=date_dir, period_days=period_days, pwd=pwd,
                         group_id=group_id, title=title, on_progress=on_progress,
-                        log=log)
-    writers = _run_writers(writer_names, _task_of(res, title, [item]), log) \
+                        log=log, progress=progress)
+    writers = _run_writers(writer_names, _task_of(res, title, [item]), log,
+                           progress=progress) \
         if not item.get("dedup") else []
     return {**item, "writers": writers, "group_id": group_id, "title": title,
             "file_hash": res["file_hash"], "size": res["size"]}
