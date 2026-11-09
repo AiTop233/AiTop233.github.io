@@ -142,7 +142,8 @@ class CheckAllTests(unittest.TestCase):
     def test_output_sorted_by_name(self):
         from panup.core.pipeline import check_all
 
-        out = check_all(driver_registry={"b": _OkDriver, "a": _OkDriver})
+        out = check_all(driver_registry={"b": _OkDriver, "a": _OkDriver},
+                        writer_registry={})
         self.assertEqual(list(out), ["a", "b"])
 
 

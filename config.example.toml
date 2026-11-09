@@ -8,19 +8,23 @@ baidu_default_dir = "/来自电脑"
 quark_default_dir = "/来自电脑"
 
 [watch]
-# 监控目录与目标映射。每项：local = 本地目录，pan = 网盘名（baidu / quark），remote_dir = 网盘目标目录
-# 示例：dirs = [{ local = "D:\\Drop", pan = "quark", remote_dir = "/同步" }]
+# 监控目录与目标映射（panup watch 使用）。每项字段：
+#   local      本地目录（递归监控）
+#   pan        网盘名：baidu / quark
+#   remote_dir 网盘目标目录
+#   date_dir   是否追加「年/月/日」子目录（默认 true，即 /同步/26/11/09）
+#   doc        成功后写入的文档端列表（默认 ["feishu"]；写失败不影响上传）
+# 示例：dirs = [{ local = "D:\\Drop", pan = "quark", remote_dir = "/同步", date_dir = true, doc = ["feishu"] }]
 dirs = []
 # 轮询间隔（秒）
 interval_seconds = 5
-# 新文件稳定判定等待（秒）：两次采样大小不变即认为写完
+# 新文件稳定判定等待（秒）：大小两次采样不变即认为写完
 stable_seconds = 10
 # 单文件失败重试上限
 retry_limit = 3
 
 [feishu]
-# 飞书自建应用与目标文档（I-005 使用；app_secret 放 secrets/feishu_app.json，不写在这里）
-app_id = ""
+# 目标飞书文档 token（文档链接中 /docx/ 后那串）；应用凭证放 secrets/feishu_app.json
 doc_token = ""
 
 [web]

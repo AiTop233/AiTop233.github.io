@@ -295,32 +295,49 @@ class QuarkDriver(Driver):
             })
         return out
 
-    def mkdir(self, remote_dir):
-        """建目录；同名冲突视为已存在（幂等），返回 {"path", "created", "fid"}。"""
-        p = self._norm(remote_dir)
-        if p == "/":
-            return {"path": "/", "created": False, "fid": "0"}
-        parent = p.rsplit("/", 1)[0] or "/"
-        name = p.rsplit("/", 1)[1]
-        parent_fid = self._resolve_fid(parent)
+    def _find_in(self, parent_fid: str, name: str):
+        """在父目录列表里找同名条目（目录），没有返回 None。"""
+        return next((it for it in self._list_fid(parent_fid)
+                     if it.get("file_name") == name), None)
+
+    def _ensure_level(self, parent_fid: str, name: str, walked: str) -> str:
+        """确保一级目录存在：找不到就创建（同名冲突回查一次），返回 fid。"""
+        hit = self._find_in(parent_fid, name)
+        if hit is not None:
+            return hit["fid"]
         try:
             resp = self._api("POST", "/file", body={
                 "dir_init_lock": False, "dir_path": "",
                 "file_name": name, "pdir_fid": parent_fid,
             })
-            fid = (resp.get("data") or {}).get("fid")
+            return (resp.get("data") or {}).get("fid")
         except ProjectError as e:
             if "同名冲突" not in str(e) and "doloading" not in str(e):
                 raise
-            hit = next((it for it in self._list_fid(parent_fid)
-                        if it.get("file_name") == name), None)
+            hit = self._find_in(parent_fid, name)
             if hit is None:
                 raise
-            fid = hit["fid"]
-            self._fid_cache[p] = fid
-            return {"path": p, "created": False, "fid": fid}
-        self._fid_cache[p] = fid
-        return {"path": p, "created": True, "fid": fid}
+            return hit["fid"]
+
+    def mkdir(self, remote_dir):
+        """建目录（父级逐级创建，全部幂等），返回 {"path", "created", "fid"}。
+
+        与百度不同，夸克的建目录接口挂在已有父目录下，多级目录必须逐级走。
+        """
+        p = self._norm(remote_dir)
+        if p == "/":
+            return {"path": "/", "created": False, "fid": "0"}
+        fid = "0"
+        walked = "/"
+        created = False
+        for seg in [s for s in p.split("/") if s]:
+            before = self._find_in(fid, seg)
+            fid = self._ensure_level(fid, seg, walked)
+            walked = walked.rstrip("/") + "/" + seg
+            self._fid_cache[walked] = fid
+            if before is None:
+                created = True
+        return {"path": p, "created": created, "fid": fid}
 
     # -- 上传 ------------------------------------------------------------------
 
