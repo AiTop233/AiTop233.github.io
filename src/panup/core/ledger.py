@@ -121,7 +121,66 @@ class Ledger:
             "WHERE id=?", (error_code, self._now(), record_id))
         self._conn.commit()
 
-    def recent(self, limit: int = 10) -> list[dict]:
-        cur = self._conn.execute(
-            "SELECT * FROM uploads ORDER BY id DESC LIMIT ?", (limit,))
+    def recent(self, limit: int = 10, status: str | None = None) -> list[dict]:
+        """按 id 倒序取记录；status 给定时只取该状态（failed 即「待修」）。"""
+        if status:
+            cur = self._conn.execute(
+                "SELECT * FROM uploads WHERE status=? ORDER BY id DESC LIMIT ?",
+                (status, limit))
+        else:
+            cur = self._conn.execute(
+                "SELECT * FROM uploads ORDER BY id DESC LIMIT ?", (limit,))
         return [dict(r) for r in cur.fetchall()]
+
+    def get(self, record_id: int):
+        """按主键取单条记录；不存在返回 None（重传接口用）。"""
+        cur = self._conn.execute("SELECT * FROM uploads WHERE id=?",
+                                 (record_id,))
+        return self._one(cur)
+
+    def tasks(self, limit: int = 50) -> list[dict]:
+        """按 group_id 聚合最近的任务（记录页主视图，BACKEND §2）。
+
+        一次上传的各盘行共享 group_id，聚合后每项含 items（按盘）与整体状态：
+        success（全成功）/ partial（有成有败）/ failed（全失败）/ pending。
+        旧库单行任务（legacy-<id>）同样适用，item 只有一条。
+        """
+        cur = self._conn.execute(
+            "SELECT group_id, MAX(id) AS last_id FROM uploads "
+            "GROUP BY group_id ORDER BY last_id DESC LIMIT ?", (limit,))
+        groups = [r["group_id"] for r in cur.fetchall()]
+        if not groups:
+            return []
+        marks = ",".join("?" * len(groups))
+        rows = self._conn.execute(
+            f"SELECT * FROM uploads WHERE group_id IN ({marks}) ORDER BY id",
+            groups).fetchall()
+        buckets: dict = {g: [] for g in groups}
+        for r in rows:
+            buckets.setdefault(r["group_id"], []).append(dict(r))
+        return [_as_task(g, buckets.get(g) or []) for g in groups]
+
+
+def _as_task(group_id: str, items: list[dict]) -> dict:
+    """把同一 group_id 的记录行合成一条任务视图。"""
+    first = items[0]
+    statuses = {i["status"] for i in items}
+    if statuses == {"success"}:
+        status = "success"
+    elif statuses == {"failed"}:
+        status = "failed"
+    elif "pending" in statuses:
+        status = "pending"
+    else:
+        status = "partial"
+    return {
+        "group_id": group_id,
+        "title": items[0].get("title") or Path(first["local_path"]).stem,
+        "filename": Path(first["local_path"]).name,
+        "local_path": first["local_path"],
+        "size": first.get("size"),
+        "created_at": min(i["created_at"] for i in items),
+        "updated_at": max(i["updated_at"] for i in items),
+        "status": status,
+        "items": items,
+    }

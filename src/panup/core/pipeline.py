@@ -144,18 +144,20 @@ def _check_targets(targets) -> list[dict]:
 def publish_task(local_path, targets, *, ledger: Ledger, title=None,
                  driver_factory=None, force: bool = False, date_dir: bool = False,
                  period_days: int = 0, pwd: str | None = None,
-                 writer_names=None, on_progress=None, log=None) -> dict:
+                 writer_names=None, on_progress=None, log=None,
+                 group_id: str | None = None) -> dict:
     """多盘上传任务（D-004）：各盘独立成败，全部跑完后只写一次文档。
 
     返回 {group_id, title, items, failed, writers}；items 只含成功的盘，
     failed 里是 {pan, code, msg, hint}。
+    group_id 可注入：失败项重传时沿用原任务号，让记录归位而不是另起一条任务。
     """
     log = log or (lambda *a, **k: None)
     _check_writer_names(writer_names)
     src, local_path_str, size, fh = _prepare_source(local_path)
     targets = _check_targets(targets)
 
-    group_id = _new_group_id()
+    group_id = group_id or _new_group_id()
     task_title = (title or "").strip() or src.name.rsplit(".", 1)[0] or src.name
     log("task.started", group_id=group_id, file=local_path_str,
         pans=[t["pan"] for t in targets])
