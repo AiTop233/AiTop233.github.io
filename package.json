@@ -8,7 +8,11 @@
     "build": "vitepress build",
     "preview": "vitepress preview",
     "add": "node tools/add.mjs",
-    "extract": "node tools/extract.mjs"
+    "extract": "node tools/extract.mjs",
+    "seo:check": "node tools/seo-check.mjs",
+    "assets": "python tools/gen-assets.py",
+    "ping": "node tools/ping.mjs",
+    "verify": "vitepress build && node tools/seo-check.mjs"
   },
   "devDependencies": {
     "vitepress": "^1.5.0"

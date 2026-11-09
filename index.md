@@ -5,15 +5,6 @@ head:
   - - meta
     - name: keywords
       content: 网盘资源,资源分享,百度网盘,夸克网盘,影视资源,电子书,教程,软件,音乐
-  - - meta
-    - property: og:title
-      content: 资源合集 - 互联网优质资源分享
-  - - meta
-    - property: og:description
-      content: 影视、电子书、教程、软件、音乐等海量网盘资源，分类清晰，查找方便
-  - - meta
-    - property: og:url
-      content: https://aitop233.github.io
   - - script
     - type: application/ld+json
     - |

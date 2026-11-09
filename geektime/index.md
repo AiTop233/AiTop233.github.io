@@ -27,7 +27,9 @@ Java · Python · Go · C++ · Rust · JavaScript · Vue · React · Kotlin · S
 
 ---
 
-## 📖 专栏课（{{ columnCourses.length }}门）
+## 📖 专栏课
+
+共 {{ columnCourses.length }} 门。
 
 <ResourceCard
   v-for="r in columnCourses"
@@ -40,7 +42,9 @@ Java · Python · Go · C++ · Rust · JavaScript · Vue · React · Kotlin · S
 
 ---
 
-## 🎥 视频课（{{ videoCourses.length }}门）
+## 🎥 视频课
+
+共 {{ videoCourses.length }} 门。
 
 <ResourceCard
   v-for="r in videoCourses"
