@@ -1,25 +1,6 @@
-# 凭据不进仓库：cookie 与飞书 app 凭证（换机需重新导出）
-/secrets/
-# 运行期数据：SQLite 台账、watch 单实例锁（换机上传记录不带走，需要时手动备份）
-# 锚定根目录：site/data/ 是站点内容，不能连带忽略
-/data/
-# 日志：JSON lines 按天滚动，保留 30 天
-/logs/
-# 实际配置含个人路径与个人目录规则；模板 config.example.toml 入库
-config.toml
-# Python 缓存
-__pycache__/
-*.pyc
-# SQLite 台账（含在 src/ 下跑脚本时的遗留库）
-*.db
-*.db-journal
-*.db-wal
-# 站点依赖：site/ 由 I-025 以 subtree 迁入，node_modules 不入库
 node_modules/
-# 站点构建产物与缓存
-**/.vitepress/dist/
-**/.vitepress/cache/
-# 会话工具目录（本机）
-.zcode/
-# 预留：若将来需要隔离环境，建在项目内
-.venv/
+.vitepress/dist/
+.vitepress/cache/
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,19 @@
+{
+  "name": "aitop233-resources",
+  "version": "1.0.0",
+  "description": "资源分享站 - 互联网资源合集",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "add": "node tools/add.mjs",
+    "extract": "node tools/extract.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.5.0"
+  },
+  "dependencies": {
+    "sitemap": "^9.0.1"
+  }
+}
