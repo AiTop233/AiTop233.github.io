@@ -7,8 +7,14 @@
 ------------------------------------------------
 POST /open-apis/auth/v3/tenant_access_token/internal   app_id+secret 换 token
 GET  /open-apis/docx/v1/documents/{document_id}        文档可达性检查
+GET  /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children?page_size=500
+                                                       列页面子块（定位插入位置）
 POST /open-apis/docx/v1/documents/{document_id}/blocks/{block_id}/children
-                                                       向页面块末尾追加文本块
+                                                       body.index 指定位置写入小节
+
+版式（PRD F3 固定更新规则 / DECISIONLOG D-003）：每次成功上传向文档**最顶**
+（首个标题块前）插入一节——h2「YYMMDD 文件名（不带扩展名）」+ 每盘一行
+「盘名：链接?pwd=提取码」（全角冒号，提取码内嵌进链接，链接可点击）。
 
 凭证来源（BACKEND.md §9）：环境变量 FEISHU_APP_ID / FEISHU_APP_SECRET >
 secrets/feishu_app.json（{"app_id": "...", "app_secret": "..."}）。
@@ -37,6 +43,16 @@ SECRETS_DIR = _PROJECT_ROOT / "secrets"
 
 # token 提前 5 分钟失效重取
 _TOKEN_EXPIRY_MARGIN = 300
+
+# 标题小节里的网盘名写法（未知盘用原名）
+_PAN_LABELS = {"quark": "夸克", "baidu": "百度"}
+# 标题块的 block_type 区间（h1～h9）
+_HEADING_TYPES = set(range(3, 12))
+
+
+def _today_str() -> str:
+    """标题日期（YYMMDD，如 261109）；测试覆写点。"""
+    return f"{datetime.now().astimezone():%y%m%d}"
 
 
 def load_default_credentials():
@@ -181,28 +197,57 @@ class FeishuWriter(Writer):
         return {"ok": True, "doc": doc_token}
 
     def append_record(self, record: dict) -> dict:
-        """向目标文档末尾追加一行「时间 · 文件名 · 链接（提取码）」。"""
+        """按固定更新规则向文档最顶插入一节（版式见模块 docstring）。"""
         doc_token = self._doc_token()
-        ts = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M")
-        pwd = record.get("pwd") or ""
-        prefix = f"{ts} · {record.get('filename')} · "
-        link = record.get("link") or ""
-        suffix = f"（提取码 {pwd}）" if pwd else ""
-        elements = [
-            {"text_run": {"content": prefix}},
-            {"text_run": {"content": link,
-                          "text_element_style": {"link": {"url": urllib.parse.quote(link, safe="")}}}},
-        ]
-        if suffix:
-            elements.append({"text_run": {"content": suffix}})
+        index = self._insert_index(doc_token)
         body = {
-            "children": [{
-                "block_type": 2,
-                "text": {"elements": elements, "style": {}},
-            }],
+            "index": index,
+            "children": [self._heading_block(self._section_title(record)),
+                         *self._link_blocks(record)],
         }
         path = (f"/open-apis/docx/v1/documents/{doc_token}"
                 f"/blocks/{doc_token}/children?document_revision_id=-1")
         payload = self._api("POST", path, body=body)
-        block_id = ((payload.get("data") or {}).get("children") or [{}])[0].get("block_id")
-        return {"block_id": block_id, "doc": doc_token}
+        block_ids = [b.get("block_id")
+                     for b in (payload.get("data") or {}).get("children") or []]
+        return {"block_ids": block_ids, "doc": doc_token, "index": index}
+
+    def _insert_index(self, doc_token: str) -> int:
+        """插入位置：首个标题块（h1～h9）之前；没有标题块则最顶（0）。"""
+        index = 0
+        page_token = ""
+        while True:
+            path = (f"/open-apis/docx/v1/documents/{doc_token}"
+                    f"/blocks/{doc_token}/children"
+                    f"?page_size=500&document_revision_id=-1" + page_token)
+            data = self._api("GET", path).get("data") or {}
+            for i, b in enumerate(data.get("items") or [], start=index):
+                if b.get("block_type") in _HEADING_TYPES:
+                    return i
+            index += len(data.get("items") or [])
+            if not data.get("has_more"):
+                return 0
+            page_token = f"&page_token={data['page_token']}"
+
+    def _section_title(self, record: dict) -> str:
+        name = record.get("filename") or "未命名"
+        stem = Path(name).stem or name
+        return f"{_today_str()} {stem}"
+
+    def _heading_block(self, title: str) -> dict:
+        return {"block_type": 4, "heading2": {
+            "elements": [{"text_run": {"content": title}}], "style": {}}}
+
+    def _link_blocks(self, record: dict) -> list[dict]:
+        link = record.get("link") or ""
+        pwd = record.get("pwd") or ""
+        if link and pwd and "?pwd=" not in link:
+            link = f"{link}?pwd={pwd}"
+        pan = record.get("pan") or ""
+        label = _PAN_LABELS.get(pan, pan or "链接")
+        elements = [{"text_run": {"content": f"{label}："}}]
+        if link:
+            elements.append({"text_run": {"content": link,
+                "text_element_style": {
+                    "link": {"url": urllib.parse.quote(link, safe="")}}}})
+        return [{"block_type": 2, "text": {"elements": elements, "style": {}}}]
