@@ -106,7 +106,24 @@ body {
 
 .panel { display: none; padding: var(--sp-5); }
 .panel.active { display: block; }
-.placeholder { color: var(--c-muted); }
+
+/* 空态（DESIGN_SYSTEM §2：写明「发生了什么 / 下一步去哪」） */
+.empty {
+  padding: 64px var(--sp-4);
+  text-align: center;
+  border: 1px dashed var(--c-border);
+  border-radius: var(--radius);
+}
+.empty-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+.empty-hint {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--c-muted);
+}
 
 #toast {
   position: fixed;
