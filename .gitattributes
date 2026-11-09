@@ -1,0 +1,2 @@
+# IndexNow 的 key 文件内容必须与文件名逐字一致，别让换行规则把它改写
+public/*.txt text eol=lf
