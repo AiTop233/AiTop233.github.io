@@ -13,6 +13,8 @@ from pathlib import Path
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS uploads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id TEXT,
+    title TEXT,
     local_path TEXT NOT NULL,
     file_hash TEXT NOT NULL,
     size INTEGER,
@@ -37,6 +39,25 @@ class Ledger:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute(_SCHEMA)
         self._conn.commit()
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """存量库补列（BACKEND §11）：旧库没有 group_id / title 时 ALTER 补上。
+
+        旧行 group_id 回填 `legacy-<id>`（一次上传一行的旧语义），title 留空由
+        记录页回退显示文件名；不重建表、不丢数据。
+        """
+        cols = {r[1] for r in self._conn.execute("PRAGMA table_info(uploads)")}
+        if "group_id" not in cols:
+            self._conn.execute("ALTER TABLE uploads ADD COLUMN group_id TEXT")
+            self._conn.execute(
+                "UPDATE uploads SET group_id = 'legacy-' || id "
+                "WHERE group_id IS NULL OR group_id = ''")
+        if "title" not in cols:
+            self._conn.execute("ALTER TABLE uploads ADD COLUMN title TEXT")
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_uploads_group ON uploads(group_id)")
+        self._conn.commit()
 
     @staticmethod
     def _now() -> str:
@@ -60,23 +81,26 @@ class Ledger:
         return self._one(cur)
 
     def record_start(self, *, local_path: str, file_hash: str, size: int,
-                     pan: str, remote_path: str) -> int:
+                     pan: str, remote_path: str, group_id: str = "",
+                     title: str = "") -> int:
         """记一条 pending；同键已有记录则复用该行（不违反唯一索引）。"""
         now = self._now()
         try:
             cur = self._conn.execute(
-                "INSERT INTO uploads (local_path, file_hash, size, pan, "
-                "remote_path, status, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)",
-                (local_path, file_hash, size, pan, remote_path, now, now))
+                "INSERT INTO uploads (group_id, title, local_path, file_hash, "
+                "size, pan, remote_path, status, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)",
+                (group_id or f"legacy-{now}", title, local_path, file_hash,
+                 size, pan, remote_path, now, now))
             self._conn.commit()
             return int(cur.lastrowid)
         except sqlite3.IntegrityError:
             self._conn.execute(
                 "UPDATE uploads SET status='pending', error_code=NULL, "
-                "updated_at=? WHERE local_path=? AND file_hash=? AND pan=? "
-                "AND remote_path=?",
-                (now, local_path, file_hash, pan, remote_path))
+                "group_id=?, title=?, updated_at=? WHERE local_path=? AND "
+                "file_hash=? AND pan=? AND remote_path=?",
+                (group_id or "", title, now, local_path, file_hash, pan,
+                 remote_path))
             self._conn.commit()
             cur = self._conn.execute(
                 "SELECT id FROM uploads WHERE local_path=? AND file_hash=? "
