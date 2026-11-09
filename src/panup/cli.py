@@ -158,7 +158,7 @@ def cmd_serve(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="panup", description="网盘自动上传")
+    p = argparse.ArgumentParser(prog="panup", description="网盘中控台（手动 / 自动上传到百度、夸克网盘）")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     up = sub.add_parser("upload", help="上传文件/目录并返回分享链接")
