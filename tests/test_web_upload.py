@@ -350,5 +350,112 @@ class RecordsTests(unittest.TestCase):
         self.assertEqual(r.json()["failed"][0]["code"], "PAN-quark-noauth")
 
 
+class _DeleteDriver:
+    """假驱动：只实现 delete，记录被删的路径；missing 集合里的路径视为远端不存在。"""
+
+    name = "stubdel"
+
+    def __init__(self, missing=()):
+        self.deleted = []
+        self.missing = set(missing)
+
+    def delete(self, remote_path):
+        self.deleted.append(remote_path)
+        if remote_path in self.missing:
+            return {"path": remote_path, "deleted": False, "missing": True}
+        return {"path": remote_path, "deleted": True, "missing": False}
+
+
+class RemoteDeleteTests(unittest.TestCase):
+    """I-039：删远端接口 —— 记录级 + 路径级，台账状态与链接同步。"""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.db = self.root / "ledger.db"
+        self.src = self.root / "src.bin"
+        self.src.write_bytes(b"x")
+        self.drv = _DeleteDriver()
+        led = Ledger(self.db)
+        try:
+            self.ok_id = led.record_start(
+                local_path=str(self.src), file_hash="h1", size=1, pan="baidu",
+                remote_path="/panup验收-I017/26/11/09/主题一", group_id="g-1",
+                title="主题一")
+            led.record_success(self.ok_id, "https://pan.baidu.com/s/ok", "pwd1")
+        finally:
+            led.close()
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _client(self):
+        return TestClient(create_app(
+            status_provider=lambda: {}, task_runner=_Recorder(),
+            ledger_factory=lambda: Ledger(self.db),
+            config_loader=lambda: CFG, inbox_dir=str(self.root / "inbox"),
+            driver_factory=lambda name, **kw: self.drv))
+
+    def _row(self, record_id):
+        led = Ledger(self.db)
+        try:
+            return led.get(record_id)
+        finally:
+            led.close()
+
+    def test_delete_record_removes_remote_and_marks_row(self):
+        r = self._client().post(f"/api/uploads/{self.ok_id}/delete-remote")
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertTrue(r.json()["ok"])
+        self.assertEqual(self.drv.deleted, ["/panup验收-I017/26/11/09/主题一"])
+        row = self._row(self.ok_id)
+        self.assertEqual(row["status"], "deleted")
+        self.assertEqual(row["link"], "")
+        self.assertEqual(row["pwd"], "")
+
+    def test_delete_record_twice_is_skipped(self):
+        client = self._client()
+        client.post(f"/api/uploads/{self.ok_id}/delete-remote")
+        r = client.post(f"/api/uploads/{self.ok_id}/delete-remote")
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["skipped"])
+        self.assertEqual(len(self.drv.deleted), 1)      # 没有再打网盘
+
+    def test_delete_unknown_record_is_404(self):
+        r = self._client().post("/api/uploads/9999/delete-remote")
+        self.assertEqual(r.status_code, 404)
+        self.assertEqual(r.json()["code"], "PUP-404")
+
+    def test_delete_missing_remote_still_marks_deleted(self):
+        self.drv.missing = {"/panup验收-I017/26/11/09/主题一"}
+        r = self._client().post(f"/api/uploads/{self.ok_id}/delete-remote")
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertTrue(r.json()["missing"])
+        self.assertEqual(self._row(self.ok_id)["status"], "deleted")
+
+    def test_path_delete_marks_prefix_records_deleted(self):
+        r = self._client().post("/api/remote/delete",
+                                json={"pan": "baidu", "path": "/panup验收-I017"})
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertTrue(body["deleted"])
+        self.assertEqual(body["records"], 1)
+        self.assertEqual(self.drv.deleted, ["/panup验收-I017"])
+        self.assertEqual(self._row(self.ok_id)["status"], "deleted")
+
+    def test_path_delete_root_is_refused(self):
+        r = self._client().post("/api/remote/delete",
+                                json={"pan": "baidu", "path": "/"})
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()["code"], "PUP-108")
+        self.assertEqual(self.drv.deleted, [])
+
+    def test_path_delete_unknown_pan_is_refused(self):
+        r = self._client().post("/api/remote/delete",
+                                json={"pan": "nope", "path": "/x"})
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json()["code"], "PUP-405")
+
+
 if __name__ == "__main__":
     unittest.main()

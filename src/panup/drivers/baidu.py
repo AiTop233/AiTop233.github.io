@@ -16,6 +16,7 @@ GET  d.pcs.baidu.com/rest/2.0/pcs/file?method=locateupload  上传节点
 POST <host>/rest/2.0/pcs/superfile2?method=upload    分片上传
 POST /api/create?isdir=0                             落盘
 POST /api/filemetas                                  路径 → fs_id
+POST /api/filemanager?opera=delete                   删除文件/目录（服务端递归；errno 132=需先过安全校验）
 POST /share/pset                                     创建分享链接
 """
 
@@ -399,6 +400,29 @@ class BaiduDriver(Driver):
                 return int(it["fs_id"]), it
         raise UploadError(f"查不到文件: {remote_path}", code="PAN-baidu-nofile",
                           hint="确认文件已上传成功（先跑 upload 再 share）")
+
+    def delete(self, remote_path):
+        """删远端一个路径（文件或整个目录，服务端递归）。
+
+        幂等：路径本来就不存在（errno -9 / 31066）返回 missing=True 而不是报错——
+        删验收目录时常常「上一轮已经删过一半」，重跑不该红。
+        """
+        p = _norm(remote_path)
+        if p == "/":
+            raise UploadError("不能删除网盘根目录", code="PUP-108",
+                              hint="删除具体目录，例如 /panup验收-I017")
+        payload = self._json(
+            "POST", f"{PAN}/api/filemanager",
+            params={"opera": "delete", "async": 2, "onnest": "fail",
+                    "bdstoken": self.bdstoken, "clienttype": 0,
+                    "app_id": APP_ID, "web": 1},
+            data={"filelist": json.dumps([{"path": p}], ensure_ascii=False,
+                                         separators=(",", ":"))},
+            allow=(-9, 31066),
+        )
+        if payload.get("errno") in (-9, 31066):
+            return {"path": p, "deleted": False, "missing": True}
+        return {"path": p, "deleted": True, "missing": False}
 
     # -- 上传 ------------------------------------------------------------------
 

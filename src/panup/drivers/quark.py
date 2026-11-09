@@ -23,6 +23,7 @@ POST /file/upload/finish    落盘
 POST /share                 创建分享（task）
 GET  /task                  分享任务轮询
 POST /share/password        取 share_url 与提取码
+POST /file/delete           删除文件/目录（按 fid，服务端递归）
 """
 
 from __future__ import annotations
@@ -336,6 +337,31 @@ class QuarkDriver(Driver):
             if before is None:
                 created = True
         return {"path": p, "created": created, "fid": fid}
+
+    def delete(self, remote_path):
+        """删远端一个路径（文件或整个目录，服务端递归）。
+
+        幂等：路径不存在（解析不到 fid）返回 missing=True 而不是报错；删成功后把该
+        路径及其子路径的 fid 缓存清掉，免得后续操作拿着已失效的 fid 继续跑。
+        """
+        p = self._norm(remote_path)
+        if p == "/":
+            raise UploadError("不能删除网盘根目录", code="PUP-108",
+                              hint="删除具体目录，例如 /panup验收-I017")
+        try:
+            fid = self._fid_cache.get(p) or self._resolve_fid(p)
+        except ProjectError as e:
+            if getattr(e, "code", "") == "PAN-quark-nodir":
+                return {"path": p, "deleted": False, "missing": True}
+            raise
+        self._api("POST", "/file/delete", body={
+            "action": "DELETE", "filelist": [fid], "excl_filelist": [],
+            "from": "web",
+        })
+        prefix = p.rstrip("/") + "/"
+        for key in [k for k in self._fid_cache if k == p or k.startswith(prefix)]:
+            self._fid_cache.pop(key, None)
+        return {"path": p, "deleted": True, "missing": False}
 
     # -- 上传 ------------------------------------------------------------------
 

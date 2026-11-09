@@ -68,6 +68,8 @@ def _canned_api(method, url, *, params=None, body=None, headers=None):
         return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
             "share_id": "sid1", "share_url": "https://pan.quark.cn/s/sid1",
             "share_pwd": "ab12"}})
+    if path == "/file/delete" and method == "POST":
+        return 200, {}, json.dumps({"status": 200, "code": 0, "data": {}})
     raise AssertionError(f"stub 未覆盖的端点: {method} {path}")
 
 
@@ -249,6 +251,33 @@ class QuarkContractTests(unittest.TestCase):
     def test_norm_rejects_windows_drive_path(self):
         with self.assertRaises(ProjectError):
             QuarkDriver._norm("C:/x")
+
+    def test_delete_resolves_fid_then_posts_file_delete(self):
+        d = make_driver(self.wrapped())
+        res = d.delete("/a")
+        self.assertTrue(res["deleted"])
+        self.assertIn("POST /file/delete", calls)
+
+    def test_delete_missing_dir_is_idempotent(self):
+        """解析不到 fid（目录不存在）→ missing=True，不抛错。"""
+        res = make_driver(self.wrapped()).delete("/nope")
+        self.assertFalse(res["deleted"])
+        self.assertTrue(res["missing"])
+
+    def test_delete_drops_stale_fid_cache(self):
+        d = make_driver(self.wrapped())
+        d._fid_cache["/a"] = "DA"
+        d._fid_cache["/a/hello.txt"] = "FH"
+        d.delete("/a")
+        self.assertNotIn("/a", d._fid_cache)
+        self.assertNotIn("/a/hello.txt", d._fid_cache)
+
+    def test_delete_root_refused_before_network(self):
+        calls.clear()
+        with self.assertRaises(UploadError) as cm:
+            make_driver(self.wrapped()).delete("/")
+        self.assertEqual(cm.exception.code, "PUP-108")
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":
