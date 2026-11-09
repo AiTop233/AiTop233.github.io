@@ -36,7 +36,27 @@ core 上传任务（publish_task）：一个资源 → 按网盘逐个跑单盘�
 
 Web 入口另有一条**进度旁路**（D-006）：`POST /api/upload` 落盘分组后立刻返回批次号，上传任务在线程里按资源**串行**跑（全局单并发，D-007），管道把「扫描 / 各盘上传字节 / 分享 / 写文档」以结构化事件丢进内存任务板，页面轮询整批快照画进度。这条旁路不改变数据流主干——任务板只在内存，进程退出即丢，链接与成败仍以台账为准；进度回调抛错也不影响上传。
 
-现状与目标的差距：阶段 1 的 I-001 ～ I-006 代码已完成并全部验收；阶段 2 的 I-007 / I-015 / I-016 / I-017 / I-019 / I-018 代码已完成，待人验收（合并顺序见看板）；剩余差距是目录约定解析（F5）与监控页（I-009 / I-010）。
+阶段 3 多一条**获取**链路（设计见 `SOURCES.md`），它与上传链路在「投放」处汇合：
+
+```
+远端资源（一条分享链接 / 关键词搜到的候选）
+          │
+          ▼
+sources.discover(query) → [Candidate]（标题、盘型、链接、提取码、大小、新鲜度；**不含文件内容**）
+          │   select：过滤 → 去重 → 排序 → 截断（limit 是风控阀门，默认 3）
+          ▼
+acquire（core 编排，按驱动能力选择路径）
+   ├─ 同盘 + 驱动声明 save_share → 服务端 save → rename（秒级、零流量、不破坏秒传）
+   └─ 跨盘 → 下载到 data/relay/ →（可选加工）→ 上传 → 清临时（分钟级、破坏秒传）
+          ▼
+transforms（名字模板 / 广告词清洗 / 结构拍平，纯字符串，不碰内容）
+          ▼
+publish_task（与本地来源同一条投放管道：同名检查 → 建文件夹 → 上传或改名 → 分享 → 台账 → 飞书）
+```
+
+一句话：**来源可以变，投放只有一条**。所有资源最终都收敛到「我的盘里一个以标题命名的文件夹 + 一条指向它的链接 + 台账一行 + 飞书一节」，这也是为什么获取层不需要重写投放逻辑。
+
+现状与目标的差距：阶段 1 的 I-001 ～ I-006 代码已完成并全部验收；阶段 2 的 I-007 / I-015 / I-016 / I-017 / I-019 / I-018 代码已完成，待人验收（合并顺序见看板）；剩余差距是目录约定解析（F5）与监控页（I-009 / I-010）。阶段 3 只有设计（`SOURCES.md`），代码未动。
 
 ## 2. 模块分类与依赖方向
 
@@ -44,17 +64,19 @@ Web 入口另有一条**进度旁路**（D-006）：`POST /api/upload` 落盘分
 
 | 模块 | 在数据流中的职责 | 代码目录 | 允许依赖 | 禁止依赖 |
 |---|---|---|---|---|
-| drivers | 网盘客户端：登录态校验、建目录、上传、创建分享 | `src/panup/drivers/` | config | core、writers、入口 |
+| drivers | 网盘客户端：登录态校验、建目录、上传、创建分享；**能力声明**（`capabilities`：上传 / 分享 / 转存 / 改名）决定它能否当来源 | `src/panup/drivers/` | config | core、writers、入口 |
+| sources | 资源发现：本地路径 / 分享链接 / 关键词搜索 → `Candidate`（只有元数据，没有文件内容） | `src/panup/sources/` | config | core、drivers、writers、入口 |
+| transforms | 资源加工：名字模板、广告词清洗、结构拍平（纯字符串变换，不改内容） | `src/panup/transforms/` | config | core、drivers、writers、入口 |
 | writers | 文档写入端：向指定文档追加记录 | `src/panup/writers/` | config | core、drivers、入口 |
-| core | 上传任务编排（一个资源分发到多个网盘）、资源文件夹化与单盘上传管道、同名检查、台账、驱动与写入端注册表 | `src/panup/core/` | drivers、writers、config | 入口 |
+| core | 上传任务编排（一个资源分发到多个网盘）、**产线编排（发现 → 获取 → 加工 → 投放）**、资源文件夹化与单盘上传管道、同名检查、台账、驱动 / 写入端 / 来源 / 加工注册表 | `src/panup/core/` | drivers、writers、sources、transforms、config | 入口 |
 | cli | 命令入口：upload / status / watch / serve 转发 | `src/panup/cli.py` | core | drivers、writers |
 | watcher | 目录监控，产出新文件事件交给 core；阶段 2 支持约定目录动态规则 | `src/panup/watcher.py` | core | drivers、writers |
 | web | 本地管理台服务端（FastAPI REST API + 托管 SPA 静态资源） | `src/panup/web/` | core、watcher | drivers、writers |
 | config | 配置与密钥加载、启动校验 | `src/panup/config.py` | — | — |
 
-依赖方向：入口（cli / watcher / web）→ core → drivers / writers → config，单向；drivers 内部、drivers 与 writers 之间互不依赖。
+依赖方向：入口（cli / watcher / web）→ core → drivers / writers / sources / transforms → config，单向；drivers、writers、sources、transforms 四者之间互不依赖（sources 只认链接格式，不认驱动；transforms 只认字符串）。
 
-通信契约按「未来会新增」设计：新增一个网盘 = `drivers/` 下新增一个驱动文件并在注册表登记一行；新增一个写入目标 = `writers/` 下新增一个文件并登记；新增一个入口（桌面 / MCP）= 调 core 公开函数或 REST API，不改 core；Web 前端只消费 REST API（`/api/*`），不 import 服务端内部。
+通信契约按「未来会新增」设计：新增一个网盘 = `drivers/` 下新增一个驱动文件并在注册表登记一行；新增一个来源 = `sources/` 下新增一个文件并登记（只输出 `Candidate`，不碰网盘）；新增一种加工 = `transforms/` 下新增一个文件并登记；新增一个写入目标 = `writers/` 下新增一个文件并登记；新增一个入口（桌面 / MCP）= 调 core 公开函数或 REST API，不改 core；Web 前端只消费 REST API（`/api/*`），不 import 服务端内部。
 
 技术栈：
 
@@ -75,6 +97,8 @@ Web 入口另有一条**进度旁路**（D-006）：`POST /api/upload` 落盘分
 - **AC-01** 入口（cli / watcher）不得直接 import drivers / writers，一律经 core ｜ 检查：评审核对 import 方向
 - **AC-02** 新增网盘或写入目标只新增注册文件与注册表一行，不改既有模块 ｜ 检查：评审新增驱动的 diff，应只含新文件 + 注册表一行
 - **AC-03** 网盘与文档接口的响应解析只发生在 drivers / writers 内部，core 只消费契约返回值 ｜ 检查：评审时确认 core 无网盘端点常量
+- **AC-09** 来源层只产出 `Candidate`（元数据），不得自己下载或上传；走「同盘 save」还是「跨盘 relay」由 core 按驱动**能力声明**决定 ｜ 检查：`sources/` 内无 `drivers` import、无落盘代码
+- **AC-10** 网盘能力用声明（`capabilities` / `supports()`），不得用 `try: ... except NotSupported` 或「先试再降级」来探测 ｜ 检查：评审转存路径代码，无能力探测式异常捕获
 
 **安全边界**
 
@@ -89,6 +113,8 @@ Web 入口另有一条**进度旁路**（D-006）：`POST /api/upload` 落盘分
 **风险边界**
 
 - **AC-08** cookie 方案的操作保持低频串行（批量场景逐文件间隔 ≥ 1 秒），不做高频并发，降低风控风险 ｜ 检查：评审批量路径代码无并发上传调用
+- **AC-11** 转存与分享一律串行，单轮候选有上限（默认 3），连续失败 3 次停线亮红灯，不自动无限重试 ｜ 检查：评审产线循环代码 + 人为断网跑一轮，确认真会停
+- **AC-12** 热度榜不得把代理指标（点击/复制）写成「转存数」；样本不足必须显示「样本不足」，不得输出无置信度的精确分数 ｜ 检查：评审接口字段名与页面文案
 
 项目私有规则：以上全部为本项目私有约束，不与其他项目共用。
 
