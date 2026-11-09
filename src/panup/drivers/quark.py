@@ -520,7 +520,9 @@ class QuarkDriver(Driver):
             data = resp.get("data") or {}
             status = data.get("status")
             if status == 2:
-                return ((data.get("task_resp") or {}).get("data") or {}).get("share_id")
+                # 两种形状都见过：task_resp.data.share_id（旧）与顶层 share_id（新）
+                inner = ((data.get("task_resp") or {}).get("data") or {})
+                return inner.get("share_id") or data.get("share_id")
             if status == 3:
                 raise ShareError(f"分享任务失败: {data.get('task_resp') or data}",
                                  code="PAN-quark-task",

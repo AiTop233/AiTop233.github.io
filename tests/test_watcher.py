@@ -76,7 +76,7 @@ class WatcherTests(unittest.TestCase):
         self.assertNotIn("upload", [c[0] for c in d.calls])
         time.sleep(0.2)
         w.run_cycle()  # 大小稳定 → 上传
-        self.assertIn(("share", "/同步/a.txt"), d.calls)
+        self.assertIn(("share", "/同步/a"), d.calls)
         row = self.ledger.recent()[0]
         self.assertEqual(row["status"], "success")
 

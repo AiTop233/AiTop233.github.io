@@ -180,6 +180,18 @@ class QuarkContractTests(unittest.TestCase):
         with self.assertRaises(ShareError):
             make_driver(api).share("/a/hello.txt")
 
+    def test_share_task_reads_top_level_share_id(self):
+        """文件夹分享走异步任务，share_id 在 data 顶层（I-017 实测形状）。"""
+        def api(method, url, *, params=None, body=None, headers=None):
+            path = url.split("/1/clouddrive")[-1].split("?")[0]
+            if path == "/task":
+                return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
+                    "status": 2, "share_id": "sid9", "share": {}}})
+            return _canned_api(method, url, params=params, body=body, headers=headers)
+
+        r = make_driver(api).share("/a/hello.txt")
+        self.assertEqual(r["share_id"], "sid9")
+
     def test_upload_missing_local_file_raises_without_network(self):
         with self.assertRaises(UploadError):
             make_driver().upload("Z:/no/such/file.bin", "/a")
