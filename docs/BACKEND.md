@@ -37,15 +37,16 @@
   - `publish(local_path, remote_dir, **kwargs) -> dict`：mkdir + upload + share 一步到位
   - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
 - Writer 基类：
-  - `auth_check() -> None`：凭证可用性检查
-  - `append_record(record) -> dict`：向目标文档写入一节记录（版式与插入位置按 PRD F3 固定更新规则：h2「YYMMDD 文件名」小节插最顶 + 盘名链接行）
+  - `auth_check() -> dict`：凭证可用性检查
+  - `append_task(task) -> dict`：向目标文档写入**一节**；`task = {title, filename, date, items: [{pan, link, pwd}]}`，`items` **只含成功的网盘**、按驱动注册顺序排列（版式与插入位置按 PRD F3：h2「YYMMDD 标题名」小节插最顶 + 每个成功盘一行「盘名：链接?pwd=提取码」）
 - core 公开函数（未来 Web / 桌面 / MCP 入口共用）：
-  - `publish_file(local_path, pan, remote_dir, *, writer_names=None, force=False) -> dict`：完整管道；返回链接与台账记录
+  - `publish_task(local_path, targets, *, title=None, writer_names=None, force=False, date_dir=False, period_days=0) -> dict`：**多盘上传任务**；`targets = [{pan, remote_dir}]`，逐盘跑单盘管道（某盘失败不影响其他盘），全部跑完后**只写一次**文档；返回 `{group_id, title, items, failed, writers}`
+  - `publish_file(local_path, pan, remote_dir, *, …) -> dict`：单盘特例（watcher 与既有调用方），内部转 `publish_task` 的单个 target
   - `check_all() -> dict`：各网盘与写入端登录态体检
 - 错误契约：对外只抛 `ProjectError` 子类（`AuthError` / `UploadError` / `ShareError` / `WriterError` / `ConfigError`），携带 `code`、上游 `errno` 与「怎么办」恢复指引；不向调用方裸抛网络异常。
 - REST API（阶段 2，全部挂 `/api/*`，只监听 127.0.0.1）：
-  - `POST /api/upload`（multipart 文件 + pan/dir/date_dir/doc 表单）→ `{link, pwd, path, dedup, writers}`
-  - `GET /api/uploads?limit=` → 台账记录列表；`POST /api/uploads/{id}/retry` → 失败项重传
+  - `POST /api/upload`（multipart 文件 + `pans`［JSON 数组，每项 `{pan, dir}`］+ `title` + `date_dir` + `doc`）→ `{group_id, title, items, failed, writers}`
+  - `GET /api/uploads?limit=&status=` → 台账记录列表（按 `group_id` 聚合展示，`status=failed` 即「待修」）；`POST /api/uploads/{id}/retry` → 失败项重传（只重跑该「文件 × 网盘」）
   - `GET /api/status` → 各网盘与写入端登录态体检（三灯）
   - `GET /api/rules` / `PUT /api/rules`（阶段 1 固定规则）；约定目录模式下由 convention 扫描动态生成（F5）
   - `GET /api/config` / `PUT /api/config` → 白名单配置项（默认目录、飞书 doc_token、监控参数）
@@ -55,16 +56,16 @@
 
 - 代码位置：`core/ledger.py`
 - 存储选型：SQLite 单文件 `data/ledger.db`（标准库 `sqlite3`）
-- 核心表：`uploads`（id、local_path、file_hash、size、pan、remote_path、link、pwd、status［success / failed / pending］、error_code、created_at、updated_at）
-- 索引与去重：唯一索引 `(local_path, file_hash, pan, remote_path)`，支撑 AC-07 去重
-- 软删、迁移策略：阶段 1 无软删；建表一次成型，字段变更用 ALTER + 版本标记（后续 issue 再扩展，见第 11 节）
+- 核心表：`uploads`（id、**group_id**（任务号，同一次上传的各盘记录相同）、local_path、file_hash、size、pan、remote_path、link、pwd、**title**（任务标题，各盘行冗余存同一值）、status［success / failed / pending］、error_code、created_at、updated_at）
+- 索引与去重：唯一索引 `(local_path, file_hash, pan, remote_path)`，支撑 AC-07 去重；`group_id` 建普通索引供记录页聚合
+- 软删、迁移策略：阶段 1 无软删；建表一次成型，字段变更用 ALTER + 版本标记（见第 11 节）
 
 ## 4. 用例
 
 - 代码位置：`core/pipeline.py`
-- 事务边界：单文件上传为最小事务单元；分片中断 → 台账记 `pending`，下次重传整个文件（明确不做断点续传）
-- 校验位置：管道入口校验文件存在且可读、网盘与目录参数合法；config 启动时校验必填项
-- 幂等键：`(local_path, file_hash, pan, remote_path)`；台账已有 `success` 记录 → 跳过上传并返回已有链接；`force=True` 覆盖重传
+- 事务边界：**单盘上传**（一个文件 × 一个网盘）为最小事务单元；一个任务含多盘时各盘独立成败，某盘失败不回滚其他盘、不阻断后续盘；分片中断 → 台账记 `pending`，下次重传整个文件（明确不做断点续传）
+- 校验位置：管道入口校验文件存在且可读、网盘与目录参数合法、`targets` 非空且盘名已注册；config 启动时校验必填项
+- 幂等键：`(local_path, file_hash, pan, remote_path)`；某盘已有 `success` 记录 → 该盘跳过并复用已有链接（任务内其他盘照常跑）；`force=True` 覆盖重传
 
 ## 5. 后台任务
 
@@ -106,7 +107,7 @@
 
 - 代码位置：`core/log.py`
 - 档位：本地小工具
-- 事件目录：`upload.start / upload.success / upload.failed`、`share.created`、`writer.appended / writer.failed`、`watch.file_detected / watch.dedup_skipped`、`auth.expired`
+- 事件目录：`upload.start / upload.success / upload.failed`、`task.started / task.finished`（含 `group_id`、盘数、成功与失败数）、`share.created`、`writer.appended / writer.failed`、`watch.file_detected / watch.dedup_skipped`、`auth.expired`
 - 去向与格式：JSON lines，`logs/panup-YYYYMMDD.log`，每行 `{ts, event, level, pan, file, code, msg}`
 - 保留、采样、脱敏：按天滚动保留 30 天（启动时清理过期文件）；全量记录不采样；不记录 cookie、secret、提取码（AC-05）
 - 查询入口：`grep '"event":"upload.failed"' logs/*.log`
@@ -116,6 +117,7 @@
 
 - 代码位置：`core/ledger.py`
 - 迁移工具：无外部工具；阶段 1 建表一次成型。后续字段变更在此单位登记做法（ALTER + 版本标记）后另行实现
+- 2026-11-09（I-015）：`uploads` 加 `group_id TEXT` 与 `title TEXT`；启动时检测缺列则 `ALTER TABLE ADD COLUMN`，存量行 `group_id` 回填 `legacy-<id>`、`title` 留空（记录页对空标题回退显示文件名）；不重建表、不丢数据
 
 ## 12. 测试
 
