@@ -51,6 +51,15 @@ class FakeDriver:
         return []
 
 
+class ByteDriver(FakeDriver):
+    """会回调字节进度的假驱动（真驱动的 on_progress 形状）。"""
+
+    def upload(self, local_path, remote_dir, *, overwrite=True, on_progress=None):
+        if on_progress:
+            on_progress(3, 5)
+        return super().upload(local_path, remote_dir, overwrite=overwrite)
+
+
 class RecordingWriter(Writer):
     """记录收到的 task，供断言「只写一节、只含成功盘」。"""
 
@@ -166,6 +175,63 @@ class TaskTests(unittest.TestCase):
     def test_rejects_empty_targets(self):
         with self.assertRaises(UploadError):
             self.run_task([])
+
+    # ---- I-019：结构化进度事件 ----
+
+    def test_progress_stream_covers_scan_upload_share_and_writer(self):
+        events = []
+        self.run_task([{"pan": "baidu", "remote_dir": "/A"},
+                       {"pan": "quark", "remote_dir": "/B"}],
+                      progress=events.append)
+        stages = [e["stage"] for e in events]
+        self.assertEqual(stages[0], "scanning")
+        self.assertEqual(stages[-1], "finished")
+        for stage in ("checking", "mkdir", "uploading", "sharing", "done",
+                      "writing"):
+            self.assertIn(stage, stages)
+        scan = events[0]
+        self.assertEqual(scan["pans"], ["baidu", "quark"])
+        self.assertEqual(scan["file_count"], 1)
+        self.assertEqual(scan["kind"], "file")
+        self.assertTrue(all(e["pan"] in ("baidu", "quark")
+                            for e in events
+                            if e["stage"] in ("checking", "done") and e.get("pan")))
+
+    def test_progress_reports_bytes_against_whole_resource(self):
+        self.src.write_text("hello", encoding="utf-8")
+        self.drivers["baidu"] = ByteDriver("baidu")
+        events = []
+        self.run_task([{"pan": "baidu", "remote_dir": "/A"}],
+                      progress=events.append)
+        ups = [e for e in events if e["stage"] == "uploading"]
+        self.assertTrue(any(e["bytes_done"] == 3 and e["bytes_total"] == 5
+                            for e in ups), ups)
+        self.assertTrue(all("file_index" in e for e in ups))
+
+    def test_progress_callback_error_does_not_break_upload(self):
+        def boom(event):
+            raise RuntimeError("前端断线")
+
+        r = self.run_task([{"pan": "baidu", "remote_dir": "/A"}], progress=boom)
+        self.assertEqual(len(r["items"]), 1)
+        self.assertEqual(r["failed"], [])
+
+    def test_dedup_emits_skipped_instead_of_uploading(self):
+        targets = [{"pan": "baidu", "remote_dir": "/A"}]
+        self.run_task(targets)
+        events = []
+        self.run_task(targets, progress=events.append)
+        self.assertIn("skipped", [e["stage"] for e in events])
+        self.assertNotIn("uploading", [e["stage"] for e in events])
+
+    def test_failed_pan_emits_failure_with_reason(self):
+        self.drivers["baidu"] = FakeDriver("baidu", error=ShareError("额度不足"))
+        events = []
+        self.run_task([{"pan": "baidu", "remote_dir": "/A"}],
+                      progress=events.append)
+        fail = [e for e in events if e["stage"] == "failed"][0]
+        self.assertEqual(fail["pan"], "baidu")
+        self.assertIn("额度不足", fail["msg"])
 
 
 class LedgerMigrationTests(unittest.TestCase):

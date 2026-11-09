@@ -1,7 +1,10 @@
-/* 管理台前端（I-008：上传 + 记录 + 待修重传）。
+/* 管理台前端（I-008 上传 + 记录 + 待修重传；I-019 上传进度与目录回填）。
  * 约定见 docs/FRONTEND.md：无框架、无构建；state 整体刷新；错误统一 toast。 */
 
-const state = { status: null, file: null, tasks: [], failures: [], busy: false };
+const state = {
+  status: null, options: null, file: null, tasks: [], failures: [],
+  busy: false, job: null, jobTimer: null,
+};
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -122,23 +125,77 @@ async function refreshStatus() {
 
 /* ---------------- 上传页 ---------------- */
 
+/* 网盘列表：目录由 /api/options 回填（不留空），下面一行写出「实际落点」。
+ * 落点 = 基础目录 [+ 年/月/日] + 标题/，与管道 D-005 的规则一致。 */
+
+function panOptions() {
+  const list = (state.options && state.options.pans) || [];
+  if (list.length) return list;
+  return channels().map((c) => ({ name: c.name, default_dir: "" }));
+}
+
 function renderPanList() {
   const box = $("#pan-list");
-  box.innerHTML = channels().map((c, i) => `
+  box.innerHTML = panOptions().map((p, i) => `
     <div class="pan-row">
       <label class="check">
-        <input type="checkbox" class="pan-check" value="${esc(c.name)}" ${i === 0 ? "checked" : ""}>
-        ${esc(c.label)}
+        <input type="checkbox" class="pan-check" value="${esc(p.name)}" ${i === 0 ? "checked" : ""}>
+        ${esc(panLabel(p.name))}
       </label>
-      <input class="text pan-dir" data-pan="${esc(c.name)}"
-             placeholder="远端目录（留空用配置默认）"
-             ${i === 0 ? "" : "disabled"}>
+      <div class="pan-dir-wrap">
+        <input class="text pan-dir" data-pan="${esc(p.name)}"
+               value="${esc(p.default_dir || "")}"
+               placeholder="远端基础目录，例如 /来自电脑"
+               ${i === 0 ? "" : "disabled"}>
+        <p class="pan-note" data-note="${esc(p.name)}"></p>
+      </div>
     </div>`).join("");
-  box.addEventListener("change", (ev) => {
-    if (!ev.target.classList.contains("pan-check")) return;
-    const dir = box.querySelector(`.pan-dir[data-pan="${ev.target.value}"]`);
-    if (dir) dir.disabled = !ev.target.checked;
+  updateLanding();
+}
+
+function dateSubdir() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getFullYear() % 100)}/${p(d.getMonth() + 1)}/${p(d.getDate())}`;
+}
+
+function tidyPath(path) {
+  return String(path || "/").replace(/\/{2,}/g, "/");
+}
+
+function titlePreview() {
+  const typed = $("#title").value.trim();
+  if (typed) return typed;
+  if (state.file) {
+    const name = baseName(state.file.name);
+    return name.replace(/\.[^.]+$/, "") || name;
+  }
+  return "<标题>";
+}
+
+function landingOf(pan) {
+  const input = document.querySelector(`.pan-dir[data-pan="${pan}"]`);
+  const base = tidyPath((input && input.value.trim()) || "/").replace(/\/+$/, "") || "/";
+  const dir = $("#date-dir").checked ? tidyPath(`${base}/${dateSubdir()}`) : base;
+  return tidyPath(`${dir}/${titlePreview()}`);
+}
+
+function updateLanding() {
+  $$(".pan-dir").forEach((input) => {
+    const note = document.querySelector(`.pan-note[data-note="${input.dataset.pan}"]`);
+    if (!note) return;
+    note.classList.toggle("hidden", input.disabled);
+    note.textContent = input.disabled ? "" : `实际落点 ${landingOf(input.dataset.pan)}/`;
   });
+}
+
+async function refreshOptions() {
+  try {
+    state.options = await api("/api/options");
+  } catch (e) {
+    state.options = null;      // 接口不通时退回「用状态灯顺序 + 目录留空」
+  }
+  renderPanList();
 }
 
 function setFile(file) {
@@ -149,6 +206,7 @@ function setFile(file) {
   $("#drop-hint").textContent = state.file
     ? `${fmtSize(state.file.size)} · 点这里可重新选择`
     : "或点击选择文件 · 一次一个";
+  updateLanding();
 }
 
 function setBusy(busy, text) {
@@ -198,6 +256,187 @@ function renderResult(r) {
     ${rows.join("")}`;
 }
 
+/* ---------------- 上传进度（I-019）----------------
+ * 两段：① 浏览器 → 本地服务（XHR 上传字节，本地也照实显示）；
+ * ② 服务端任务（轮询 /api/jobs/{id}）：各盘传了多少、分享建好没、飞书写了没。 */
+
+const PAN_STAGE_TEXT = {
+  waiting: "等待", checking: "检查同名", mkdir: "建文件夹", uploading: "上传中",
+  sharing: "创建分享链接", done: "完成", skipped: "已有记录", failed: "失败",
+};
+
+const WRITER_STAGE_TEXT = {
+  pending: "等待写入", writing: "写入中", done: "已写入",
+  failed: "写入失败", skipped: "未写入（无需写入）",
+};
+
+function pctOf(row) {
+  const total = Number(row.bytes_total) || 0;
+  const done = Number(row.bytes_done) || 0;
+  if (total > 0) return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
+  const t = Number(row.total) || 0;
+  const d = Number(row.done) || 0;
+  return t > 0 ? Math.max(0, Math.min(100, Math.round((d / t) * 100))) : 0;
+}
+
+function rowClass(stage) {
+  if (stage === "failed") return " bad";
+  if (stage === "done" || stage === "skipped") return " ok";
+  return "";
+}
+
+function stageLine(job) {
+  const rows = Object.values(job.pans || {});
+  const total = rows.length;
+  if (job.status === "failed") return (job.error && job.error.msg) || "上传失败";
+  if (job.status === "done") {
+    const ok = rows.filter((r) => r.stage === "done" || r.stage === "skipped").length;
+    const doc = job.writer
+      ? ` · ${writerLabel(job.writer.name)}${job.writer.stage === "done" ? "已写入" : "未写入"}`
+      : "";
+    return `已完成 · ${ok}/${total} 个网盘${doc}`;
+  }
+  if (job.stage === "writing") {
+    return `网盘已传完，正在写入${job.writer ? writerLabel(job.writer.name) : "文档"}…`;
+  }
+  if (job.stage === "finalizing") return "收尾中…";
+  if (job.stage === "queued") return "准备中…";
+  const settled = rows.filter((r) => ["done", "skipped", "failed"].includes(r.stage)).length;
+  return `上传到网盘 · 已完成 ${settled}/${total} 个网盘`;
+}
+
+function renderTransfer(loaded, total) {
+  const p = total ? Math.round((loaded / total) * 100) : 0;
+  $("#progress").classList.remove("hidden");
+  $("#pg-title").textContent = state.file ? state.file.name : "正在上传";
+  $("#pg-stage").textContent = `把文件交给本地服务 · ${p}%`;
+  $("#pg-rows").innerHTML = `
+    <div class="pg-row">
+      <span class="pg-pan">接收</span>
+      <div class="pg-bar"><i style="width:${p}%"></i></div>
+      <span class="pg-text">${fmtSize(loaded)} / ${fmtSize(total)}</span>
+      <span class="pg-file"></span>
+    </div>`;
+  $("#pg-steps").innerHTML = "";
+}
+
+function renderProgress(job) {
+  state.job = job;
+  const box = $("#progress");
+  box.classList.remove("hidden");
+  $("#pg-title").textContent = job.title || job.filename || "正在上传";
+  $("#pg-stage").textContent = stageLine(job);
+
+  const rows = Object.keys(job.pans || {}).map((name) => {
+    const row = job.pans[name];
+    const p = pctOf(row);
+    const text = row.stage === "uploading"
+      ? `第 ${row.file_index}/${row.total} 个 · ${p}%`
+      : (PAN_STAGE_TEXT[row.stage] || row.stage);
+    return `<div class="pg-row${rowClass(row.stage)}">
+      <span class="pg-pan">${esc(panLabel(name))}</span>
+      <div class="pg-bar"><i style="width:${p}%"></i></div>
+      <span class="pg-text">${esc(text)}</span>
+      <span class="pg-file" title="${esc(row.file || "")}">${esc(row.file || "")}</span>
+    </div>`;
+  });
+
+  if (job.writer) {
+    const w = job.writer;
+    const text = (WRITER_STAGE_TEXT[w.stage] || w.stage)
+      + (w.stage === "failed" && w.error ? ` · ${w.error}` : "");
+    rows.push(`<div class="pg-row${rowClass(w.stage)}">
+      <span class="pg-pan">${esc(writerLabel(w.name))}</span>
+      <div class="pg-bar"><i style="width:${w.stage === "done" ? 100 : 0}%"></i></div>
+      <span class="pg-text">${esc(text)}</span>
+      <span class="pg-file"></span>
+    </div>`);
+  }
+
+  $("#pg-rows").innerHTML = rows.join("");
+  // 时间线「最新在上」：进度是看当下，不需要往下滚
+  $("#pg-steps").innerHTML = (job.steps || []).slice().reverse().map((s) => {
+    const who = s.pan ? panLabel(s.pan) : (s.writer ? writerLabel(s.writer) : "");
+    return `<li><span class="pg-time">${esc(s.at)}</span>${who ? `<b>${esc(who)}</b> ` : ""}${esc(s.text)}</li>`;
+  }).join("");
+}
+
+function stopJobPolling() {
+  if (state.jobTimer) {
+    clearInterval(state.jobTimer);
+    state.jobTimer = null;
+  }
+}
+
+function pollJob(jobId) {
+  stopJobPolling();
+  const tick = async () => {
+    let job;
+    try {
+      job = await api(`/api/jobs/${jobId}`);
+    } catch (e) {
+      stopJobPolling();
+      setBusy(false);
+      showToast(`${e.msg}（${e.code}）${e.hint ? " 怎么办: " + e.hint : ""}`);
+      return;
+    }
+    renderProgress(job);
+    if (job.status === "running") return;
+
+    stopJobPolling();
+    setBusy(false);
+    if (job.status === "done") {
+      renderResult(job.result || {});
+      finishUpload(job.result || {});
+    } else {
+      refreshRecords();
+      const err = job.error || {};
+      showToast(`${err.msg || "上传失败"}${err.code ? `（${err.code}）` : ""}${err.hint ? " 怎么办: " + err.hint : ""}`);
+    }
+  };
+  state.jobTimer = setInterval(tick, 500);
+  tick();
+}
+
+function finishUpload(r) {
+  const fails = r.failed || [];
+  if (fails.length) {
+    showToast(fails.map((f) =>
+      `${panLabel(f.pan)}失败：${f.msg}${f.hint ? `（怎么办: ${f.hint}）` : ""}`).join("；"));
+  } else if (state.job && state.job.writer && state.job.writer.stage === "done") {
+    showToast("上传完成，飞书文档已写入", false);
+  } else {
+    showToast("上传完成", false);
+  }
+  setFile(null);
+  refreshRecords();
+}
+
+/* 用 XHR 发 multipart：fetch 拿不到上传字节进度，本地写入也要让人看见。 */
+function uploadWithProgress(fd, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/upload");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(e.loaded, e.total);
+    };
+    xhr.onload = () => {
+      let body = null;
+      try { body = JSON.parse(xhr.responseText || "null"); } catch (e) { /* 非 JSON */ }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(body || {});
+        return;
+      }
+      const b = body || {};
+      reject({ code: b.code || `PUP-${xhr.status}`, msg: b.msg || `HTTP ${xhr.status}`,
+               hint: b.hint || "" });
+    };
+    xhr.onerror = () => reject({ code: "PUP-NET", msg: "无法连接本地服务",
+                                 hint: "确认 python -m panup serve 正在运行" });
+    xhr.send(fd);
+  });
+}
+
 async function doUpload(ev) {
   ev.preventDefault();
   if (state.busy) return;
@@ -213,22 +452,22 @@ async function doUpload(ev) {
   fd.append("doc", $("#write-doc").checked ? "feishu" : "");
 
   setBusy(true, "上传中…");
+  $("#result").className = "result hidden";
+  state.job = null;
+  renderTransfer(0, state.file.size);
   try {
-    const r = await api("/api/upload", { method: "POST", body: fd });
-    renderResult(r);
-    const fails = r.failed || [];
-    if (fails.length) {
-      showToast(fails.map((f) =>
-        `${panLabel(f.pan)}失败：${f.msg}${f.hint ? `（怎么办: ${f.hint}）` : ""}`).join("；"));
-    } else {
-      showToast("上传完成", false);
+    const r = await uploadWithProgress(fd, renderTransfer);
+    if (r && r.job_id) {          // 服务端交后台跑，进度靠轮询
+      pollJob(r.job_id);
+      return;
     }
-    setFile(null);
-    refreshRecords();
-  } catch (e) {
-    showToast(`${e.msg}（${e.code}）${e.hint ? " 怎么办: " + e.hint : ""}`);
-  } finally {
+    renderResult(r || {});        // 兼容同步返回（旧服务 / sync=1）
     setBusy(false);
+    finishUpload(r || {});
+  } catch (e) {
+    setBusy(false);
+    $("#progress").classList.add("hidden");
+    showToast(`${e.msg}（${e.code}）${e.hint ? " 怎么办: " + e.hint : ""}`);
   }
 }
 
@@ -258,6 +497,19 @@ function initUpload() {
   });
 
   $("#upload-form").addEventListener("submit", doUpload);
+
+  // 目录与落点联动：改目录、改标题、切日期开关都刷新「实际落点」
+  $("#pan-list").addEventListener("change", (ev) => {
+    if (!ev.target.classList.contains("pan-check")) return;
+    const dir = document.querySelector(`.pan-dir[data-pan="${ev.target.value}"]`);
+    if (dir) dir.disabled = !ev.target.checked;
+    updateLanding();
+  });
+  $("#pan-list").addEventListener("input", (ev) => {
+    if (ev.target.classList.contains("pan-dir")) updateLanding();
+  });
+  $("#title").addEventListener("input", updateLanding);
+  $("#date-dir").addEventListener("change", updateLanding);
 }
 
 /* ---------------- 记录页 ---------------- */
@@ -371,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $$(".tab").forEach((b) =>
     b.addEventListener("click", () => switchTab(b.dataset.tab)));
   $("#refresh-status").addEventListener("click", refreshStatus);
-  renderPanList();
+  refreshOptions();
   initUpload();
   refreshStatus();
   refreshRecords();
