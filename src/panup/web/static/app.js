@@ -732,6 +732,12 @@ function initUpload() {
     setPicked(items);
   });
 
+  // 拖歪了（落在拖拽区外）时别让浏览器把文件当页面打开——直接吞掉
+  ["dragover", "drop"].forEach((name) =>
+    document.addEventListener(name, (ev) => {
+      if (!ev.target.closest || !ev.target.closest("#drop")) ev.preventDefault();
+    }));
+
   $("#upload-form").addEventListener("submit", doUpload);
 
   // 目录与落点联动：改目录、改标题、切日期开关都刷新「实际落点」
