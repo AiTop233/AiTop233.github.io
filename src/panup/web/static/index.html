@@ -18,25 +18,70 @@
 </header>
 
 <section class="statusbar" id="statusbar" aria-label="凭据状态灯">
-  <span class="light" data-light="baidu"><i class="dot unknown"></i>百度</span>
-  <span class="light" data-light="quark"><i class="dot unknown"></i>夸克</span>
-  <span class="light" data-light="feishu"><i class="dot unknown"></i>飞书</span>
+  <span class="light" data-light="baidu" data-kind="pan"><i class="dot unknown"></i>百度</span>
+  <span class="light" data-light="quark" data-kind="pan"><i class="dot unknown"></i>夸克</span>
+  <span class="light" data-light="feishu" data-kind="writer"><i class="dot unknown"></i>飞书</span>
   <button id="refresh-status" type="button">刷新状态</button>
 </section>
 
 <main id="panels">
   <div class="panel active" data-panel="upload" id="panel-upload">
-    <div class="empty">
-      <p class="empty-title">把文件拖到这里开始上传</p>
-      <p class="empty-hint">上传功能正在开发中，开放后可直接选网盘、拿分享链接</p>
+    <div class="drop" id="drop" role="button" tabindex="0"
+         aria-label="拖入文件或点击选择文件">
+      <p class="drop-title" id="drop-title">把文件拖到这里</p>
+      <p class="drop-hint" id="drop-hint">或点击选择文件 · 一次一个</p>
+      <input type="file" id="file-input" hidden>
     </div>
+
+    <form class="form" id="upload-form">
+      <div class="form-row">
+        <span class="form-label">传到</span>
+        <div class="pan-list" id="pan-list"><!-- 由状态灯里的 data-kind="pan" 生成 --></div>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="title">标题</label>
+        <input class="text" id="title" name="title" maxlength="120"
+               placeholder="写进飞书文档的标题；留空用文件名">
+      </div>
+      <div class="form-row">
+        <span class="form-label">选项</span>
+        <label class="check"><input type="checkbox" id="date-dir"> 按日期建子目录</label>
+        <label class="check"><input type="checkbox" id="write-doc" checked> 写入飞书文档</label>
+      </div>
+      <div class="form-row">
+        <span class="form-label"></span>
+        <button class="btn primary" id="upload-btn" type="submit">上传</button>
+        <span class="form-hint" id="upload-hint"></span>
+      </div>
+    </form>
+
+    <section class="result hidden" id="result" aria-live="polite"></section>
   </div>
+
   <div class="panel" data-panel="records" id="panel-records">
-    <div class="empty">
-      <p class="empty-title">暂无记录</p>
-      <p class="empty-hint">上传成功后，每次的文件、网盘与分享链接都会列在这里</p>
-    </div>
+    <section class="block">
+      <h2 class="block-title">待修 <span class="badge bad" id="failure-count">0</span></h2>
+      <p class="block-hint">这些记录没有传成功；修掉原因后点「重传」，只重跑这一个盘。</p>
+      <table class="table hidden" id="failure-table">
+        <thead><tr><th>时间</th><th>文件</th><th>网盘</th><th>原因</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="block-empty" id="failure-empty">没有待修的记录</p>
+    </section>
+
+    <section class="block">
+      <h2 class="block-title">上传记录</h2>
+      <table class="table hidden" id="record-table">
+        <thead><tr><th>时间</th><th>标题</th><th>各盘</th><th>状态</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty hidden" id="record-empty">
+        <p class="empty-title">暂无记录</p>
+        <p class="empty-hint">上传成功后，每次的文件、网盘与分享链接都会列在这里</p>
+      </div>
+    </section>
   </div>
+
   <div class="panel" data-panel="watch" id="panel-watch">
     <div class="empty">
       <p class="empty-title">还没有监控规则</p>
