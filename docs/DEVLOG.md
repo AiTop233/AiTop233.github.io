@@ -279,3 +279,12 @@
 - `.pytest_cache` 删除；`logs/` 保留（按天滚动，30 天）
 - 未动：8 条已合并特性分支（I-007～I-019）仍留着，删不删等人；`stash@{0}`（I-029-stats-draft）保留
 - 仍需人手工：远端验收目录（`/panup验收-I017/-I018/-I018B/-I019`、`/panup验收-无密码`）驱动无删除接口；飞书文档顶部本轮代验节
+
+## 2026-11-09（I-039 远端删除；验收痕迹全清）
+- 驱动契约加 `delete`（非抽象，基类默认报 `PUP-107`，存量驱动与测试桩零改动）：百度 `POST /api/filemanager?opera=delete&async=2&onnest=fail`，夸克 `_resolve_fid` → `POST /file/delete` 并清 fid 缓存；远端不存在返回 `missing:true`（幂等），根目录发请求前拒 `PUP-108`
+- 台账加 `deleted` 状态：`record_deleted`（单条）/ `mark_deleted_by_remote`（前缀批量）把 `link`/`pwd` 清空、行保留；`tasks()` 聚合出 `deleted`
+- 接口两条：`POST /api/uploads/{id}/delete-remote`（记录级，删过返 `skipped`）、`POST /api/remote/delete`（`{pan,path}`，台账里查不到的路径也能删，顺带标前缀记录）；页面每个成功项加「删远端」按钮 + 确认框，删完显示「远端已删除」/「已删除」徽标
+- 自测：208 例绿（+15）；变异把夸克 missing 分支改成 `if False` → 幂等用例红，还原后绿
+- 实机清理：夸克根目录 18 个 `panup验收-*` / `panup-acceptance-*` / `panup-i018-review-*` 全部删除并复查无残留；**百度 16 个同类目录卡在 `PAN-baidu-132`**（账号级安全校验，需人先在浏览器过一次短信/邮箱验证再重跑）
+- 飞书文档：删掉本轮代验产生的 9 节（158 → 132 块），真实上传的节（`ai Agent短视频创作skill` 等）保留
+- 回程合并后看板待验收 3 → 4（I-039 标准已写全，可直接验）
