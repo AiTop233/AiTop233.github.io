@@ -196,15 +196,14 @@ class FeishuWriter(Writer):
                   err_cls=AuthError)
         return {"ok": True, "doc": doc_token}
 
-    def append_record(self, record: dict) -> dict:
-        """按固定更新规则向文档最顶插入一节（版式见模块 docstring）。"""
+    def append_task(self, task: dict) -> dict:
+        """按固定更新规则向文档最顶插入一节（一个任务一节，节内每盘一行）。"""
         doc_token = self._doc_token()
         index = self._insert_index(doc_token)
-        body = {
-            "index": index,
-            "children": [self._heading_block(self._section_title(record)),
-                         *self._link_blocks(record)],
-        }
+        blocks = [self._heading_block(self._section_title(task))]
+        for item in task.get("items") or []:
+            blocks.extend(self._link_blocks(item))
+        body = {"index": index, "children": blocks}
         path = (f"/open-apis/docx/v1/documents/{doc_token}"
                 f"/blocks/{doc_token}/children?document_revision_id=-1")
         payload = self._api("POST", path, body=body)
@@ -229,21 +228,25 @@ class FeishuWriter(Writer):
                 return 0
             page_token = f"&page_token={data['page_token']}"
 
-    def _section_title(self, record: dict) -> str:
-        name = record.get("filename") or "未命名"
-        stem = Path(name).stem or name
-        return f"{_today_str()} {stem}"
+    def _section_title(self, task: dict) -> str:
+        """h2 = 「YYMMDD 标题名」；标题优先取任务标题，缺省用文件名去扩展名。"""
+        title = (task.get("title") or "").strip()
+        if not title:
+            name = task.get("filename") or "未命名"
+            title = Path(name).stem or name
+        return f"{task.get('date') or _today_str()} {title}"
 
     def _heading_block(self, title: str) -> dict:
         return {"block_type": 4, "heading2": {
             "elements": [{"text_run": {"content": title}}], "style": {}}}
 
-    def _link_blocks(self, record: dict) -> list[dict]:
-        link = record.get("link") or ""
-        pwd = record.get("pwd") or ""
+    def _link_blocks(self, item: dict) -> list[dict]:
+        """一个成功网盘一行「盘名：链接?pwd=提取码」（提取码内嵌，可点击）。"""
+        link = item.get("link") or ""
+        pwd = item.get("pwd") or ""
         if link and pwd and "?pwd=" not in link:
             link = f"{link}?pwd={pwd}"
-        pan = record.get("pan") or ""
+        pan = item.get("pan") or ""
         label = _PAN_LABELS.get(pan, pan or "链接")
         elements = [{"text_run": {"content": f"{label}："}}]
         if link:
