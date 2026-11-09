@@ -41,7 +41,7 @@
   - `share(remote_path, *, pwd=None, period_days=0) -> dict`：创建分享链接，返回链接、提取码、有效期；`pwd=None` 按各盘默认（百度随机 4 位、夸克不带，D-014），返回的 `pwd` 为空串即该盘无提取码
   - `publish(local_path, remote_dir, **kwargs) -> dict`：mkdir + upload + share 一步到位
   - `list(remote_dir) -> list`：列目录（阶段 1 仅百度完整实现，夸克按需）
-  - `delete(remote_path) -> dict`：删远端文件或整个目录（服务端递归），返回 `{path, deleted, missing}`；`missing=True` 表示远端本来就没有（幂等，不算失败）。基类默认实现报 `PUP-107`「驱动不支持删除」，百度/夸克已实现；根目录拒绝（`PUP-108`）
+  - `delete(remote_paths, *, to_trash=True) -> dict`：服务端批量删文件或整个目录（递归），返回 `{deleted: [...], missing: [...], failed: [{path, code, msg}]}`；`missing` 是远端本来就没有的路径（幂等，按成功处理），单条失败不中断整批。默认进回收站，`to_trash=False` 百度/夸克都拒（网页接口没有彻底删）。基类默认实现报 `PUP-422`「驱动不支持删除」。签名与 I-027 文件页的批量删除一致
 - Writer 基类：
   - `auth_check() -> dict`：凭证可用性检查
   - `append_task(task) -> dict`：向目标文档写入**一节**；`task = {title, filename, date, items: [{pan, link, pwd}]}`，`items` **只含成功的网盘**、按驱动注册顺序排列（版式与插入位置按 PRD F3：h2「YYMMDD 标题名」小节插最顶 + 每个成功盘一行「盘名：链接?pwd=提取码」）
