@@ -192,6 +192,49 @@ class QuarkContractTests(unittest.TestCase):
         r = make_driver(api).share("/a/hello.txt")
         self.assertEqual(r["share_id"], "sid9")
 
+    def test_share_defaults_to_no_password(self):
+        """人定（2026-11-09）：夸克分享默认不带提取码；显式传 pwd 才设码。"""
+        seen = {}
+
+        def api(method, url, *, params=None, body=None, headers=None):
+            path = url.split("/1/clouddrive")[-1].split("?")[0]
+            if path == "/share":
+                seen["password"] = (body or {}).get("password")
+                return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
+                    "task_sync": True, "share_id": "sid5",
+                    "share_url": "https://pan.quark.cn/s/sid5"}})
+            if path == "/share/password":
+                return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
+                    "share_url": "https://pan.quark.cn/s/sid5", "share_pwd": ""}})
+            return _canned_api(method, url, params=params, body=body, headers=headers)
+
+        d = make_driver(api)
+        d._fid_cache["/a/hello.txt"] = "F1"
+        r = d.share("/a/hello.txt")
+        self.assertEqual(seen["password"], "")
+        self.assertEqual(r["pwd"], "")
+
+    def test_share_with_explicit_pwd_still_sets_it(self):
+        seen = {}
+
+        def api(method, url, *, params=None, body=None, headers=None):
+            path = url.split("/1/clouddrive")[-1].split("?")[0]
+            if path == "/share":
+                seen["password"] = (body or {}).get("password")
+                return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
+                    "task_sync": True, "share_id": "sid6",
+                    "share_url": "https://pan.quark.cn/s/sid6"}})
+            if path == "/share/password":
+                return 200, {}, json.dumps({"status": 200, "code": 0, "data": {
+                    "share_url": "https://pan.quark.cn/s/sid6", "share_pwd": "k9m2"}})
+            return _canned_api(method, url, params=params, body=body, headers=headers)
+
+        d = make_driver(api)
+        d._fid_cache["/a/hello.txt"] = "F1"
+        r = d.share("/a/hello.txt", pwd="k9m2")
+        self.assertEqual(seen["password"], "k9m2")
+        self.assertEqual(r["pwd"], "k9m2")
+
     def test_upload_missing_local_file_raises_without_network(self):
         with self.assertRaises(UploadError):
             make_driver().upload("Z:/no/such/file.bin", "/a")
