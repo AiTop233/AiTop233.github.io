@@ -137,6 +137,23 @@ class TaskTests(unittest.TestCase):
         rows = self.ledger.recent(10)
         self.assertEqual({row["group_id"] for row in rows}, {r["group_id"]})
 
+    def test_all_dedup_skips_writer(self):
+        targets = [{"pan": "baidu", "remote_dir": "/A"},
+                   {"pan": "quark", "remote_dir": "/B"}]
+        self.run_task(targets)
+        RecordingWriter.instances.clear()
+        r = self.run_task(targets)
+        self.assertTrue(all(i["dedup"] for i in r["items"]))
+        self.assertEqual(RecordingWriter.instances, [])
+
+    def test_partial_dedup_writes_only_fresh_pan(self):
+        self.run_task([{"pan": "baidu", "remote_dir": "/A"}])
+        RecordingWriter.instances.clear()
+        self.run_task([{"pan": "baidu", "remote_dir": "/A"},
+                       {"pan": "quark", "remote_dir": "/B"}])
+        task = RecordingWriter.instances[0].tasks[0]
+        self.assertEqual([i["pan"] for i in task["items"]], ["quark"])
+
     def test_rejects_duplicate_pan(self):
         with self.assertRaises(UploadError):
             self.run_task([{"pan": "baidu", "remote_dir": "/A"},
